@@ -1,139 +1,116 @@
-# .gitignore for .NET (C#) Web API projects
-# Build results
-bin/
-obj/
+# ==========================================
+# RESULTADOS DE COMPILACIÓN (.NET)
+# ==========================================
+[Bb]in/
+[Oo]bj/
+publish/
+*.exe
+*.dll
+*.pdb
+*.cache
 
-# User-specific files
+# ==========================================
+# CONFIGURACIONES DE IDEs (VS Code, Visual Studio, Rider)
+# ==========================================
+.vscode/
+.vs/
+.idea/
+*.sln.iml
 *.user
 *.suo
 *.userosscache
 *.sln.docstates
 
-# Visual Studio Code
-.vscode/
+# ==========================================
+# ARCHIVOS DE CONFIGURACIÓN Y SECRETOS (¡CRUCIAL!)
+# ==========================================
+# SÓLO ignoramos los appsettings de desarrollo y producción con datos sensibles
+appsettings.Development.json
+appsettings.Local.json
+appsettings.Production.json
+appsettings.Staging.json
 
-# OS generated files
-.DS_Store
-Thumbs.db
+# Ignorar archivos de secretos específicos y variables de entorno
+secrets.json
+secrets.local.json
+apikeys.json
+.env*
 
-# Logs
-*.log
+# OJO: NO ignoramos el 'appsettings.json' base. Ese SÍ debe subirse a GitHub 
+# sin contraseñas para que el proyecto no falle al clonarse.
 
-# Database
+# ==========================================
+# BASES DE DATOS LOCALES
+# ==========================================
 *.mdf
 *.ldf
 *.sqlite
 *.db
 
-# Secrets and config (customize as needed)
-appsettings.Development.json
-appsettings.Local.json
-
-
-
-
-# Others
-*.swp
-*.bak
-*.tmp
-
-# Rider
-.idea/
-*.sln.iml
-
-# Test results
-TestResults/
-
-# NuGet
-*.nupkg
-packages/
-.nuget/
-
-# Documentation
-Document/
-
-# JSON
-*.json
-*.appsettings.json
-
-# IDEs
-.idea/
-*.sln.iml
-*.vs/
-
-# User secrets
-secrets.json
-secrets.local.json
-
-# Environment files
-.env*
-[Bb]in/
-[Oo]bj/
-*.log
-# Publish output
-publish/
-# .NET Core / .NET 10
-bin/
-obj/
-*.exe
-*.dll
-*.pdb
-*.cache
-*.json
-!appsettings.json
-# Backup and temp files
-*.bak
-*.tmp
-*.temp
-~$*
-
-# Crash dumps
-*.dmp
-
-# Sensitive config
-appsettings.Production.json
-appsettings.Staging.json
-
-# Certificates and keys
+# ==========================================
+# CERTIFICADOS Y SEGURIDAD
+# ==========================================
 *.pfx
 *.p12
 *.key
 *.crt
 *.pem
-
-# SSH
 .ssh/
 *.pub
-
-# Token files
 *.token
 *.auth
 
-# API keys
-apikeys.json
-
-# Docker
-.docker/
-Dockerfile*
-
-# npm/yarn
+# ==========================================
+# PAQUETES Y DEPENDENCIAS (NuGet y NPM)
+# ==========================================
+*.nupkg
+packages/
+.nuget/
 node_modules/
 
-# Python
-__pycache__/
-*.pyc
-
-# MacOS
-.AppleDouble
-.LSOverride
-
-# Windows
+# ==========================================
+# ARCHIVOS DEL SISTEMA OPERATIVO Y TEMPORALES
+# ==========================================
+.DS_Store
+Thumbs.db
 Desktop.ini
 $RECYCLE.BIN/
+*.log
+*.swp
+*.bak
+*.tmp
+*.temp
+~$*
+*.dmp
 
-# Linux
-*~
-
-# Custom sensitive folders
+# ==========================================
+# CARPETAS PERSONALIZADAS DE SEGURIDAD
+# ==========================================
 /private/
 /secure/
+TestResults/
+
+# ==========================================
+# OTROS ARCHIVOS Y CARPETAS QUE PUEDEN CONTENER INFORMACIÓN SENSIBLE
+*.zip
+*.tar.gz
+*.7z
+*.rar
+*.bak
+*.backup
+*.log
+*.csv
+*.xlsx
+*.docx
+*.pdf
+*.key
+*.pem
+*.pfx
+*.p12
+*.ps1
+# ==========================================
+# SCRIPTS DE AUTOMATIZACIÓN LOCAL
+# ==========================================
+ollama_ia.ps1
+DOCUMENTACIÓN.md
+migrations_cmd_output.txt
