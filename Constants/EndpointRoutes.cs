@@ -1,0 +1,113 @@
+using System;
+// This class centralizes all the endpoint routes for the API, making it easier to manage and maintain them in one place.
+// Esta clase centraliza todas las rutas de los puntos finales de la API, lo que facilita su gestión y mantenimiento en un solo lugar.
+namespace vet_api_Net.Routes
+{
+    public static class Endpoints
+    {
+        public static class Auth
+        {
+            public const string Login = "login";
+            public const string Me = "me";
+            public const string UpdatePassword = "update-password";
+        }
+        public static class Users
+        {
+            public const string Create = "create";
+            public const string Secretaries = "secretarias";
+            public const string UserDisabled = "{id}/disable";
+            public const string UserEnabled = "{id}/enable";
+            public const string Delete = "{id}";
+            public const string Status = "{id}/status";
+        }
+        public static class Citas
+        {
+            public const string GetAllRequests = "requests";
+            public const string Delete = "{id}";
+            public const string Finalizar = "{id}/finalizar";
+            public const string NewStatus = "{id}/statusnew";
+            public const string Status = "{id}/status";
+            public const string Create = "create";
+            public const string CitaToday = "today";
+        }
+        public static class Client
+        {
+            public const string GetById = "{id}";
+        }
+        public static class ClientPets
+        {
+            public const string CreateWithPet = "create-with-pet";
+            public const string CreatePetForExistingClient = "add-pet";
+            public const string GetClientsWithPetsLookup = "lookup/clients";
+        }
+        public static class Consultas
+        {
+            public const string Create = "create";
+            public const string GetById = "{id}";
+        }
+        public static class Facturas
+        {
+            public const string CitaId = "cita/{citaId}";
+            public const string CitaPdf = "cita/{citaId}/pdf";
+            public const string Files = "files";
+            public const string Download = "files/download/{fileName}";
+            public const string StatusPago = "{id}/estado-pago";
+            public const string Settings = "settings-facturas";
+            public const string UpdateSettings = "settings-facturas/auto-delete";
+        }
+        public static class UsersPetsController
+        {
+            public const string UserPets = "{nombre}/pets";
+        }
+        public static class MassagesController
+        {
+            public const string Conversation = "conversation/{userId}/{otherId}";
+            public const string UserMessages = "user/{userId}";
+            public const string MarkRead = "{id}/read";
+        }
+        public static class PetsController
+        {
+            public const string GetById = "{id}";
+        }
+        public static class ProductsController
+        {
+            public const string Create = "Create";
+            public const string Delete = "delete/{id}";
+            public const string Quantity = "{id}/quantity";
+            public const string UpdateProducto = "update/{id}";
+            public const string Categories = "categories";
+        }
+        public static class ReportController
+        {
+            public const string GetById = "{id}";
+            public const string Delete = "{id}";
+            public const string GenerateFull = "generate-full";
+            public const string GenerateFullReport = "full/{id}";
+            public const string CreateExcel = "excel/{id}";
+            public const string GetExcel = "excel/{id}";
+            public const string UpdateRetentionDays = "settings/retention-days";
+            public const string ToggleAutoDelete = "settings/autodelete";
+            public const string ToggleAutoGenerate = "settings/autogenerate";
+            public const string Settings = "settings";
+        }
+
+        public static class MoneyController
+        {
+            public const string Update = "update";
+            public const string TasaDollarBcv = "tasa-dollar-bcv-scraping";
+            public const string TasaDollarBcvToDb = "tasa-dollar-bcv";
+        }
+        public static class NotificationController
+        {
+            public const string Create = "Created";
+            public const string MarkAsRead = "{alertId}/mark-as-read";
+        }
+        public static class WSMessageController
+        {
+            public const string DispatchInvoiceByCita = "dispatch/appointment/{citaId}";
+            public const string SessionInit = "session/init";
+            public const string SessionStatus = "session/status";
+        }
+    }
+
+}

@@ -1,0 +1,110 @@
+using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+
+namespace DTOs;
+
+public record FacturationItemDTO
+{
+    [JsonPropertyName("productos_consultas_id")]
+    public int? ProductosConsultasId { get; init; }
+
+    [JsonPropertyName("producto_id")]
+    public int ProductoId { get; init; }
+
+    [JsonPropertyName("codigo")]
+    public string Codigo { get; init; } = null!;
+
+    [JsonPropertyName("nombre")]
+    public string Nombre { get; init; } = null!;
+
+    [JsonPropertyName("descripcion")]
+    public string? Descripcion { get; init; }
+
+    [JsonPropertyName("precio_unitario")]
+    public decimal PrecioUnitario { get; init; }
+
+    [JsonPropertyName("cantidad")]
+    public int Cantidad { get; init; }
+
+    [JsonPropertyName("total")]
+    public decimal Total { get; init; }
+
+    [JsonPropertyName("consulta_price")]
+    public decimal? ConsultaPrice { get; init; }
+}
+
+public record FacturationDTO
+{
+    [JsonPropertyName("factura_id")]
+    public int? FacturaId { get; init; }
+
+    [JsonPropertyName("numero_factura")]
+    public string NumeroFactura { get; set; } = null!;
+
+    [JsonPropertyName("cliente_id")]
+    public int ClienteId { get; init; }
+
+    [JsonPropertyName("cliente_nombre")]
+    public string? ClienteNombre { get; init; }
+
+    [JsonPropertyName("mascota_id")]
+    public int? MascotaId { get; init; }
+
+    [JsonPropertyName("mascota_nombre")]
+    public string? MascotaNombre { get; init; }
+
+    [JsonPropertyName("consulta_id")]
+    public int? ConsultaId { get; init; }
+
+    [JsonPropertyName("cita_id")]
+    public int? CitaId { get; init; }
+
+    [JsonPropertyName("doctor_id")]
+    public int? DoctorId { get; init; }
+
+    [JsonPropertyName("doctor_nombre")]
+    public string? DoctorNombre { get; init; }
+
+    [JsonPropertyName("fecha_emision")]
+    public DateTime FechaEmision { get; init; }
+
+    [JsonPropertyName("items")]
+    public List<FacturationItemDTO> Items { get; init; } = new List<FacturationItemDTO>();
+
+    [JsonPropertyName("subtotal")]
+    public decimal Subtotal { get; init; }
+
+    [JsonPropertyName("descuento")]
+    public decimal? Descuento { get; init; }
+
+    [JsonPropertyName("total")]
+    public decimal Total { get; init; }
+
+    [JsonPropertyName("metodo_pago")]
+    public string MetodoPago { get; init; } = "pendiente";
+
+    [JsonPropertyName("estado_pago")]
+    public string? EstadoPago { get; init; }
+
+    [JsonPropertyName("notas")]
+    public string? Notas { get; init; }
+
+    [JsonPropertyName("creado")]
+    public DateTime? Creado { get; init; }
+
+    [JsonPropertyName("actualizado")]
+    public DateTime? Actualizado { get; init; }
+
+    [JsonPropertyName("url_docx")]
+    public string? UrlDocx { get; set; }
+
+    [JsonPropertyName("is_new")]
+    public bool IsNew { get; init; } = false;
+}
+
+public record FacturationMoneyUse
+{
+    [JsonPropertyName("money_type")]
+    public string MoneyType { get; init; } = null!;
+}

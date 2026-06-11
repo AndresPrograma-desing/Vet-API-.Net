@@ -1,0 +1,139 @@
+# .gitignore for .NET (C#) Web API projects
+# Build results
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database
+*.mdf
+*.ldf
+*.sqlite
+*.db
+
+# Secrets and config (customize as needed)
+appsettings.Development.json
+appsettings.Local.json
+
+
+
+
+# Others
+*.swp
+*.bak
+*.tmp
+
+# Rider
+.idea/
+*.sln.iml
+
+# Test results
+TestResults/
+
+# NuGet
+*.nupkg
+packages/
+.nuget/
+
+# Documentation
+Document/
+
+# JSON
+*.json
+*.appsettings.json
+
+# IDEs
+.idea/
+*.sln.iml
+*.vs/
+
+# User secrets
+secrets.json
+secrets.local.json
+
+# Environment files
+.env*
+[Bb]in/
+[Oo]bj/
+*.log
+# Publish output
+publish/
+# .NET Core / .NET 10
+bin/
+obj/
+*.exe
+*.dll
+*.pdb
+*.cache
+*.json
+!appsettings.json
+# Backup and temp files
+*.bak
+*.tmp
+*.temp
+~$*
+
+# Crash dumps
+*.dmp
+
+# Sensitive config
+appsettings.Production.json
+appsettings.Staging.json
+
+# Certificates and keys
+*.pfx
+*.p12
+*.key
+*.crt
+*.pem
+
+# SSH
+.ssh/
+*.pub
+
+# Token files
+*.token
+*.auth
+
+# API keys
+apikeys.json
+
+# Docker
+.docker/
+Dockerfile*
+
+# npm/yarn
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+
+# MacOS
+.AppleDouble
+.LSOverride
+
+# Windows
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# Custom sensitive folders
+/private/
+/secure/
