@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
-using vet_api_Net.Interfaze.Repositories;
+using vet_api_Net.Interfaces.Repositories;
 
 namespace vet_api_Net.Workers;
 

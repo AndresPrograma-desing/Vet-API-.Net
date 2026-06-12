@@ -1,111 +1,107 @@
-using System.Linq;
+using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using DTOs;
-using vet_api_Net.Interfaze.Services;
-using vet_api_Net.Data;
+using vet_api_Net.Interfaces.Services;
+using vet_api_Net.Interfaces.Repositories;
 using vet_api_Net.Models;
 using vet_api_Net.Hubs;
 using vet_api_Net.Constants;
 
-namespace vet_api_Net.Services;
-
-public class MessagingService : IMessagingService
+namespace vet_api_Net.Services
 {
-    private readonly AppDbContext _context;
-    private readonly IHubContext<MessageHub> _hubContext;
-
-    public MessagingService(AppDbContext context, IHubContext<MessageHub> hubContext)
+    public class MessagingService : IMessagingService
     {
-        _context = context;
-        _hubContext = hubContext;
-    }
+        private readonly IMessagesRepository _messagesRepository;
+        private readonly IHubContext<MessageHub> _hubContext;
 
-    public async Task<MensajeDTO> SendMessageAsync(CreateMensajeDTO dto)
-    {
-        var mensaje = new Mensaje
+        public MessagingService(IMessagesRepository messagesRepository, IHubContext<MessageHub> hubContext)
         {
-            EmisorId = dto.EmisorId,
-            ReceptorId = dto.ReceptorId,
-            Contenido = dto.Contenido,
-            Leido = false,
-            FechaEnvio = DateTime.Now
-        };
+            _messagesRepository = messagesRepository;
+            _hubContext = hubContext;
+        }
 
-        _context.Mensajes.Add(mensaje);
-        await _context.SaveChangesAsync();
-
-        var result = new MensajeDTO
+        public async Task<MensajeDTO> SendMessageAsync(CreateMensajeDTO dto)
         {
-            Id = mensaje.Id,
-            EmisorId = mensaje.EmisorId,
-            ReceptorId = mensaje.ReceptorId,
-            Contenido = mensaje.Contenido,
-            Leido = mensaje.Leido ?? false,
-            FechaEnvio = mensaje.FechaEnvio
-        };
- 
-        await _hubContext.Clients.Group(mensaje.ReceptorId.ToString()).SendAsync("ReceiveMessage", result);
-        await _hubContext.Clients.Group(mensaje.EmisorId.ToString()).SendAsync("ReceiveMessage", result);
+            var mensaje = new Mensaje
+            {
+                EmisorId = dto.EmisorId,
+                ReceptorId = dto.ReceptorId,
+                Contenido = dto.Contenido,
+                Leido = false,
+                FechaEnvio = DateTime.Now
+            };
 
-        return result;
-    }
+            _messagesRepository.Add(mensaje);
+            await _messagesRepository.SaveChangesAsync();
 
-    public async Task<List<MensajeDTO>> GetConversationAsync(int userId, int otherUserId)
-    {
-        var rows = await _context.Mensajes
-            .Where(m => (m.EmisorId == userId && m.ReceptorId == otherUserId) || (m.EmisorId == otherUserId && m.ReceptorId == userId))
-            .OrderBy(m => m.FechaEnvio)
-            .ToListAsync();
+            var result = new MensajeDTO
+            {
+                Id = mensaje.Id,
+                EmisorId = mensaje.EmisorId,
+                ReceptorId = mensaje.ReceptorId,
+                Contenido = mensaje.Contenido,
+                Leido = mensaje.Leido ?? false,
+                FechaEnvio = mensaje.FechaEnvio
+            };
 
-        return rows.Select(m => new MensajeDTO
+            await _hubContext.Clients.Group(mensaje.ReceptorId.ToString()).SendAsync("ReceiveMessage", result);
+            await _hubContext.Clients.Group(mensaje.EmisorId.ToString()).SendAsync("ReceiveMessage", result);
+
+            return result;
+        }
+
+        public async Task<List<MensajeDTO>> GetConversationAsync(int userId, int otherUserId)
         {
-            Id = m.Id,
-            EmisorId = m.EmisorId,
-            ReceptorId = m.ReceptorId,
-            Contenido = m.Contenido,
-            Leido = m.Leido ?? false,
-            FechaEnvio = m.FechaEnvio
-        }).ToList();
-    }
+            var rows = await _messagesRepository.GetConversationAsync(userId, otherUserId);
 
-    public async Task<List<MensajeDTO>> GetUserMessagesAsync(int userId)
-    {
-        var rows = await _context.Mensajes
-            .Where(m => m.ReceptorId == userId)
-            .OrderByDescending(m => m.FechaEnvio)
-            .ToListAsync();
+            return rows.Select(m => new MensajeDTO
+            {
+                Id = m.Id,
+                EmisorId = m.EmisorId,
+                ReceptorId = m.ReceptorId,
+                Contenido = m.Contenido,
+                Leido = m.Leido ?? false,
+                FechaEnvio = m.FechaEnvio
+            }).ToList();
+        }
 
-        return rows.Select(m => new MensajeDTO
+        public async Task<List<MensajeDTO>> GetUserMessagesAsync(int userId)
         {
-            Id = m.Id,
-            EmisorId = m.EmisorId,
-            ReceptorId = m.ReceptorId,
-            Contenido = m.Contenido,
-            Leido = m.Leido ?? false,
-            FechaEnvio = m.FechaEnvio
-        }).ToList();
-    }
+            var rows = await _messagesRepository.GetUserMessagesAsync(userId);
 
-    public async Task MarkAsReadAsync(int messageId)
-    {
-        var msg = await _context.Mensajes.FindAsync(messageId);
-        if (msg == null) throw new KeyNotFoundException(ResponseMessagesMessaging.MessageNotFound);
+            return rows.Select(m => new MensajeDTO
+            {
+                Id = m.Id,
+                EmisorId = m.EmisorId,
+                ReceptorId = m.ReceptorId,
+                Contenido = m.Contenido,
+                Leido = m.Leido ?? false,
+                FechaEnvio = m.FechaEnvio
+            }).ToList();
+        }
 
-        msg.Leido = true;
-        await _context.SaveChangesAsync();
-
-        var dto = new MensajeDTO
+        public async Task MarkAsReadAsync(int messageId)
         {
-            Id = msg.Id,
-            EmisorId = msg.EmisorId,
-            ReceptorId = msg.ReceptorId,
-            Contenido = msg.Contenido,
-            Leido = true,
-            FechaEnvio = msg.FechaEnvio
-        };
+            var msg = await _messagesRepository.GetByIdAsync(messageId);
+            if (msg == null) throw new KeyNotFoundException(ResponseMessagesMessaging.MessageNotFound);
 
-        await _hubContext.Clients.Group(msg.EmisorId.ToString()).SendAsync("MessageRead", dto);
+            msg.Leido = true;
+            await _messagesRepository.SaveChangesAsync();
+
+            var dto = new MensajeDTO
+            {
+                Id = msg.Id,
+                EmisorId = msg.EmisorId,
+                ReceptorId = msg.ReceptorId,
+                Contenido = msg.Contenido,
+                Leido = true,
+                FechaEnvio = msg.FechaEnvio
+            };
+
+            await _hubContext.Clients.Group(msg.EmisorId.ToString()).SendAsync("MessageRead", dto);
+        }
     }
 }

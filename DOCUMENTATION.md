@@ -15,7 +15,7 @@ Este backend es la base de la aplicación Happy Pets, diseñada para gestionar d
 
 ## Estructura de Carpetas
 
-**Controller/**: Controladores de la API REST. Ejemplo:
+**Controllers/**: Controladores de la API REST. Ejemplo:
 	- `AuthController.cs`, `CitasController.cs`, `ClientController.cs`, `PetsController.cs`, `FacturasController.cs`, `ReportController.cs`, etc.
 
 **DTOs/**: Objetos de transferencia de datos (Data Transfer Objects) usados para entrada y salida de información en la API. Ejemplo:
@@ -27,7 +27,7 @@ Este backend es la base de la aplicación Happy Pets, diseñada para gestionar d
 **Services/**: Lógica de negocio y servicios para cada módulo. Ejemplo:
 	- `AuthService.cs`, `CitasRequestService.cs`, `InvoiceService.cs`, etc.
 
-**interface/**: Interfaces que definen los contratos de los servicios, facilitando la inyección de dependencias y la escalabilidad. Ejemplo:
+**Interfaces/**: Interfaces que definen los contratos de los servicios, facilitando la inyección de dependencias y la escalabilidad. Ejemplo:
 	- `IAuthService.cs`, `ICitasRequestService.cs`, etc.
 
 **Configuration/**: Archivos de configuración y clases para parámetros globales o específicos del sistema.

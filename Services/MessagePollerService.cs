@@ -12,6 +12,7 @@ using DTOs;
 using vet_api_Net.Data;
 using vet_api_Net.Hubs;
 using vet_api_Net.Constants;
+using vet_api_Net.Interfaces.Repositories;
 
 namespace vet_api_Net.Services
 {
@@ -38,6 +39,7 @@ namespace vet_api_Net.Services
                 {
                     using var scope = _scopeFactory.CreateScope();
                     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    var messagesRepository = scope.ServiceProvider.GetRequiredService<IMessagesRepository>();
  
                     if (_mensajesTableExists != true)
                     {
@@ -49,10 +51,7 @@ namespace vet_api_Net.Services
                         }
                     }
 
-                    var messages = await db.Mensajes
-                        .Where(m => m.Leido == false)
-                        .OrderBy(m => m.FechaEnvio)
-                        .ToListAsync(stoppingToken);
+                    var messages = await messagesRepository.GetUnreadMessagesAsync();
 
                     foreach (var m in messages)
                     {

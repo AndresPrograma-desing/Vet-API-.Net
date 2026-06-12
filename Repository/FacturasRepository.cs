@@ -1,10 +1,10 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using vet_api_Net.Data;
 using vet_api_Net.Models;
-using vet_api_Net.Interfaze.Repositories;
+using vet_api_Net.Interfaces.Repositories;
 
 namespace vet_api_Net.Repositories;
 
