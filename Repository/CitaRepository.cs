@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using vet_api_Net.Data;
 using vet_api_Net.Models;
-using vet_api_Net.Interfaze.Repositories;
+using vet_api_Net.Interfaces.Repositories;
 using DTOs;
 
 namespace vet_api_Net.Repositories;
@@ -86,4 +86,25 @@ public class CitasRepository : ICitasRepository
     public void Delete(Cita cita) => _context.Citas.Remove(cita);
 
     public async Task<bool> SaveChangesAsync() => await _context.SaveChangesAsync() > 0;
+
+    public async Task<bool> AnyConflictAsync(int doctorId, DateTime fecha, TimeOnly hora)
+    {
+        return await _context.Citas.AnyAsync(c => c.DoctorId == doctorId && c.FechaCita.Date == fecha.Date && c.HoraCita == hora);
+    }
+
+    public async Task<MetodoPago?> GetMetodoPagoByNameAsync(string nombre)
+    {
+        var metodoNombre = nombre.Trim().ToLower();
+        return await _context.MetodoPagos.FirstOrDefaultAsync(m => m.Nombre.ToLower() == metodoNombre);
+    }
+
+    public void AddMetodoPago(MetodoPago metodo)
+    {
+        _context.MetodoPagos.Add(metodo);
+    }
+
+    public async Task<Cita?> GetByIdWithMetodoPagoAsync(int id)
+    {
+        return await _context.Citas.Include(c => c.MetodoPago).FirstOrDefaultAsync(c => c.Id == id);
+    }
 }

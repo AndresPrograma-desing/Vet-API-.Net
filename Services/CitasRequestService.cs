@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
 using System.Threading.Tasks;
 using DTOs;
-using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaces.Services;
 using vet_api_Net.Models;
 using vet_api_Net.Constants;
-using vet_api_Net.Interfaze.Repositories;
+using vet_api_Net.Interfaces.Repositories;
 using vet_api_Net.Extensions;
 using vet_api_Net.Infrastructure.Configuration;
 using Microsoft.Extensions.Options;

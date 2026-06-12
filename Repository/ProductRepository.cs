@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using vet_api_Net.Data;
 using vet_api_Net.Models;
-using vet_api_Net.Interfaze.Repositories;
+using vet_api_Net.Interfaces.Repositories;
 
 namespace vet_api_Net.Repositories;
 
@@ -57,5 +57,15 @@ public class ProductRepository : IProductRepository
     public async Task<bool> SaveChangesAsync()
     {
         return await _context.SaveChangesAsync() > 0;
+    }
+
+    public async Task<bool> ExistsByCodeOrNameAsync(string code, string name)
+    {
+        return await _context.Productos.AnyAsync(p => p.Codigo == code || p.Nombre == name);
+    }
+
+    public async Task<bool> CategoryExistsAsync(int categoryId)
+    {
+        return await _context.CategoriasProductos.AnyAsync(c => c.Id == categoryId);
     }
 }

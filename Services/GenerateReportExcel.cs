@@ -6,9 +6,11 @@ using ClosedXML.Excel;
 using vet_api_Net.Models;
 using vet_api_Net.Constants;
 
+using vet_api_Net.Interfaces.Services;
+
 namespace vet_api_Net.Services
 {
-    public class GenerateReportExcel
+    public class GenerateReportExcel : IGenerateReportExcel
     {
         public byte[] GenerateExcelFromReport(Reporte reporte)
         {

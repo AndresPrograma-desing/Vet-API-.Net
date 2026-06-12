@@ -1,91 +1,95 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using DTOs;
-using vet_api_Net.Data;
 using vet_api_Net.Models;
-namespace vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaces.Services;
+using vet_api_Net.Interfaces.Repositories;
 using vet_api_Net.Constants;
-public class MoneyTypeService : IMoneyTypeService
+
+namespace vet_api_Net.Services
 {
-    private readonly AppDbContext _context;
-    private readonly IConfiguration _configuration;
-
-    public MoneyTypeService(AppDbContext context, IConfiguration configuration)
+    public class MoneyTypeService : IMoneyTypeService
     {
-        _context = context;
-        _configuration = configuration;
-    }
+        private readonly IMoneyTypeRepository _moneyTypeRepository;
+        private readonly IConfiguration _configuration;
 
-    public async Task<MoneyTypesDTO?> GetMoneyTypeAsync()
-    {
-        var moneyType = await _context.MoneyTypes.FirstOrDefaultAsync();
-        if (moneyType == null) return null;
-
-        int targetId = _configuration.GetValue<int>("BcvSettings:TargetId", 1);
-
-        if(moneyType.Id != targetId)
+        public MoneyTypeService(IMoneyTypeRepository moneyTypeRepository, IConfiguration configuration)
         {
-            throw new Exception(ResponseMessagesMoneyTypes.InvalidId);
+            _moneyTypeRepository = moneyTypeRepository;
+            _configuration = configuration;
         }
-        return new MoneyTypesDTO
-        {
-            Id = moneyType.Id,
-            MoneyName = moneyType.MoneyName
-        };
-    }
 
-    public async Task<MoneyTypesDTO?> UpdateMoneyTypeAsync(MoneyTypesDTO money_name)
-    {
-        var existingMoneyType = await _context.MoneyTypes.FirstOrDefaultAsync();
-
-        int targetId = _configuration.GetValue<int>("BcvSettings:TargetId", 1);
-
-        if(existingMoneyType != null && existingMoneyType.Id != targetId)
+        public async Task<MoneyTypesDTO?> GetMoneyTypeAsync()
         {
-            throw new Exception(ResponseMessagesMoneyTypes.ErrorUpdate);
-        }
-        if (existingMoneyType == null)
-        {
-            existingMoneyType = new MoneyType
+            var moneyType = await _moneyTypeRepository.GetFirstOrDefaultAsync();
+            if (moneyType == null) return null;
+
+            int targetId = _configuration.GetValue<int>("BcvSettings:TargetId", 1);
+
+            if (moneyType.Id != targetId)
             {
-                MoneyName = money_name.MoneyName
+                throw new Exception(ResponseMessagesMoneyTypes.InvalidId);
+            }
+            return new MoneyTypesDTO
+            {
+                Id = moneyType.Id,
+                MoneyName = moneyType.MoneyName
             };
-            _context.MoneyTypes.Add(existingMoneyType);
-        }
-        else
-        {
-            existingMoneyType.MoneyName = money_name.MoneyName;
-            _context.MoneyTypes.Update(existingMoneyType);
         }
 
-        await _context.SaveChangesAsync();
+        public async Task<MoneyTypesDTO?> UpdateMoneyTypeAsync(MoneyTypesDTO money_name)
+        {
+            var existingMoneyType = await _moneyTypeRepository.GetFirstOrDefaultAsync();
 
-        return new MoneyTypesDTO
+            int targetId = _configuration.GetValue<int>("BcvSettings:TargetId", 1);
+
+            if (existingMoneyType != null && existingMoneyType.Id != targetId)
+            {
+                throw new Exception(ResponseMessagesMoneyTypes.ErrorUpdate);
+            }
+            if (existingMoneyType == null)
+            {
+                existingMoneyType = new MoneyType
+                {
+                    MoneyName = money_name.MoneyName
+                };
+                _moneyTypeRepository.Add(existingMoneyType);
+            }
+            else
+            {
+                existingMoneyType.MoneyName = money_name.MoneyName;
+                _moneyTypeRepository.Update(existingMoneyType);
+            }
+
+            await _moneyTypeRepository.SaveChangesAsync();
+
+            return new MoneyTypesDTO
+            {
+                Id = existingMoneyType.Id,
+                MoneyName = existingMoneyType.MoneyName
+            };
+        }
+
+        public async Task<RequestDollarBcvDTO> GetTasaDollarBcvAsync()
         {
-            Id = existingMoneyType.Id,
-            MoneyName = existingMoneyType.MoneyName
-        };
-    }
-    public async Task<RequestDollarBcvDTO> GetTasaDollarBcvAsync()
-    {
-        var moneyType = await _context.MoneyTypes.FirstOrDefaultAsync(m => m.DollarPersistence == "USD");
-        
-       
-        if (moneyType == null)
-        {
+            var moneyType = await _moneyTypeRepository.GetDollarPersistenceAsync();
+
+            if (moneyType == null)
+            {
+                return new RequestDollarBcvDTO
+                {
+                    MoneyType = "USD",
+                    BcvDollar = 0m
+                };
+            }
+
             return new RequestDollarBcvDTO
             {
-                MoneyType = "USD",
-                BcvDollar = 0m
+                MoneyType = moneyType.DollarPersistence,
+                BcvDollar = moneyType.BcvDollar
             };
         }
-
-        return new RequestDollarBcvDTO
-        {
-            MoneyType = moneyType.DollarPersistence,
-            BcvDollar = moneyType.BcvDollar
-        };
     }
 }

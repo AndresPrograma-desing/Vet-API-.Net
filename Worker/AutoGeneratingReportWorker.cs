@@ -1,5 +1,5 @@
-using vet_api_Net.Data;
-using vet_api_Net.Interfaze.Services;
+﻿using vet_api_Net.Data;
+using vet_api_Net.Interfaces.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace vet_api_Net.Worker
@@ -45,11 +45,11 @@ namespace vet_api_Net.Worker
                             var proximaFechaGeneracion = ultimoReporteSistema?.FechaCreacion.AddSeconds(15) ?? DateTime.MinValue;
                             if (DateTime.UtcNow >= proximaFechaGeneracion)
                             {
-                                _logger.LogInformation("Iniciando generación automática de reporte quincenal...");
+                                _logger.LogInformation("Iniciando generaciÃ³n automÃ¡tica de reporte quincenal...");
  
                                 await reportService.GenerateFullSystemReportAsync("sistema");
                                 
-                                _logger.LogInformation("Reporte automático generado con éxito.");
+                                _logger.LogInformation("Reporte automÃ¡tico generado con Ã©xito.");
                             }
                         }
                     }

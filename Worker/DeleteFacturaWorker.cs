@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
 using vet_api_Net.Data;
-using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaces.Services;
 using DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -85,7 +85,7 @@ namespace vet_api_Net.Worker
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Error al cargar la configuración del DeleteFacturaWorker, se usarán valores predeterminados");
+                _logger.LogWarning(ex, "Error al cargar la configuraciÃ³n del DeleteFacturaWorker, se usarÃ¡n valores predeterminados");
                 _scanInterval = TimeSpan.FromSeconds(10);
                 _threshold = TimeSpan.FromMinutes(30);
                 _enabled = true;
@@ -143,7 +143,7 @@ namespace vet_api_Net.Worker
                                         .Where(u => u.Rol == "secretaria" && (u.Activo == null || u.Activo == true))
                                         .ToListAsync();
 
-                                    var messageText = $"La factura {fileName} ha expirado y fue eliminada automáticamente.";
+                                    var messageText = $"La factura {fileName} ha expirado y fue eliminada automÃ¡ticamente.";
 
                                     if (botId.HasValue && messagingService != null)
                                     {

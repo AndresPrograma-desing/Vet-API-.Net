@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using DTOs;
 using vet_api_Net.Constants;
 using vet_api_Net.Infrastructure.Configuration;
-using vet_api_Net.Interfaze.Repositories;
-using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaces.Repositories;
+using vet_api_Net.Interfaces.Services;
 using vet_api_Net.Services.WSMessage;
 using vet_api_Net.Repositories;
 

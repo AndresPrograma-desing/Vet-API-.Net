@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using DTOs;
-using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaces.Services;
 
 namespace vet_api_Net.Hubs;
 

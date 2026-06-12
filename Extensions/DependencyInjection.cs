@@ -11,8 +11,8 @@ using Microsoft.IdentityModel.Tokens;
 using QuestPDF.Infrastructure;
 using vet_api_Net.Data;
 using vet_api_Net.Infrastructure.Configuration;
-using vet_api_Net.Interfaze.Repositories;
-using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaces.Repositories;
+using vet_api_Net.Interfaces.Services;
 using vet_api_Net.HttpServices;
 using vet_api_Net.Worker;
 using vet_api_Net.Services; 
@@ -30,7 +30,7 @@ public static class DependencyInjection
         // Licencia QuestPDF
         QuestPDF.Settings.License = LicenseType.Community;
 
-        // Configuración Dinámica de CORS
+        // ConfiguraciÃ³n DinÃ¡mica de CORS
         bool useTunnel = configuration.GetValue<bool>("ConnectionSettings:UseTunnel");
         string localFallback = "http://localhost:5168,http://localhost:5173";
         string corsOrigins = useTunnel 
@@ -55,7 +55,7 @@ public static class DependencyInjection
             });
         });
 
-        //  Autenticación JWT
+        //  AutenticaciÃ³n JWT
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
@@ -71,7 +71,7 @@ public static class DependencyInjection
                 };
             });
 
-        //  Base de Datos - Construcción de cadena de conexión
+        //  Base de Datos - ConstrucciÃ³n de cadena de conexiÃ³n
         var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
         var dbName = Environment.GetEnvironmentVariable("DB_NAME");
         var dbUser = Environment.GetEnvironmentVariable("DB_USER");
@@ -98,13 +98,13 @@ public static class DependencyInjection
             using var testConnection = new MySqlConnection(connectionString);
             testConnection.Open(); 
             
-            Console.WriteLine("[DB CHECK] Conexión exitosa a MySQL. Continuando con el arranque de la API.");
+            Console.WriteLine("[DB CHECK] ConexiÃ³n exitosa a MySQL. Continuando con el arranque de la API.");
         }
         catch (Exception ex)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("\n==========================================================================");
-            Console.WriteLine("[ERROR CRÍTICO DE ARRANQUE] No se pudo establecer conexión con MySQL.");
+            Console.WriteLine("[ERROR CRÃTICO DE ARRANQUE] No se pudo establecer conexiÃ³n con MySQL.");
             Console.WriteLine($"Detalle del error: {ex.Message}");
             Console.WriteLine("El arranque de la API ha sido abortado para prevenir fallos en cascada.");
             Console.WriteLine("==========================================================================\n");
@@ -128,7 +128,7 @@ public static class DependencyInjection
         services.AddSignalR();
         services.AddHealthChecks();
 
-        // Repositorios de la Aplicación
+        // Repositorios de la AplicaciÃ³n
         services.AddScoped<ICitasRepository, CitasRepository>();
         services.AddScoped<IUsersRepository, UsersRepository>();
         services.AddScoped<IAlertsRepository, AlertsRepository>();
@@ -139,8 +139,12 @@ public static class DependencyInjection
         services.AddScoped<IWSMRepository, WSMRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IFacturasRepository, FacturasRepository>();
+        services.AddScoped<IPetsRepository, PetsRepository>();
+        services.AddScoped<IReportRepository, ReportRepository>();
+        services.AddScoped<IMoneyTypeRepository, MoneyTypeRepository>();
+        services.AddScoped<IMessagesRepository, MessagesRepository>();
 
-        // Servicios de la Aplicación
+        // Servicios de la AplicaciÃ³n
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProductService, ProductService>();
@@ -153,10 +157,10 @@ public static class DependencyInjection
         services.AddScoped<IMessagingService, MessagingService>();
         services.AddScoped<IInvoiceService, InvoiceService>();
         services.AddScoped<IClientService, ClientService>();
-        services.AddScoped<GeneratePdfService>();
+        services.AddScoped<IGeneratePdfService, GeneratePdfService>();
         services.AddScoped<IClientPetService, ClientPetService>();
         services.AddScoped<IReportSystemService, ReportSystemService>();
-        services.AddScoped<GenerateReportExcel>();
+        services.AddScoped<IGenerateReportExcel, GenerateReportExcel>();
         services.AddScoped<IMoneyTypeService, MoneyTypeService>();
         services.AddScoped<IBcvScraper, BcvScraper>();
         services.AddScoped<INotificationService, NotificationService>();
@@ -174,7 +178,7 @@ public static class DependencyInjection
 
         // Clientes HTTP Externos (BCV)
         string bcvUrl = configuration["BcvSettings:ApiUrl"] 
-            ?? throw new InvalidOperationException("La configuración 'BcvSettings:ApiUrl' no fue encontrada.");
+            ?? throw new InvalidOperationException("La configuraciÃ³n 'BcvSettings:ApiUrl' no fue encontrada.");
 
         services.AddHttpClient("BcvClient", client =>
         {

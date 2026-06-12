@@ -1,10 +1,10 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using vet_api_Net.Interfaze.Repositories;
-using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaces.Repositories;
+using vet_api_Net.Interfaces.Services;
 
 namespace vet_api_Net.Services;
-        // CurrencyService se encarga de convertir precios entre USD y la moneda local (VES) según la configuración y el tipo de cambio actual.
+        // CurrencyService se encarga de convertir precios entre USD y la moneda local (VES) segÃºn la configuraciÃ³n y el tipo de cambio actual.
 public class CurrencyService : ICurrencyService
 {
     private readonly IProductRepository _repository;

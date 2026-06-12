@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using vet_api_Net.Data;
 using vet_api_Net.Hubs;
 using vet_api_Net.Services;
-using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaces.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,5 +55,5 @@ app.MapHealthChecks("/health");
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("Bienvenido a Happy Pets API {EnvironmentName} {Origin}", app.Environment.EnvironmentName, builder.Configuration.GetValue<bool>("ConnectionSettings:UseTunnel") ? builder.Configuration["ConnectionSettings:TunnelOrigin"] : builder.Configuration["ConnectionSettings:LocalOrigin"]);
-
+logger.LogInformation("Endpoints documentacion en local: localhost:5168/swagger/index.html", builder.Configuration["ConnectionSettings:LocalOrigin"]);
 app.Run();

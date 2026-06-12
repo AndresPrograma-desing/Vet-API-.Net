@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Text;
 using System.Security.Claims;
@@ -8,8 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
 using vet_api_Net.Models;
 using vet_api_Net.Constants;
-using vet_api_Net.Interfaze.Services;
-using vet_api_Net.Interfaze.Repositories;
+using vet_api_Net.Interfaces.Services;
+using vet_api_Net.Interfaces.Repositories;
 using vet_api_Net.DTOs;
 
 namespace vet_api_Net.Services;
