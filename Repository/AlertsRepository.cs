@@ -7,6 +7,7 @@ using vet_api_Net.Data;
 using vet_api_Net.Models;
 using vet_api_Net.DTOs;
 using vet_api_Net.Interfaze.Repositories;
+using vet_api_Net.Extensions;
 
 namespace vet_api_Net.Repositories;
 
@@ -24,7 +25,7 @@ public class AlertsRepository : IAlertsRepository
         var limiteTiempo = DateTime.Now.AddMinutes(-1); 
 
         return await _context.AlertasInternas
-            .Where(n => n.DestinatarioRol!.ToLower() == destination.ToLower())
+            .WhereEqualsIgnoreCase(n => n.DestinatarioRol, destination)
             .Where(n => n.Leida == false || (n.Leida == true && n.FechaLectura > limiteTiempo)) 
             .Select(n => new AlertNotificationDTO
             {

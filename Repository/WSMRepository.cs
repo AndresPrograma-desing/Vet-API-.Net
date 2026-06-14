@@ -33,7 +33,6 @@ namespace vet_api_Net.Repositories
                 ApiKey = apiData.ApiKey,
                 Message = apiData.Message
             };
-   
         }
     }
 }
