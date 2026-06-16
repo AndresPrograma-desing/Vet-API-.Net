@@ -5,8 +5,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using vet_api_Net.Data;
 using vet_api_Net.Hubs;
-using vet_api_Net.Services;
 using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Services;
+using Microsoft.Extensions.Options;
+using vet_api_Net.Infrastructure.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +25,18 @@ if (Environment.GetEnvironmentVariable("BOOTSTRAP_DB") == "1")
     db.Database.EnsureCreated();
     Console.WriteLine("Database ensured (EnsureCreated).");
     return;
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var apiSettings = scope.ServiceProvider.GetRequiredService<IOptions<ApiSettingsOptions>>().Value;
+    var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    var seedDataOptions = configuration.GetSection("SeedData").Get<SeedDataOptions>() ?? new SeedDataOptions();
+    if (seedDataOptions.Initialize)
+    {
+        vet_api_Net.Data.seeds.SeedsData.Initialize(db, apiSettings, seedDataOptions);
+    }
 }
 
 app.Use(async (context, next) => {
