@@ -187,6 +187,7 @@ public static class DependencyInjection
         });
 
         services.Configure<ApiSettingsOptions>(configuration.GetSection(ApiSettingsOptions.SectionName));
+        services.Configure<TokenTemporalOptions>(configuration.GetSection(TokenTemporalOptions.SectionName));
 
         return services;
     }
