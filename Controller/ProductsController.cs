@@ -130,8 +130,15 @@ public class ProductsController : ControllerBase
     {
         try
         {
-            var product = await _productService.UpdateProductAsync(id, updatedProductDto);
-            return Ok(product);
+            var (product, hasChanges) = await _productService.UpdateProductAsync(id, updatedProductDto);
+            var result = new
+            {
+                message = hasChanges 
+                    ? ResponseMessagesProduct.UpdateProductSuccess 
+                    : ResponseMessagesProduct.UpdateProductNoChanges,
+                product
+            };
+            return Ok(result);
         }
         catch (KeyNotFoundException ex)
         {

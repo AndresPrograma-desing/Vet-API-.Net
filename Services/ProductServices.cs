@@ -107,7 +107,7 @@ public class ProductService : IProductService, ICreateProductService
 
         return product;
     }
-public async Task<Producto> UpdateProductAsync(int id, ProductsUpdateDTO updatedProductDto)
+public async Task<(Producto Product, bool HasChanges)> UpdateProductAsync(int id, ProductsUpdateDTO updatedProductDto)
 {
     ArgumentNullException.ThrowIfNull(updatedProductDto);
 
@@ -118,27 +118,62 @@ public async Task<Producto> UpdateProductAsync(int id, ProductsUpdateDTO updated
     if (existingProduct == null)
         throw new KeyNotFoundException(ResponseMessagesProduct.ProductNotFound);
 
+    decimal targetPrecio = existingProduct.Precio;
     if (updatedProductDto.Precio.HasValue)
     {
-        existingProduct.Precio = await _currencyService.ConvertToUsdAsync(updatedProductDto.Precio.Value);
+        targetPrecio = await _currencyService.ConvertToUsdAsync(updatedProductDto.Precio.Value);
     }
+
+    decimal targetPrecioVenta = existingProduct.PrecioVenta;
     if (updatedProductDto.PrecioVenta.HasValue)
     {
-        existingProduct.PrecioVenta = await _currencyService.ConvertToUsdAsync(updatedProductDto.PrecioVenta.Value);
+        targetPrecioVenta = await _currencyService.ConvertToUsdAsync(updatedProductDto.PrecioVenta.Value);
     }
-    existingProduct.Codigo = updatedProductDto.Codigo ?? existingProduct.Codigo;
-    existingProduct.Nombre = updatedProductDto.Nombre ?? existingProduct.Nombre;
-    existingProduct.Descripcion = updatedProductDto.Descripcion ?? existingProduct.Descripcion;
-    existingProduct.CategoriaId = updatedProductDto.CategoriaId ?? existingProduct.CategoriaId;
-    existingProduct.Tipo = updatedProductDto.Tipo ?? existingProduct.Tipo;
-    existingProduct.Stock = updatedProductDto.Stock ?? existingProduct.Stock;
-    existingProduct.StockMinimo = updatedProductDto.StockMinimo ?? existingProduct.StockMinimo;
-    existingProduct.Proveedor = updatedProductDto.Proveedor ?? existingProduct.Proveedor;
+
+    string targetCodigo = updatedProductDto.Codigo ?? existingProduct.Codigo;
+    string targetNombre = updatedProductDto.Nombre ?? existingProduct.Nombre;
+    string? targetDescripcion = updatedProductDto.Descripcion ?? existingProduct.Descripcion;
+    int? targetCategoriaId = updatedProductDto.CategoriaId ?? existingProduct.CategoriaId;
+    string targetTipo = updatedProductDto.Tipo ?? existingProduct.Tipo;
+    int? targetStock = updatedProductDto.Stock ?? existingProduct.Stock;
+    int? targetStockMinimo = updatedProductDto.StockMinimo ?? existingProduct.StockMinimo;
+    string? targetProveedor = updatedProductDto.Proveedor ?? existingProduct.Proveedor;
+    string? targetUnidadMedida = updatedProductDto.UnidadMedida ?? existingProduct.UnidadMedida;
+
+    bool hasChanges = 
+        existingProduct.Precio != targetPrecio ||
+        existingProduct.PrecioVenta != targetPrecioVenta ||
+        existingProduct.Codigo != targetCodigo ||
+        existingProduct.Nombre != targetNombre ||
+        existingProduct.Descripcion != targetDescripcion ||
+        existingProduct.CategoriaId != targetCategoriaId ||
+        existingProduct.Tipo != targetTipo ||
+        existingProduct.Stock != targetStock ||
+        existingProduct.StockMinimo != targetStockMinimo ||
+        existingProduct.Proveedor != targetProveedor ||
+        existingProduct.UnidadMedida != targetUnidadMedida;
+
+    if (!hasChanges)
+    {
+        return (existingProduct, false);
+    }
+
+    existingProduct.Precio = targetPrecio;
+    existingProduct.PrecioVenta = targetPrecioVenta;
+    existingProduct.Codigo = targetCodigo;
+    existingProduct.Nombre = targetNombre;
+    existingProduct.Descripcion = targetDescripcion;
+    existingProduct.CategoriaId = targetCategoriaId;
+    existingProduct.Tipo = targetTipo;
+    existingProduct.Stock = targetStock;
+    existingProduct.StockMinimo = targetStockMinimo;
+    existingProduct.Proveedor = targetProveedor;
+    existingProduct.UnidadMedida = targetUnidadMedida;
 
     _repository.UpdateProduct(existingProduct);
     await _repository.SaveChangesAsync();
 
-    return existingProduct;
+    return (existingProduct, true);
 }
 
     public async Task<List<CategoryProductsDTO>> GetCategoriesAsync()

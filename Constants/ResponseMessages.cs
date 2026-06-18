@@ -23,6 +23,7 @@ namespace vet_api_Net.Constants
         public const string IsEqualToCurrentPassword = "La nueva contraseña no puede ser igual a la actual.";
         public const string GenericError = "Ocurrió un error interno, por favor intenta nuevamente.";
         public const string ErrorSavingPassword = "Ocurrió un error interno al guardar la contraseña.";
+        public const string ErrorCredential = "Credenciales incorrectas";
 
 
     }
@@ -203,6 +204,8 @@ namespace vet_api_Net.Constants
         public const string DecreaseStockSuccess = "Stock disminuido exitosamente.";
         public const string ErrorUpdatingProduct = "Error al actualizar el producto.";
         public const string ProductCantNegative = "El precio no puede ser negativo.";
+        public const string UpdateProductSuccess = "Producto actualizado exitosamente.";
+        public const string UpdateProductNoChanges = "No se aplicaron cambios.";
 
         public static class ResponseMessagesProductCreate
         {
@@ -328,9 +331,9 @@ namespace vet_api_Net.Constants
     public static class ResponseMessagesWSMessageController
     {
         public const string Success = "El envío del comprobante a través de WhatsApp fue exitoso.";
-        public const string PartialFailure = "La factura se procesó localmente pero el envío por WhatsApp falló.";
+        public const string PartialFailure = "El envio a WhatsApp fallo, intente mas tarde";
         public const string CriticalFailure = "Hubo un fallo crítico en el procesamiento y despacho del comprobante.";
-        public const string SessionInitSuccess = "Solicitud de inicialización de sesión enviada con éxito.";
+        public const string SessionInitSuccess = "Solicitud de inicialización de sesión enviada con éxito:";
         public const string SessionInitFailure = "No se pudo completar la inicialización de la sesión con el servidor de mensajería.";
         public const string SessionInitCriticalFailure = "Hubo un error crítico al procesar la solicitud de inicialización.";
         public const string SessionStatusNotFound = "No se encontró información o la instancia de WhatsApp no está inicializada.";

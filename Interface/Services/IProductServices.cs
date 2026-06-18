@@ -13,7 +13,7 @@ public interface IProductService
 
     Task<Producto> DecreaseStockAsync(int id, int quantity);
 
-    Task<Producto> UpdateProductAsync(int id, ProductsUpdateDTO updatedProductDto);
+    Task<(Producto Product, bool HasChanges)> UpdateProductAsync(int id, ProductsUpdateDTO updatedProductDto);
     Task<List<CategoryProductsDTO>> GetCategoriesAsync();
 
 }
