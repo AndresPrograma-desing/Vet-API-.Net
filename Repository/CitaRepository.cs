@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using vet_api_Net.Data;
-using vet_api_Net.Models;
-using vet_api_Net.Interfaze.Repositories;
 using DTOs;
+using Microsoft.EntityFrameworkCore;
+using vet_api_Net.Constants;
+using vet_api_Net.Data;
+using vet_api_Net.Interfaze.Repositories;
+using vet_api_Net.Models;
 
 namespace vet_api_Net.Repositories;
 
@@ -65,7 +66,9 @@ public class CitasRepository : ICitasRepository
     public async Task<List<NotificationCitaDTO>> GetUpcomingNotificationsAsync(DateTime fecha, TimeOnly horaDesde, string dateFormat, string timeFormat)
     {
         return await _context.Citas
-            .Where(c => c.FechaCita.Date == fecha.Date && c.HoraCita > horaDesde)
+            .Where(c => c.FechaCita.Date == fecha.Date && c.HoraCita > horaDesde
+            && c.Estado != Status.Completed
+            && c.Estado != Status.Cancelled )
             .OrderBy(c => c.HoraCita)
             .Select(c => new NotificationCitaDTO
             {
@@ -73,8 +76,9 @@ public class CitasRepository : ICitasRepository
                 HoraCita = c.HoraCita.ToString(timeFormat),
                 MascotaNombre = c.Mascota != null ? c.Mascota.Nombre : string.Empty,
                 ClienteNombre = c.Mascota != null && c.Mascota.Cliente != null 
-                    ? (c.Mascota.Cliente.Nombre + " " + c.Mascota.Cliente.Apellido).Trim() 
+                    ? (c.Mascota.Cliente.Nombre + " " + c.Mascota.Cliente.Apellido).Trim()
                     : string.Empty
+                
             })
             .ToListAsync();
     }

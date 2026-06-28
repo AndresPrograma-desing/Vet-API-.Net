@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using vet_api_Net.Models;
 using Microsoft.EntityFrameworkCore;
 using vet_api_Net.Infrastructure.Configuration;
+using vet_api_Net.Models;
+using vet_api_Net.Constants;
 
 
 /*
@@ -50,6 +51,9 @@ namespace vet_api_Net.Data.seeds
                 TRUNCATE TABLE MoneyTypes;
                 TRUNCATE TABLE FacturaConfigs;
                 TRUNCATE TABLE ReporConfigs;
+                TRUNCATE TABLE Reportes;
+                TRUNCATE TABLE consultas;
+                TRUNCATE TABLE citas;
                 SET FOREIGN_KEY_CHECKS = 1;
             ");
 
@@ -108,8 +112,8 @@ namespace vet_api_Net.Data.seeds
                 context.MoneyTypes.Add(new MoneyType
                 {
                     MoneyName = apiSettings.USD ?? "USD",
-                    BcvDollar = 36.50m,
-                    DollarPersistence = "36.50",
+                    BcvDollar = 500.50m,
+                    DollarPersistence = "999.50",
                     Fecha = DateTime.Now
                 });
                 context.SaveChanges();
@@ -131,8 +135,8 @@ namespace vet_api_Net.Data.seeds
                 context.ReporConfigs.Add(new ReporConfig
                 {
                     Days = 30,
-                    IsEnabled = true,
-                    GenerateEnabled = true,
+                    IsEnabled = false,
+                    GenerateEnabled = false,
                     LastUpdated = DateTime.Now
                 });
                 context.SaveChanges();
@@ -342,10 +346,18 @@ namespace vet_api_Net.Data.seeds
                     Actualizado = DateTime.Now
                 },
                 new CategoriasProducto {
-                    Nombre = "Accesorios", Descripcion = "Collares, juguetes, etc.", Activo = true, Creado = DateTime.Now, Actualizado = DateTime.Now
+                    Nombre = "Accesorios",
+                    Descripcion = "Collares, juguetes, etc.",
+                    Activo = true,
+                    Creado = DateTime.Now,
+                    Actualizado = DateTime.Now
                 },
                 new CategoriasProducto {
-                    Nombre = "Higiene", Descripcion = "Shampoos y limpieza", Activo = true, Creado = DateTime.Now, Actualizado = DateTime.Now
+                    Nombre = "Higiene", 
+                    Descripcion = "Shampoos y limpieza", 
+                    Activo = true, 
+                    Creado = DateTime.Now, 
+                    Actualizado = DateTime.Now
                 }
             };
             foreach (var cat in categoriasDefecto)
@@ -381,7 +393,7 @@ namespace vet_api_Net.Data.seeds
                     Nombre = "Desparasitante",
                     CategoriaId = categoria.Id,
                     Tipo = "medicamento",
-                    Precio = 2.50m,
+                    Precio = 5.00m,
                     PrecioVenta = 5.00m,
                     Stock = 100,
                     StockMinimo = 20,
@@ -397,9 +409,9 @@ namespace vet_api_Net.Data.seeds
                     Nombre = "Antibiótico",
                     CategoriaId = categoria.Id,
                     Tipo = "medicamento",
-                    Precio = 8.00m,
-                    PrecioVenta = 12.00m,
-                    Stock = 30,
+                    Precio = 1.00m,
+                    PrecioVenta = 1.00m,
+                    Stock = 3,
                     StockMinimo = 5,
                     UnidadMedida = "frasco",
                     RequiereReceta = true,
@@ -412,8 +424,13 @@ namespace vet_api_Net.Data.seeds
             context.Productos.AddRange(productos);
             context.SaveChanges();
 
-            var citaDate1 = DateTime.Now.AddHours(5);
-            var citaDate2 = DateTime.Now.AddHours(6);
+            var baseDate = DateTime.Now;
+            var citaDate1 = baseDate.AddHours(1); // Dentro de 1 hora
+            var citaDate2 = baseDate.AddHours(2); // Dentro de 2 horas
+            var citaDate3 = baseDate.AddHours(3); // Dentro de 3 horas
+            var citaDate4 = baseDate.AddHours(4); // Dentro de 4 horas
+            var citaDate5 = baseDate.AddHours(5); // Dentro de 5 horas
+            var citaDate6 = baseDate.AddHours(6); // Dentro de 6 horas
 
             var citas = new List<Cita>
             {
@@ -423,7 +440,7 @@ namespace vet_api_Net.Data.seeds
                     SecretariaId = secretaria.Id,
                     FechaCita = citaDate1.Date,
                     HoraCita = TimeOnly.FromDateTime(citaDate1),
-                    Estado = "completada",
+                    Estado = Status.Completed,
                     TipoCita = "consulta",
                     Motivo = "Control general",
                     MetodoPagoId = metodoPago.Id,
@@ -435,11 +452,59 @@ namespace vet_api_Net.Data.seeds
                     SecretariaId = secretaria.Id,
                     FechaCita = citaDate2.Date,
                     HoraCita = TimeOnly.FromDateTime(citaDate2),
-                    Estado = "programada",
+                    Estado = Status.Programed,
                     TipoCita = "vacunacion",
                     Motivo = "Vacuna anual",
                     MetodoPagoId = metodoPago.Id,
                     Notas = "Traer carnet de vacunación"
+                },
+                new Cita {
+                    DoctorId = doctor.Id,
+                    MascotaId = mascotas[2].Id,
+                    SecretariaId = secretaria.Id,
+                    FechaCita = citaDate3.Date,
+                    HoraCita = TimeOnly.FromDateTime(citaDate3),
+                    Estado = Status.Programed,
+                    TipoCita = "consulta",
+                    Motivo = "Revisión general",
+                    MetodoPagoId = metodoPago.Id,
+                    Notas = "Primera vez"
+                },
+                new Cita {
+                    DoctorId = doctor.Id,
+                    MascotaId = mascotas[3].Id,
+                    SecretariaId = secretaria.Id,
+                    FechaCita = citaDate4.Date,
+                    HoraCita = TimeOnly.FromDateTime(citaDate4),
+                    Estado = Status.Cancelled,
+                    TipoCita = "emergencia",
+                    Motivo = "Dolor abdominal",
+                    MetodoPagoId = metodoPago.Id,
+                    Notas = "Cliente canceló por teléfono"
+                },
+                new Cita {
+                    DoctorId = doctor.Id,
+                    MascotaId = mascotas[4].Id,
+                    SecretariaId = secretaria.Id,
+                    FechaCita = citaDate5.Date,
+                    HoraCita = TimeOnly.FromDateTime(citaDate5),
+                    Estado = Status.InCurso,
+                    TipoCita = "cirugia",
+                    Motivo = "Castración",
+                    MetodoPagoId = metodoPago.Id,
+                    Notas = "En quirófano"
+                },
+                new Cita {
+                    DoctorId = doctor.Id,
+                    MascotaId = mascotas[5].Id,
+                    SecretariaId = secretaria.Id,
+                    FechaCita = citaDate6.Date,
+                    HoraCita = TimeOnly.FromDateTime(citaDate6),
+                    Estado = Status.NotAssisted,
+                    TipoCita = "consulta",
+                    Motivo = "Seguimiento",
+                    MetodoPagoId = metodoPago.Id,
+                    Notas = "No se presentó"
                 }
             };
             context.Citas.AddRange(citas);
