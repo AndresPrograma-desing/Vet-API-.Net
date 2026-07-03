@@ -68,24 +68,64 @@ public class MoneyTypeService : IMoneyTypeService
             MoneyName = existingMoneyType.MoneyName
         };
     }
-    public async Task<RequestDollarBcvDTO> GetTasaDollarBcvAsync()
+public async Task<RequestDollarBcvDTO> GetTasaDollarBcvAsync()
+{
+    var moneyType = await _context.MoneyTypes.FirstOrDefaultAsync(m => m.DollarPersistence == "USD");
+    
+    if (moneyType == null || moneyType.BcvDollar == 0m)
     {
-        var moneyType = await _context.MoneyTypes.FirstOrDefaultAsync(m => m.DollarPersistence == "USD");
-        
-       
-        if (moneyType == null)
+        return new RequestDollarBcvDTO
         {
-            return new RequestDollarBcvDTO
-            {
-                MoneyType = "USD",
-                BcvDollar = 0m
-            };
+            MoneyType = moneyType?.DollarPersistence ?? "USD",
+            BcvDollar = ResponseMessagesMoneyTypes.BcvFallen,
+            Message = ResponseMessagesMoneyTypes.GetTasaBcvError
+        };
+    }
+
+    return new RequestDollarBcvDTO
+    {
+        MoneyType = moneyType.DollarPersistence,
+        BcvDollar = moneyType.BcvDollar.ToString("F2", CultureInfo.InvariantCulture),
+        Message = ResponseMessagesMoneyTypes.BcvRequestSuccess
+    };
+}
+
+    public async Task<RequestDollarBcvDTO> UpdateBcvDollarPriceAsync(decimal price)
+    {
+        if (price <= 0)
+        {
+            throw new ArgumentException(ResponseMessagesMoneyTypes.InvalidPrice);
         }
+
+        int targetId = _configuration.GetValue<int>("BcvSettings:TargetId", 1);
+        var moneyEntry = await _context.MoneyTypes.FirstOrDefaultAsync(m => m.Id == targetId);
+
+        if (moneyEntry == null)
+        {
+            moneyEntry = new MoneyType
+            {
+                Id = targetId,
+                BcvDollar = price,
+                DollarPersistence = "USD",
+                Fecha = DateTime.Now
+            };
+            _context.MoneyTypes.Add(moneyEntry);
+        }
+        else
+        {
+            moneyEntry.BcvDollar = price;
+            moneyEntry.DollarPersistence = "USD";
+            moneyEntry.Fecha = DateTime.Now;
+            _context.MoneyTypes.Update(moneyEntry);
+        }
+
+        await _context.SaveChangesAsync();
 
         return new RequestDollarBcvDTO
         {
-            MoneyType = moneyType.DollarPersistence,
-            BcvDollar = moneyType.BcvDollar
+            MoneyType = "USD",
+            BcvDollar = price.ToString("F2", CultureInfo.InvariantCulture),
+            Message = ResponseMessagesMoneyTypes.BcvRequestSuccess
         };
     }
 }

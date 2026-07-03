@@ -1,25 +1,25 @@
 using System;
-using System.Text;
 using System.Linq;
-using System.Text.Json.Serialization;
 using System.Net.Http;
+using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using MySqlConnector;  
 using QuestPDF.Infrastructure;
 using vet_api_Net.Data;
+using vet_api_Net.HttpServices;
 using vet_api_Net.Infrastructure.Configuration;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
-using vet_api_Net.HttpServices;
-using vet_api_Net.Worker;
-using vet_api_Net.Services; 
 using vet_api_Net.Repositories;
-using vet_api_Net.Workers;
+using vet_api_Net.Services; 
 using vet_api_Net.Services.WSMessage;
-using MySqlConnector;  
+using vet_api_Net.Worker;
+using vet_api_Net.Workers;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -31,7 +31,7 @@ public static class DependencyInjection
         QuestPDF.Settings.License = LicenseType.Community;
 
         // Configuración Dinámica de CORS
-        bool useTunnel = configuration.GetValue<bool>("ConnectionSettings:UseTunnel");
+        bool useTunnel = configuration.GetValue<bool>("ConnectionSettings:UseTunnel"); // si 
         string localFallback = "http://localhost:5168,http://localhost:5173";
         string corsOrigins = useTunnel 
             ? (configuration["ConnectionSettings:TunnelOrigin"] ?? localFallback)
@@ -132,6 +132,7 @@ public static class DependencyInjection
         services.AddScoped<ICitasRepository, CitasRepository>();
         services.AddScoped<IUsersRepository, UsersRepository>();
         services.AddScoped<IAlertsRepository, AlertsRepository>();
+        services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
         services.AddScoped<IClientPetRepository, ClientPetRepository>();
         services.AddScoped<IClientRepository, ClientRepository>();
         services.AddScoped<IConsultasRepository, ConsultasRepository>();
@@ -160,9 +161,17 @@ public static class DependencyInjection
         services.AddScoped<IMoneyTypeService, MoneyTypeService>();
         services.AddScoped<IBcvScraper, BcvScraper>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<INotificationsPushService, NotificationsPushService>();
         services.AddScoped<IWSMessage, WSMessage>();
         services.AddScoped<IInvoiceExternalService, InvoiceExternalService>();
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddSingleton<IFailureTracker, FailureTracker>();
         services.AddScoped<ICurrencyService, CurrencyService>();
+        services.AddHttpClient<IEmailSenderService, vet_api_Net.HttpServices.ResendEmailService>()
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            });
 
         // Workers / Background Services
         services.AddHostedService<MessagePollerService>();

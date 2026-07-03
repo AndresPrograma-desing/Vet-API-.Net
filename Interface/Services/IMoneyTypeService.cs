@@ -10,4 +10,5 @@ public interface IMoneyTypeService
     Task<MoneyTypesDTO?> GetMoneyTypeAsync();
     Task<MoneyTypesDTO?> UpdateMoneyTypeAsync(MoneyTypesDTO money_name);
     Task<RequestDollarBcvDTO> GetTasaDollarBcvAsync();
+    Task<RequestDollarBcvDTO> UpdateBcvDollarPriceAsync(decimal price);
 }
