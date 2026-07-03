@@ -21,9 +21,13 @@ namespace vet_api_Net.Constants
         public const string NoWhiteSpace = "La contraseña no puede contener espacios en blanco.";
         public const string IncorrectOldPassword = "Ingrese la contraseña actual correcta.";
         public const string IsEqualToCurrentPassword = "La nueva contraseña no puede ser igual a la actual.";
+        public const string EmailAndRolRequired = "Email, Contrasena y Rol son requerido";
         public const string GenericError = "Ocurrió un error interno, por favor intenta nuevamente.";
         public const string ErrorSavingPassword = "Ocurrió un error interno al guardar la contraseña.";
         public const string ErrorCredential = "Credenciales incorrectas";
+        public const string UserNotExisting = "El usuario con ese correo electrónico no existe.";
+        public const string NoRolForUser = "Rol seleccionado no valido para ese usuario";
+
 
 
     }
@@ -107,13 +111,13 @@ namespace vet_api_Net.Constants
     }
     public static class ResponseMessagesFacturaErrors
     {
-        public const string ConsultaNotFound = "Consulta no encontrada para facturación.";
-        public const string CitaNotFound = "Cita no encontrada para facturación.";
-        public const string MascotaNotFound = "Mascota no encontrada para facturación.";
-        public const string OnlyCitaAllowed = "La factura solo puede generarse para citas completadas.";
-        public const string ErrorProcessingInvoice = "Error al procesar la facturación interna. Consulta creada pero no se pudo generar la factura.";
-        public const string InvoiceGenerationError = "Error al guardar la información de la factura generada. Sin embargo, el PDF se ha creado correctamente.";
-
+        public const string ConsultaNotFound = "Consulta no encontrada para recibos.";
+        public const string CitaNotFound = "Cita no encontrada para recibos.";
+        public const string MascotaNotFound = "Mascota no encontrada para recibos.";
+        public const string OnlyCitaAllowed = "La Recibo solo puede generarse para citas completadas.";
+        public const string ErrorProcessingInvoice = "Error al procesar la Recibos internamente. Consulta creada pero no se pudo generar la factura.";
+        public const string InvoiceGenerationError = "Error al guardar la información de la Recibo generada. Sin embargo, el PDF se ha creado correctamente.";
+        
     }
     public static class PdfText
     {
@@ -127,7 +131,7 @@ namespace vet_api_Net.Constants
         public const string DMY = "dd/MM/yyyy";
         public const string Servicios = "Servicios";
         public const string Total = "Total";
-        public const string Factura = "facturas";
+        public const string Factura = "Recibo";
         public const string Currency = "BS";
         public const string HappyPets = "Happy Pets";
         public const string FooterText = "Factura generada por el sistema de gestión de Happy Pets 2026";
@@ -149,7 +153,7 @@ namespace vet_api_Net.Constants
         public const string Clientes = "Clientes";
         public const string Mascotas = "Mascotas";
         public const string Productos = "Productos";
-        public const string Facturas = "Facturas";
+        public const string Facturas = "Recibo";
         public const string Usuarios = "Usuarios";
         public const string InvalidReport = "Reporte inválido o sin datos.";
         public const string DeserializationError = "No se pudo deserializar el contenido del reporte.";
@@ -170,11 +174,11 @@ namespace vet_api_Net.Constants
     }
     public static class ResponseMessagesFactura
     {
-        public const string FacturaCreada = "Factura creada exitosamente.";
-        public const string FacturaNoEncontrada = "Factura no encontrada.";
-        public const string ErrorInterno = "Ocurrió un error interno al procesar la solicitud de factura.";
-        public const string FacturaActualizada = "Factura actualizada exitosamente.";
-        public const string EmptyProducts = "No se pueden generar facturas sin productos asociados.";
+        public const string FacturaCreada = "Recibo creado exitosamente.";
+        public const string FacturaNoEncontrada = "Recibo no encontrado.";
+        public const string ErrorInterno = "Ocurrió un error interno al procesar la solicitud de recibo.";
+        public const string FacturaActualizada = "Recibo actualizado exitosamente.";
+        public const string EmptyProducts = "No se pueden generar Recibo sin productos asociados.";
         public const string NoData = "N/A";
         public const int EmptyProductId = 0;
         public const string EmptyProductName = "Sin productos asociados";
@@ -183,7 +187,10 @@ namespace vet_api_Net.Constants
         public const int EmptyProductQuantity = 0;
         public const int EmptyProductTotal = 0;
         public const string Notes = "No hay notas disponibles";
-        public const string NotFactura = "No hay facturas registradas en el sistema.";
+        public const string NotFactura = "No hay Recibo registradas en el sistema.";
+        public const string DeleteReceiptsNotificactionTittle = "Eliminacion de Recibo";
+        public const string DeleteReceiptsNotificactionDesc = "Se ha eliminado el Recibo de ${cliente_name}, para generarlo nuevamente ir a centro de recibos";
+        
     }
     public static class MessagePoller
     {
@@ -220,10 +227,13 @@ namespace vet_api_Net.Constants
         public const string ReportTittle = "Reporte del sistema completo";
         public const string ResportCategory = "FullSystem";
         public const string Filtre = "{}";
+        public const string ReportgeneratedTittle = "Se ha generado un reporte del sistema";
+        public const string ReportgeneratedDescription = "El reporte se ha generado correctamente. puedes descargarlo en Ajustes| Accesos Y Seguridad | Repor.";
+        
     }
     public static class ResponseMessagesAuthController
     {
-        public const string Unauthorized = "Email, Contraseña Actual y Nueva Contraseña son requeridos.";
+        public const string Unauthorized = "Email, Contraseña y Rol son requeridos.";
         public const string BadRequestUpdateCredentials = "Email, Contraseña Actual y Nueva Contraseña son requeridos.";
         public const string InvalidCredentials = "Credenciales inválidas.";
         public const string UpdatePasswordSuccess = "Contraseña actualizada exitosamente.";
@@ -289,6 +299,24 @@ namespace vet_api_Net.Constants
         public const string ScrapingError = "Error al obtener datos del BCV. Intente nuevamente más tarde.";
         public const string InvalidId = "Error al obtener el tipo de moneda";
         public const string ErrorUpdate = "Error al actualizar el tipo de moneda";
+        public const string BcvFallen = "BCV Caido";
+        public const string UpdateTasaBcv = "Tasa BCV actualizada";
+        public const string BcvRequestSuccess = "Se ha obtenido exitosamente la tasa del BCV.";
+        public const string InvalidPrice = "El precio del dólar debe ser mayor a 0.";
+        public const string APIBcvFail = "No se pudo obtener el precio del dolar en Bcv";
+        public const string APIBcvFailDatails = "Servidor del BCV caido, la tasa en Bs. no se actualizo, puedes actualizarlo manualmente en Ajustes | Configuracion de Moneda.";
+
+    }
+    public static class ResponseMessageNotificactionPush
+    {
+        public const string Error = "Error";
+        public const string Worker = "Worker";
+        public const string System = "Sistema";
+        public const string AllUsers = "ALL";
+        public const string Admin = "Admin";
+        public const string SE = "Secretaria";
+        public const string DC = "Doctor";
+
     }
     public static class ResponseMessagesNotification
     {
@@ -330,13 +358,65 @@ namespace vet_api_Net.Constants
     }
     public static class ResponseMessagesWSMessageController
     {
-        public const string Success = "El envío del comprobante a través de WhatsApp fue exitoso.";
+        public const string Success = "El envío del recibo a través de WhatsApp fue exitoso.";
         public const string PartialFailure = "El envio a WhatsApp fallo, intente mas tarde";
-        public const string CriticalFailure = "Hubo un fallo crítico en el procesamiento y despacho del comprobante.";
+        public const string CriticalFailure = "Hubo un fallo crítico en el procesamiento y despacho del recibo.";
         public const string SessionInitSuccess = "Solicitud de inicialización de sesión enviada con éxito:";
         public const string SessionInitFailure = "No se pudo completar la inicialización de la sesión con el servidor de mensajería.";
         public const string SessionInitCriticalFailure = "Hubo un error crítico al procesar la solicitud de inicialización.";
         public const string SessionStatusNotFound = "No se encontró información o la instancia de WhatsApp no está inicializada.";
         public const string SessionStatusCriticalFailure = "Hubo un error crítico al recuperar el estado del canal.";
+    }
+    public static class ResponseMessagesNotificationPush
+    {
+        public const string PushTicket = "El usuario ${user_name} marco el ticket como visto";
+        public const string Success = "Notificación push enviada correctamente.";
+        public const string Failure = "No se pudo completar la inicialización de la sesión con el servidor de mensajería.";
+        public const string CriticalFailure = "Hubo un error crítico al procesar la solicitud de inicialización.";
+        public const string SessionNotFound = "No se encontró información o la instancia de WhatsApp no está inicializada.";
+        public const string SessionStatusCriticalFailure = "Hubo un error crítico al recuperar el estado del canal.";
+    }
+    
+    public static class ResponseMessagesEmailsController
+    {
+        public const string DispatchSuccess = "Correo enviado exitosamente al cliente {0}";
+        public const string DispatchFailure = "No se pudo enviar el correo al cliente {0}";
+        public const string DispatchCriticalFailure = "Fallo crítico al intentar despachar la factura por correo.";
+        public const string MissingToParameter = "El parámetro 'to' es requerido.";
+        public const string TestEmailSuccess = "Correo de prueba enviado con éxito a {0}.";
+        public const string TestEmailFailure = "Error al intentar enviar el correo de prueba. Revisa los logs de la consola.";
+        public const string TestEmailSubject = "Correo de Prueba - HappyPets";
+        public const string TestEmailBody = "<h1>¡Hola!</h1><p>Esta es una prueba de envío exitosa de HappyPets utilizando la API de <strong>Resend</strong>.</p>";
+        
+        public const string ClientNoEmail = "El cliente no tiene un correo electrónico registrado para el envío de factura.";
+        public const string PdfNotFound = "No se encontró el archivo PDF para la factura {0}.";
+        public const string TemplateNotFound = "<h1>Plantilla no encontrada</h1>";
+        public const string TemplateNotFoundById = "No se encontró la plantilla con el ID especificado.";
+        public const string UpdateSuccess = "Plantilla de correo actualizada exitosamente.";
+        public const string UpdateFailure = "Ocurrió un error al intentar actualizar la plantilla.";
+        public const string InvalidPayload = "Datos de actualización inválidos.";
+
+        public const string SendEmailError = "Se ha producido un error al intentar enviar el correo, por favor intente de nuevo.";
+        public const string ProviderError = "ERROR. Solicite revicion del servicio de envio de correos Resend";
+        public const string ConnectionFailed = "No se pudo establecer conexión con el proveedor de correos (Resend). Verifique su conexión de red.";
+        public const string UnexpectedError = "Ocurrió un error inesperado al enviar el correo: {0}";
+    }
+
+    public static class EmailTypes
+    {
+        public const int Recibos = 25;
+        public const int ResetPassword = 15;
+        public const int Bienvenido = 10;
+
+        public static string GetEmailTypeString(int typeCode)
+        {
+            return typeCode switch
+            {
+                Recibos => "Recibos",
+                ResetPassword => "ResetPassword",
+                Bienvenido => "Bienvenido",
+                _ => "Unknown"
+            };
+        }
     }
 }

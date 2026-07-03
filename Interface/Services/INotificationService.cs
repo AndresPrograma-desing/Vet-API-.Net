@@ -7,6 +7,6 @@ namespace vet_api_Net.Interfaze.Services;
 public interface INotificationService
 {
     Task<IEnumerable<AlertNotificationDTO>> GetNotificationsByUserIdAsync(int userId);
-    Task<AlertNotificationDTO> CreateNotificationAsync(AlertNotificationDTO dto);
-    Task<bool> MarkAsReadAsync(int alertId);
+    Task<AlertNotificationDTO> CreateNotificationAsync(AlertNotificationDTO dto, int creatorId);
+    Task<bool> MarkAsReadAsync(int alertId, int userId);
 }
