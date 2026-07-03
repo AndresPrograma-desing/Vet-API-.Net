@@ -10,6 +10,7 @@ namespace vet_api_Net.Routes
             public const string Login = "login";
             public const string Me = "me";
             public const string UpdatePassword = "update-password";
+            public const string TempToken = "Token";
         }
         public static class Users
         {
@@ -96,6 +97,8 @@ namespace vet_api_Net.Routes
             public const string Update = "update";
             public const string TasaDollarBcv = "tasa-dollar-bcv-scraping";
             public const string TasaDollarBcvToDb = "tasa-dollar-bcv";
+            public const string UpdateBcvManual = "tasa-dollar-bcv/manual";
+            public const string ScrapeAndSaveBcv = "bcv-dollar-rate/scrape";
         }
         public static class NotificationController
         {
@@ -108,6 +111,15 @@ namespace vet_api_Net.Routes
             public const string SessionInit = "session/init";
             public const string SessionStatus = "session/status";
         }
+        
+        public static class EmailsController
+        {
+            public const string DispatchEmail = "send-email/{entityId}";
+            public const string TestEmail = "test-email";
+            public const string GetTemplates = "templates";
+            public const string GetTemplateById = "templates/{id}";
+            public const string UpdateTemplate = "templates/{id}";
+            public const string DataResend = "data-resend";
+        }
     }
-
 }

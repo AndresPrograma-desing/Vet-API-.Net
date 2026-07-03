@@ -10,5 +10,8 @@ public class RequestDollarBcvDTO
     public string MoneyType { get; set; } = null!;
 
     [JsonPropertyName("BcvDollarPrice")]
-    public decimal BcvDollar { get; set; }
+    public string? BcvDollar { get; set; }
+
+    [JsonPropertyName("Message")]
+    public string? Message { get; set; }
 }

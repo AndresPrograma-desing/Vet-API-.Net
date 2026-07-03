@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using DTOs;
-using vet_api_Net.Interfaze.Services;
+using Microsoft.AspNetCore.Mvc;
 using vet_api_Net.Constants;
-using vet_api_Net.Routes;
 using vet_api_Net.HttpServices;
+using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Routes;
 
 namespace vet_api_Net.Controller;
 
@@ -41,16 +41,18 @@ public class MoneyController : ControllerBase
     [HttpPut(Endpoints.MoneyController.Update)]
     public async Task<ActionResult<MoneyTypesDTO>> UpdateMoneyType(MoneyTypesDTO money)
     {
-        try{
-        if (money == null || string.IsNullOrWhiteSpace(money.MoneyName))
+        try
         {
-            return BadRequest(ResponseMessagesMoneyTypes.ErrorUpdatingMoneyType);
-        }
+            if (money == null || string.IsNullOrWhiteSpace(money.MoneyName))
+            {
+                return BadRequest(ResponseMessagesMoneyTypes.ErrorUpdatingMoneyType);
+            }
 
-        var updatedMoneyType = await _moneyTypeService.UpdateMoneyTypeAsync(money);
-        return Ok(updatedMoneyType);
-        
-    }catch(Exception ex)
+            var updatedMoneyType = await _moneyTypeService.UpdateMoneyTypeAsync(money);
+            return Ok(updatedMoneyType);
+
+        }
+        catch (Exception ex)
         {
             return StatusCode(500, new { mensaje = ex.Message });
         }
@@ -59,20 +61,20 @@ public class MoneyController : ControllerBase
     [HttpGet(Endpoints.MoneyController.TasaDollarBcv)]
     public async Task<IActionResult> GetDirectoDeBcv()
     {
-        decimal precio = await _scraper.ObtenerPrecioBcvAsync();
-
-        if (precio <= 0)
+        decimal? precio = await _scraper.ObtenerPrecioBcvAsync();
+ 
+        if (!precio.HasValue || precio.Value <= 0)
         {
             return StatusCode(503, new
             {
                 mensaje = ResponseMessagesMoneyTypes.GetTasaBcvError
             });
         }
-
+ 
         return Ok(new
         {
             moneda = "USD",
-            precio_bs = precio,
+            precio_bs = precio.Value,
             fecha_consulta = DateTime.Now,
             fuente = ResponseMessagesMoneyTypes.fuente
         });
@@ -82,16 +84,54 @@ public class MoneyController : ControllerBase
     {
         var result = await _moneyTypeService.GetTasaDollarBcvAsync();
 
-        if (result == null || result.BcvDollar <= 0)
+        if (result == null || result.BcvDollar == ResponseMessagesMoneyTypes.BcvFallen)
         {
-            return StatusCode(503, new
-            {
-                mensaje = ResponseMessagesMoneyTypes.GetTasaBcvError
-            });
+            return StatusCode(503, result);
         }
 
         return Ok(result);
+    }
 
+    [HttpPut(Endpoints.MoneyController.UpdateBcvManual)]
+    public async Task<IActionResult> UpdateBcvManual([FromBody] UpdateBcvPriceRequest request)
+    {
+        try
+        {
+            if (request == null || request.Price <= 0)
+            {
+                return BadRequest(new { mensaje = ResponseMessagesMoneyTypes.InvalidPrice });
+            }
+
+            var result = await _moneyTypeService.UpdateBcvDollarPriceAsync(request.Price);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { mensaje = ex.Message });
+        }
+    }
+
+    [HttpPost(Endpoints.MoneyController.ScrapeAndSaveBcv)]
+    public async Task<IActionResult> ScrapeAndSaveBcv()
+    {
+        try
+        {
+            decimal? precio = await _scraper.ObtenerPrecioBcvAsync();
+ 
+            if (!precio.HasValue || precio.Value <= 0)
+            {
+                return StatusCode(503, new
+                {
+                    mensaje = ResponseMessagesMoneyTypes.GetTasaBcvError
+                });
+            }
+            var result = await _moneyTypeService.UpdateBcvDollarPriceAsync(precio.Value);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { mensaje = ex.Message });
+        }
     }
 }
 

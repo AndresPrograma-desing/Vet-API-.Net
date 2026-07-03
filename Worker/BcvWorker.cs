@@ -1,7 +1,12 @@
+using DTOs;
+using NCrontab;
 using Microsoft.EntityFrameworkCore;
+using vet_api_Net.Constants;
+using vet_api_Net.Data;
 using vet_api_Net.HttpServices;
-using vet_api_Net.Models;  
-using vet_api_Net.Data;  
+using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Models;
+using vet_api_Net.Services;
 
 namespace vet_api_Net.Workers;
 
@@ -41,45 +46,65 @@ public class BcvWorker : BackgroundService
             try
             {
                 using (var scope = _scopeFactory.CreateScope())
-                { 
+                {
                     var scraper = scope.ServiceProvider.GetRequiredService<IBcvScraper>();
-                    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>(); 
+                    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    var notificationsPushService = scope.ServiceProvider.GetRequiredService<INotificationsPushService>();
 
                     _logger.LogInformation("Consultando precio en el BCV...");
- 
-                    decimal precioActual = await scraper.ObtenerPrecioBcvAsync();
 
-                    if (precioActual > 0)
+                    decimal? precioActual = await scraper.ObtenerPrecioBcvAsync();
+                    
+                    if (precioActual.HasValue && precioActual.Value > 0)
                     { 
                         var moneyEntry = await context.MoneyTypes
                             .FirstOrDefaultAsync(m => m.Id == targetId, stoppingToken);
 
                         if (moneyEntry != null)
-                        {  
-                            moneyEntry.BcvDollar = precioActual;
+                        {
+                            moneyEntry.BcvDollar = precioActual.Value;
                             moneyEntry.DollarPersistence = "USD";
                             moneyEntry.Fecha = DateTime.Now;
-                            
+                              var data = new PushNotificationDTO
+                            {
+                                Message = ResponseMessagesMoneyTypes.BcvRequestSuccess,
+                                Type = ResponseMessageNotificactionPush.Worker,
+                                Title = ResponseMessagesMoneyTypes.UpdateTasaBcv,
+                                UserId = targetId.ToString(),
+                                NameUser = ResponseMessageNotificactionPush.System
+                            };
+                            await notificationsPushService.SendNotificationAsync(data);
                             _logger.LogInformation("Registro ID {Id} actualizado: {Precio} Bs.", targetId, precioActual);
                         }
                         else
-                        {  
+                        {
                             var nuevaTasa = new MoneyType
                             {
                                 Id = targetId,
-                                BcvDollar = precioActual,
+                                BcvDollar = precioActual.Value,
                                 DollarPersistence = "USD",
                                 Fecha = DateTime.Now
                             };
                             context.MoneyTypes.Add(nuevaTasa);
+                          
                             _logger.LogInformation("Registro ID {Id} creado por primera vez: {Precio} Bs.", targetId, precioActual);
                         }
- 
+
                         await context.SaveChangesAsync(stoppingToken);
+                        _logger.LogInformation("Precio actualizado correctamente: {Precio} Bs.", precioActual);
                     }
                     else
                     {
-                        _logger.LogWarning("El scraper devolvió 0. Verifique la conexión o el sitio del BCV.");
+                        var data = new PushNotificationDTO
+                        {
+                            Message = ResponseMessagesMoneyTypes.APIBcvFailDatails,
+                            Type = ResponseMessageNotificactionPush.Error,
+                            Title = ResponseMessagesMoneyTypes.APIBcvFail,
+                            UserId = targetId.ToString(),
+                            NameUser = ResponseMessageNotificactionPush.System
+                        };
+                        await notificationsPushService.SendNotificationAsync(data);
+                        _logger.LogWarning("El scraper devolvió un valor inválido o nulo. No se actualizará la base de datos. Verifique la conexión o el sitio del BCV.");
                     }
                 }
             }
@@ -88,17 +113,27 @@ public class BcvWorker : BackgroundService
                 _logger.LogError(ex, "Error crítico en el BcvWorker.");
             }
 
-            TimeSpan delay = intervalUnit.ToLower() switch
-            {
-                "seconds" => TimeSpan.FromSeconds(intervalValue),
-                "minutes" => TimeSpan.FromMinutes(intervalValue),
-                "hours"   => TimeSpan.FromHours(intervalValue),
-                "days"    => TimeSpan.FromDays(intervalValue),
-                _         => TimeSpan.FromHours(8)
-            };
-
-            _logger.LogInformation("Próxima actualización en {Value} {Unit}.", intervalValue, intervalUnit);
+            string cronExpression = settings.GetValue<string>("CronExpression", "0 9,17 * * *");
+            TimeSpan delay = CalcularProximoRetardo(cronExpression);
+ 
+            _logger.LogInformation("Próxima actualización programada vía Cron ('{Cron}') en {DelayHours} horas y {DelayMinutes} minutos.", cronExpression, (int)delay.TotalHours, delay.Minutes);
             await Task.Delay(delay, stoppingToken);
+        }
+    }
+
+    private TimeSpan CalcularProximoRetardo(string cronExpression)
+    {
+        try
+        {
+            var schedule = CrontabSchedule.Parse(cronExpression);
+            DateTime ahora = DateTime.Now;
+            DateTime proximaEjecucion = schedule.GetNextOccurrence(ahora);
+            return proximaEjecucion - ahora;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al procesar la expresión Cron '{Cron}'. Usando fallback de 8 horas.", cronExpression);
+            return TimeSpan.FromHours(8);
         }
     }
 }
