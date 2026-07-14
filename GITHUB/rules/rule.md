@@ -49,3 +49,9 @@ En este archivo se define que hacer con cada cambio que se realiza al proyecto.
 ## El merge siempre debe ser contra la rama DEVELOP
 
 despues de develop de pasa a la rama master
+
+## Nombres para subidas directa a la rama developement o master con cambios en distintos archivos.
+    - El nombre debe seguir el siguiente formato: debe empezar con "Dev:".
+    - El mensaje debe estar en ingles siempre.
+    - Describiendo brevemente que se hizo.
+    - Ejemplo: Dev: Ajustes varios en la base de datos. ( en ingles siempre Dev: Various adjustments in the database).
