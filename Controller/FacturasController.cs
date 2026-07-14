@@ -95,7 +95,7 @@ public class FacturasController : ControllerBase
             string numeroParaUsar = dto.NumeroFactura;
             if (string.IsNullOrWhiteSpace(numeroParaUsar) || numeroParaUsar.StartsWith("TMP-"))
             {
-                numeroParaUsar = $"F-{DateTime.UtcNow:yyyyMMddHHmmss}-{consultaId}";
+                numeroParaUsar = $"R-{DateTime.UtcNow:yyyyMMddHHmmss}-{consultaId}";
                 dto = dto with { NumeroFactura = numeroParaUsar };
             }
 

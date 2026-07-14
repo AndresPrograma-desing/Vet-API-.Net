@@ -101,7 +101,7 @@ namespace vet_api_Net.Controller
 				return NotFound();
 			}
 
-			var data = System.Text.Json.JsonSerializer.Deserialize<object>(reporte.Datos);
+			var data = System.Text.Json.JsonSerializer.Deserialize<object>(reporte.Datos ?? "{}");
 			return Ok(data);
 		}
 

@@ -11,6 +11,7 @@ using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.DTOs;
+using DTOs;
 
 namespace vet_api_Net.Services;
 
@@ -27,13 +28,20 @@ public class AuthService : IAuthService
 
     public async Task<Usuario?> LoginAsync(LoginRequest request)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(request); 
+        var (isValid, message) = await VerifyEmailRoleAsync(request.Email, request.Rol);
+        if (!isValid)
+        {
+            throw new InvalidOperationException(message);
+        }
 
-        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.Rol))
+        if (string.IsNullOrWhiteSpace(request.Password))
+        {
             return null;
+        }
 
         var user = await _usersRepository.GetByEmailAndRolAsync(request.Email, request.Rol);
-        if (user == null) return null;
+        if (user == null) throw new InvalidOperationException(message);
 
         if (await _usersRepository.IsUserDisabledAsync(request.Email))
             throw new InvalidOperationException(ResponseMessagesLogin.IsDisabled);
@@ -122,6 +130,10 @@ public class AuthService : IAuthService
         try
         {
             user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            if (user.PasswordRecoveryCode == ResponseMessagesPasswordRecovery.RequirePasswordChangeCode)
+            {
+                user.PasswordRecoveryCode = null;
+            }
             _usersRepository.Update(user);
             await _usersRepository.SaveChangesAsync();
             return user;
@@ -135,5 +147,27 @@ public class AuthService : IAuthService
     public async Task<Usuario?> GetUserByIdAsync(int id)
     {
         return await _usersRepository.GetByIdAsync(id);
+    }
+
+    private async Task<(bool IsValid, string Message)> VerifyEmailRoleAsync(string email, string roleName)
+    {
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(roleName))
+        {
+            return (false, ResponseMessagesLogin.EmailAndRolRequired);
+        }
+
+        var userRole = await _usersRepository.GetRoleByEmailAsync(email);
+
+        if (userRole == null)
+        {
+            return (false, ResponseMessagesLogin.UserNotExisting);
+        }
+
+        if (userRole != roleName)
+        {
+            return (false, ResponseMessagesLogin.NoRolForUser);
+        }
+
+        return (true, "");
     }
 }

@@ -20,6 +20,12 @@ namespace vet_api_Net.Routes
             public const string UserEnabled = "{id}/enable";
             public const string Delete = "{id}";
             public const string Status = "{id}/status";
+            public const string RequestPasswordReset = "request-password-reset";
+            public const string ConfirmTicket = "confirm-ticket";
+            public const string ResetStatus = "reset-status/{email}";
+            public const string AssignNewPassword = "assign-new-password";
+            public const string PendingResets = "pending-resets";
+            public const string UpdateUserName = "update-user-name";
         }
         public static class Citas
         {
@@ -111,7 +117,7 @@ namespace vet_api_Net.Routes
             public const string SessionInit = "session/init";
             public const string SessionStatus = "session/status";
         }
-        
+
         public static class EmailsController
         {
             public const string DispatchEmail = "send-email/{entityId}";
@@ -120,6 +126,16 @@ namespace vet_api_Net.Routes
             public const string GetTemplateById = "templates/{id}";
             public const string UpdateTemplate = "templates/{id}";
             public const string DataResend = "data-resend";
+        }
+        public static class PasswordRecovery
+        {
+            public const string RequestCode = "request-code";
+            public const string VerifyCode = "verify-code";
+            public const string ResetPassword = "reset-password";
+        }
+        public static class DashboardController
+        {
+            public const string Stats = "stats";
         }
     }
 }

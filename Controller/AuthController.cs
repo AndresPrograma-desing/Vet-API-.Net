@@ -7,6 +7,7 @@ using vet_api_Net.Constants;
 using vet_api_Net.Routes;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.DTOs;
+using vet_api_Net.Infrastructure.Configuration;
 
 namespace vet_api_Net.Controllers;
 
@@ -15,10 +16,13 @@ namespace vet_api_Net.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly TokenTemporalOptions _tokenTemporalOptions;
 
-    public AuthController(IAuthService authService)
+
+    public AuthController(IAuthService authService, Microsoft.Extensions.Options.IOptions<TokenTemporalOptions> options)
     {
         _authService = authService;
+        _tokenTemporalOptions = options.Value;
     }
 
     [HttpPost(Endpoints.Auth.Login)]
@@ -48,6 +52,8 @@ public class AuthController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
+            var error = ex;
+            
             return BadRequest(new { error = ex.Message });
         }
         catch (Exception ex)
@@ -128,4 +134,55 @@ public class AuthController : ControllerBase
             return StatusCode(500, new { error = ex.Message });
         }
     }
+
+    [HttpPost(Endpoints.Auth.TempToken)]
+    public IActionResult GetTempToken([FromBody] TempTokenRequest request, [FromServices] Microsoft.AspNetCore.Hosting.IWebHostEnvironment env)
+    {
+        if (!env.IsDevelopment())
+        {
+            return Forbid();
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password) ||
+            request.Email != _tokenTemporalOptions.Email || request.Password != _tokenTemporalOptions.Password)
+        {
+            return Unauthorized(new { error = ResponseMessagesLogin.ErrorCredential });
+        }
+
+        int tempId = _tokenTemporalOptions.Id;
+
+        if (int.TryParse(_tokenTemporalOptions.Id.ToString(), out var idVal))
+        {
+            tempId = idVal;
+        }
+
+        var tempUser = new vet_api_Net.Models.Usuario
+        {
+            Id = tempId,
+            Email = _tokenTemporalOptions.Email,
+            Password = _tokenTemporalOptions.Password,
+            Rol = _tokenTemporalOptions.Rol,
+            Nombre = _tokenTemporalOptions.Nombre,
+            Apellido = _tokenTemporalOptions.Apellido
+        };
+
+        var token = _authService.GenerateToken(tempUser);
+        return Ok(new
+        {
+            success = true,
+            token,
+            user = new
+            {
+                id = tempUser.Id,
+                email = tempUser.Email,
+                rol = tempUser.Rol
+            }
+        });
+    }
+}
+
+public class TempTokenRequest
+{
+    public string Email { get; set; } = null!;
+    public string Password { get; set; } = null!;
 }

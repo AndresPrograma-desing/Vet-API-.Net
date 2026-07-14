@@ -5,8 +5,11 @@ using vet_api_Net.Constants;
 using vet_api_Net.Data;
 using vet_api_Net.HttpServices;
 using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaze.Utilities;
 using vet_api_Net.Models;
 using vet_api_Net.Services;
+using vet_api_Net.Infrastructure.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace vet_api_Net.Workers;
 
@@ -15,12 +18,21 @@ public class BcvWorker : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<BcvWorker> _logger;
     private readonly IConfiguration _configuration;
+    private readonly ApiSettingsOptions _apiSettings;
+    private readonly IFailureTracker _failureTracker;
 
-    public BcvWorker(IServiceScopeFactory scopeFactory, ILogger<BcvWorker> logger, IConfiguration configuration)
+    public BcvWorker(
+        IServiceScopeFactory scopeFactory,
+        ILogger<BcvWorker> logger,
+        IConfiguration configuration,
+        IOptions<ApiSettingsOptions> apiSettingsOptions,
+        IFailureTracker failureTracker)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
         _configuration = configuration;
+        _apiSettings = apiSettingsOptions.Value;
+        _failureTracker = failureTracker;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -54,23 +66,23 @@ public class BcvWorker : BackgroundService
                     _logger.LogInformation("Consultando precio en el BCV...");
 
                     decimal? precioActual = await scraper.ObtenerPrecioBcvAsync();
-                    
+
                     if (precioActual.HasValue && precioActual.Value > 0)
-                    { 
+                    {
                         var moneyEntry = await context.MoneyTypes
                             .FirstOrDefaultAsync(m => m.Id == targetId, stoppingToken);
 
                         if (moneyEntry != null)
                         {
                             moneyEntry.BcvDollar = precioActual.Value;
-                            moneyEntry.DollarPersistence = "USD";
+                            moneyEntry.DollarPersistence = _apiSettings.USD!;
                             moneyEntry.Fecha = DateTime.Now;
-                              var data = new PushNotificationDTO
+                            var data = new PushNotificationDTO
                             {
                                 Message = ResponseMessagesMoneyTypes.BcvRequestSuccess,
                                 Type = ResponseMessageNotificactionPush.Worker,
                                 Title = ResponseMessagesMoneyTypes.UpdateTasaBcv,
-                                UserId = targetId.ToString(),
+                                UserId = ResponseMessageNotificactionPush.Admin,
                                 NameUser = ResponseMessageNotificactionPush.System
                             };
                             await notificationsPushService.SendNotificationAsync(data);
@@ -82,11 +94,12 @@ public class BcvWorker : BackgroundService
                             {
                                 Id = targetId,
                                 BcvDollar = precioActual.Value,
-                                DollarPersistence = "USD",
+                                DollarPersistence = _apiSettings.USD!,
+                                MoneyName = _apiSettings.VES!,
                                 Fecha = DateTime.Now
                             };
                             context.MoneyTypes.Add(nuevaTasa);
-                          
+
                             _logger.LogInformation("Registro ID {Id} creado por primera vez: {Precio} Bs.", targetId, precioActual);
                         }
 
@@ -100,7 +113,7 @@ public class BcvWorker : BackgroundService
                             Message = ResponseMessagesMoneyTypes.APIBcvFailDatails,
                             Type = ResponseMessageNotificactionPush.Error,
                             Title = ResponseMessagesMoneyTypes.APIBcvFail,
-                            UserId = targetId.ToString(),
+                            UserId = ResponseMessageNotificactionPush.Admin,
                             NameUser = ResponseMessageNotificactionPush.System
                         };
                         await notificationsPushService.SendNotificationAsync(data);
@@ -115,7 +128,7 @@ public class BcvWorker : BackgroundService
 
             string cronExpression = settings.GetValue<string>("CronExpression", "0 9,17 * * *");
             TimeSpan delay = CalcularProximoRetardo(cronExpression);
- 
+
             _logger.LogInformation("Próxima actualización programada vía Cron ('{Cron}') en {DelayHours} horas y {DelayMinutes} minutos.", cronExpression, (int)delay.TotalHours, delay.Minutes);
             await Task.Delay(delay, stoppingToken);
         }

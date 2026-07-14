@@ -13,4 +13,5 @@ public interface IAlertsRepository
     Task<bool> SaveChangesAsync();
     Task<bool> MarkAsReadAsync(int alertId);
     Task<int> ExecutePurgeReadAlertsAsync();
+    Task<AlertasInterna?> GetByIdAsync(int id);
 }

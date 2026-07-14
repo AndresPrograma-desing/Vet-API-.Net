@@ -58,6 +58,11 @@ public class AlertsRepository : IAlertsRepository
         return await _context.SaveChangesAsync() > 0;
     }
 
+    public async Task<AlertasInterna?> GetByIdAsync(int id)
+    {
+        return await _context.AlertasInternas.FindAsync(id);
+    }
+
     public async Task<bool> MarkAsReadAsync(int alertId)
     {
         var alert = await _context.AlertasInternas.FindAsync(alertId);

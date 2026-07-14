@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using vet_api_Net.Data;
@@ -73,5 +74,42 @@ public class ConsultasRepository : IConsultasRepository
                 }).ToList()
             })
             .FirstOrDefaultAsync();
+    }
+
+    public async Task<IEnumerable<ConsultaRequestDTO>> GetConsultasAsync()
+    {
+        return await _context.Consultas
+            .OrderByDescending(c => c.FechaConsulta)
+            .Select(c => new ConsultaRequestDTO
+            {
+                Id = c.Id,
+                CitaId = c.CitaId,
+                MascotaId = c.MascotaId,
+                DoctorId = c.DoctorId,
+                FechaConsulta = c.FechaConsulta,
+                PesoActual = c.PesoActual,
+                Temperatura = c.Temperatura,
+                Sintomas = c.Sintomas,
+                Diagnostico = c.Diagnostico,
+                Tratamiento = c.Tratamiento,
+                Receta = c.Receta,
+                Observaciones = c.Observaciones,
+                ConsultaPrice = c.ConsultaPrice,
+                Creado = c.Creado,
+                Productos = c.ConsultasProductos.Select(cp => new ConsultaProductoDetalleDTO
+                {
+                    Id = cp.Id,
+                    ProductoId = cp.ProductoId,
+                    NombreProducto = cp.Producto.Nombre,
+                    Cantidad = cp.Cantidad,
+                    PrecioUnitario = cp.PrecioUnitario,
+                    Dosis = cp.Dosis,
+                    ViaAdministracion = cp.ViaAdministracion,
+                    Frecuencia = cp.Frecuencia,
+                    Duracion = cp.Duracion,
+                    Instrucciones = cp.Instrucciones
+                }).ToList()
+            })
+            .ToListAsync();
     }
 }

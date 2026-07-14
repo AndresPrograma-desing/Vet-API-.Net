@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -16,6 +16,9 @@ public partial class Usuario
 
     [Column("contraseña")]
     public required string Password { get; set; } = null!;
+    public string? PasswordRecoveryCode { get; set; }
+
+    public DateTime? CodeRecoveryExpireDate { get; set; }
 
     public required string Rol { get; set; } = null!;
 
@@ -52,4 +55,6 @@ public partial class Usuario
     public virtual ICollection<Mensaje> MensajesEmisor { get; set; } = new List<Mensaje>();
 
     public virtual ICollection<Mensaje> MensajesReceptor { get; set; } = new List<Mensaje>();
+
+    public virtual ICollection<PasswordResetTicket> PasswordResetTickets { get; set; } = new List<PasswordResetTicket>();
 }

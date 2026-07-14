@@ -9,6 +9,7 @@ public class ApiSettingsOptions
     public string? VES { get; set; }
     public string? ApiName { get; set; }
     public string? SystemName { get; set; }
+    public int PasswordRecoveryExpirationMinutes { get; set; } = 1;
 }
 
 public class TokenTemporalOptions
@@ -16,7 +17,7 @@ public class TokenTemporalOptions
     public const string SectionName = "token-temporal";
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
-    public int Id = 999;
+    public int Id { get; set; } = 999;
     public string Rol { get; set; } = string.Empty;
     public string Nombre { get; set; } = string.Empty;
     public string Apellido { get; set; } = string.Empty;
@@ -36,4 +37,15 @@ public class UserData
     public string Rol { get; set; } = string.Empty;
     public string Nombre { get; set; } = string.Empty;
     public string Apellido { get; set; } = string.Empty;
+}
+public class TemplatesHTML
+{
+    public const string SectionName = "TemplatesHTML";
+    public string? Recibos { get; set; }
+    public string? ResetPassword { get; set; }
+    public string? ResendPassword { get; set; }
+    public string? ConfirmChangePass { get; set; }
+    public string? ConfirmChangePassPage { get; set; }
+    public string? BirthdayPets { get; set; }
+
 }

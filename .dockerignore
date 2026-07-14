@@ -1,0 +1,10 @@
+**/.git
+**/.github
+**/.vscode
+**/bin
+**/obj
+**/migrations_cmd_output.txt
+**/server_stdout.log
+**/wwwroot/facturas/*
+Dockerfile
+.dockerignore

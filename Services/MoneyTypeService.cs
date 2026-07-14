@@ -32,7 +32,9 @@ public class MoneyTypeService : IMoneyTypeService
         return new MoneyTypesDTO
         {
             Id = moneyType.Id,
-            MoneyName = moneyType.MoneyName
+            MoneyName = moneyType.MoneyName,
+            TypeMoney = moneyType.MoneyName?.ToUpper() ?? "USD",
+            TasaBcv = moneyType.BcvDollar > 0 ? moneyType.BcvDollar : 1.0m
         };
     }
 

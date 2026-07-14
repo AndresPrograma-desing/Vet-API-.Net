@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using vet_api_Net.Models;
+using DTOs;
 
 namespace vet_api_Net.Interfaze.Repositories;
 
@@ -11,4 +12,11 @@ public interface IUsersRepository
     void Update(Usuario usuario);
     Task<bool> SaveChangesAsync();
     Task<bool> IsUserDisabledAsync(string email);
+    Task<string?> GetRoleByEmailAsync(string email);
+    Task<List<Usuario>> GetAllUsersAsync();
+    Task<List<Usuario>> GetUsersByRoleAsync(string role);
+    Task AddUserAsync(Usuario user);
+    Task DeleteUserAsync(Usuario user);
+    Task<ChangeNameUsersDTO?> ChangeNameUsersAsync(int id, string newName);
+
 }

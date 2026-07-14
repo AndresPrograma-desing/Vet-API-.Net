@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using vet_api_Net.Constants;
 using vet_api_Net.Infrastructure.Configuration;
 using vet_api_Net.Models;
-using vet_api_Net.Constants;
 
 
 /*
@@ -29,33 +29,61 @@ namespace vet_api_Net.Data.seeds
     
     public static class SeedsData
     {
+        const string emails = "ignacioangel671@gmail.com";
 
         public static void Initialize(AppDbContext context, ApiSettingsOptions apiSettings, SeedDataOptions seedDataOptions)
         {
             //Reseteo de tablas
-            context.Database.ExecuteSqlRaw(@"
-                SET FOREIGN_KEY_CHECKS = 0;
-                TRUNCATE TABLE detalles_factura;
-                TRUNCATE TABLE consultas_productos;
-                TRUNCATE TABLE historial_precios;
-                TRUNCATE TABLE movimientos_inventario;
-                TRUNCATE TABLE facturas;
-                TRUNCATE TABLE consultas;
-                TRUNCATE TABLE citas;
-                TRUNCATE TABLE mascotas;
-                TRUNCATE TABLE clientes;
-                TRUNCATE TABLE productos;
-                TRUNCATE TABLE usuarios;
-                TRUNCATE TABLE categorias_productos;
-                TRUNCATE TABLE metodos_pago;
-                TRUNCATE TABLE MoneyTypes;
-                TRUNCATE TABLE FacturaConfigs;
-                TRUNCATE TABLE ReporConfigs;
-                TRUNCATE TABLE Reportes;
-                TRUNCATE TABLE consultas;
-                TRUNCATE TABLE citas;
-                SET FOREIGN_KEY_CHECKS = 1;
-            ");
+            if (context.Database.IsNpgsql())
+            {
+                context.Database.ExecuteSqlRaw(@"
+                    TRUNCATE TABLE detalles_factura RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE consultas_productos RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE historial_precios RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE movimientos_inventario RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE facturas RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE consultas RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE citas RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE mascotas RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE clientes RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE productos RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE usuarios RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE categorias_productos RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE metodos_pago RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE ""MoneyTypes"" RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE ""FacturaConfigs"" RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE ""ReporConfigs"" RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE ""Reportes"" RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE system_configs RESTART IDENTITY CASCADE;
+                ");
+            }
+            else
+            {
+                context.Database.ExecuteSqlRaw(@"
+                    SET FOREIGN_KEY_CHECKS = 0;
+                    TRUNCATE TABLE detalles_factura;
+                    TRUNCATE TABLE consultas_productos;
+                    TRUNCATE TABLE historial_precios;
+                    TRUNCATE TABLE movimientos_inventario;
+                    TRUNCATE TABLE facturas;
+                    TRUNCATE TABLE consultas;
+                    TRUNCATE TABLE citas;
+                    TRUNCATE TABLE mascotas;
+                    TRUNCATE TABLE clientes;
+                    TRUNCATE TABLE productos;
+                    TRUNCATE TABLE usuarios;
+                    TRUNCATE TABLE categorias_productos;
+                    TRUNCATE TABLE metodos_pago;
+                    TRUNCATE TABLE MoneyTypes;
+                    TRUNCATE TABLE FacturaConfigs;
+                    TRUNCATE TABLE ReporConfigs;
+                    TRUNCATE TABLE Reportes;
+                    TRUNCATE TABLE system_configs;
+                    TRUNCATE TABLE consultas;
+                    TRUNCATE TABLE citas;
+                    SET FOREIGN_KEY_CHECKS = 1;
+                ");
+            }
 
             if (!context.Usuarios.Any() && seedDataOptions.DummyData != null)
             {
@@ -105,7 +133,7 @@ namespace vet_api_Net.Data.seeds
                 }
             }
             context.SaveChanges();
-            var metodoPago = context.MetodoPagos.FirstOrDefault();
+            var metodoPago = context.MetodoPagos.FirstOrDefault()!;
 
             if (!context.MoneyTypes.Any())
             {
@@ -113,9 +141,36 @@ namespace vet_api_Net.Data.seeds
                 {
                     MoneyName = apiSettings.USD ?? "USD",
                     BcvDollar = 500.50m,
-                    DollarPersistence = "999.50",
+                    DollarPersistence = "USD",
                     Fecha = DateTime.Now
                 });
+                context.SaveChanges();
+            }
+
+            var emailTemplatesPath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "Templates", "Email");
+            if (System.IO.Directory.Exists(emailTemplatesPath))
+            {
+                var templateFiles = System.IO.Directory.GetFiles(emailTemplatesPath, "*.html");
+                foreach (var file in templateFiles)
+                {
+                    var templateName = System.IO.Path.GetFileNameWithoutExtension(file);
+                    var existingTemplate = context.EmailTemplates.FirstOrDefault(t => t.TypeEmail == templateName);
+                    if (existingTemplate == null)
+                    {
+                        context.EmailTemplates.Add(new EmailTemplate
+                        {
+                            TypeEmail = templateName,
+                            HtmlCode = System.IO.File.ReadAllText(file),
+                            CreatedAt = DateTime.Now,
+                            Update = DateTime.Now
+                        });
+                    }
+                    else
+                    {
+                        existingTemplate.HtmlCode = System.IO.File.ReadAllText(file);
+                        existingTemplate.Update = DateTime.Now;
+                    }
+                }
                 context.SaveChanges();
             }
 
@@ -145,10 +200,10 @@ namespace vet_api_Net.Data.seeds
             var clientes = new List<Cliente>
             {
                 new Cliente { 
-                    Nombre = "Carlos", 
-                    Apellido = "Lopez", 
+                    Nombre = "Ignacio", 
+                    Apellido = "Angel", 
                     Identificacion = "V-12345678", 
-                    Email = "carlos@gmail.com", 
+                    Email = emails, 
                     Telefono = "584129361132", 
                     Direccion = "Av 1, Calle 2", 
                     Nota = "Cliente frecuente", 
@@ -159,7 +214,7 @@ namespace vet_api_Net.Data.seeds
                     Nombre = "Anastacia", 
                     Apellido = "Martinez", 
                     Identificacion = "V-87654321", 
-                    Email = "ana@gmail.com", 
+                    Email = "anastacia.martinez@gmail.com",
                     Telefono = "04121234567", 
                     Direccion = "Urb Las Palmas", 
                     Nota = "Requiere llamar antes", 
@@ -170,7 +225,7 @@ namespace vet_api_Net.Data.seeds
                     Nombre = "Luis", 
                     Apellido = "Rodriguez", 
                     Identificacion = "V-11223344", 
-                    Email = "luis@gmail.com", 
+                    Email = "luis.rodriguez@gmail.com", 
                     Telefono = "04241234567", 
                     Direccion = "Centro", 
                     Nota = "Cliente VIP", 
@@ -192,7 +247,7 @@ namespace vet_api_Net.Data.seeds
                     Nombre = "Jorge", 
                     Apellido = "Diaz", 
                     Identificacion = "V-21345678", 
-                    Email = "jorge.diaz@hotmail.com", 
+                    Email = "jorge.diaz@gmail.com",  
                     Telefono = "04149876543", 
                     Direccion = "Chacao", 
                     Nota = "Deuda pendiente", 
@@ -203,8 +258,8 @@ namespace vet_api_Net.Data.seeds
                     Nombre = "Sofia", 
                     Apellido = "Gomez", 
                     Identificacion = "V-25678912", 
-                    Email = "sofia.g@yahoo.com", 
-                    Telefono = "04241112233", 
+                    Email = "sofia.gomez@gmail.com", 
+                    Telefono = "04241112233",
                     Direccion = "La Castellana", 
                     Nota = "Familiar de Carlos", 
                     Creado = DateTime.Now, 
@@ -368,7 +423,7 @@ namespace vet_api_Net.Data.seeds
                 }
             }
             context.SaveChanges();
-            var categoria = context.CategoriasProductos.FirstOrDefault();
+            var categoria = context.CategoriasProductos.FirstOrDefault()!;
 
             var productos = new List<Producto>
             {
@@ -533,6 +588,21 @@ namespace vet_api_Net.Data.seeds
 
 
 
+            if (!context.SystemConfigs.Any())
+            {
+                var systemConfig = new SystemConfig
+                {
+                    FrontendUrl = "https://happy-pets-web.vercel.app",
+                    BackendExternalUrl = "https://g27frlv5-5168.use2.devtunnels.ms/",
+                    BcvApiUrl = "https://www.bcv.org.ve",
+                    ResendApiUrl = "https://api.resend.com/emails",
+                    ResendApiKey = "re_8ihXsxrL_NRxgtRcoyqjou3J75MjbJdFo",
+                    ResendFromEmail = "HappyPets <onboarding@resend.dev>",
+                    LastUpdated = DateTime.UtcNow
+                };
+                context.SystemConfigs.Add(systemConfig);
+                context.SaveChanges();
+            }
         }
     }
 }

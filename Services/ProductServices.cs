@@ -8,6 +8,8 @@ using vet_api_Net.Models;
 using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaze.Utilities;
+using vet_api_Net.Utilities;
 
 namespace vet_api_Net.Services;
 

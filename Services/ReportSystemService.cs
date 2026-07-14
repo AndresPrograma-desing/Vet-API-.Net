@@ -23,7 +23,7 @@ namespace vet_api_Net.Services
 			return await _context.Reportes.AsNoTracking().ToListAsync();
 		}
 
-		public async Task<Reporte> GetByIdAsync(int id)
+		public async Task<Reporte?> GetByIdAsync(int id)
 		{
 			return await _context.Reportes.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
 		}

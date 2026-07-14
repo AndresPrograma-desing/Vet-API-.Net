@@ -10,4 +10,5 @@ public interface IAuthService
     string GenerateToken(Usuario user);
     Task<Usuario?> UpdatePasswordAsync(UpdatePasswordRequest request);
     Task<Usuario?> GetUserByIdAsync(int id);
+    
 }

@@ -23,8 +23,6 @@ public class PetsService : IPetsService
             .Include(m => m.Cliente)
             .ToListAsync();
 
-        if (mascotas == null || !mascotas.Any()) return new List<MascotaResumenDTO?>();
-
         if (mascotas == null || !mascotas.Any()) return new List<MascotaResumenDTO>();
 
         return mascotas.Select(mascota => new MascotaResumenDTO

@@ -10,6 +10,8 @@ using vet_api_Net.Constants;
 using vet_api_Net.Infrastructure.Configuration;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Interfaze.Repositories;
+using vet_api_Net.Interfaze.Utilities;
+using vet_api_Net.Utilities;
 
 namespace vet_api_Net.Services;
 
@@ -306,7 +308,7 @@ public class InvoiceService : IInvoiceService
             items.Add(new FacturationItemDTO
             {
                 ProductoId = ResponseMessagesFactura.EmptyProductId,
-                Codigo = ResponseMessagesFactura.NoData,
+                Codigo = ResponseMessagesFactura.NA,
                 Nombre = ResponseMessagesFactura.EmptyProductName,
                 Descripcion = ResponseMessagesFactura.EmptyProductDescription,
                 PrecioUnitario = ResponseMessagesFactura.EmptyProductPrice,

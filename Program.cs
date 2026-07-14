@@ -10,6 +10,7 @@ using vet_api_Net.Services;
 using Microsoft.Extensions.Options;
 using vet_api_Net.Infrastructure.Configuration;
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpClient<IInvoiceService, InvoiceService>();
@@ -41,6 +42,10 @@ using (var scope = app.Services.CreateScope())
 
 app.Use(async (context, next) => {
     Console.WriteLine($"[req] {context.Request.Method} {context.Request.Path}");
+    if (context.Request.Method != "OPTIONS")
+    {
+        await Task.Delay(100);
+    }
     await next();
 });
 
@@ -65,9 +70,13 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<MessageHub>("/hubs/mensajes");
+app.MapHub<NotificactionsPush>("/hubs/notificaciones");
 app.MapHealthChecks("/health");
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
-logger.LogInformation("Bienvenido a Happy Pets API {EnvironmentName} {Origin}", app.Environment.EnvironmentName, builder.Configuration.GetValue<bool>("ConnectionSettings:UseTunnel") ? builder.Configuration["ConnectionSettings:TunnelOrigin"] : builder.Configuration["ConnectionSettings:LocalOrigin"]);
+logger.LogInformation("Bienvenido a Happy Pets API {EnvironmentName}. Orígenes CORS: {LocalOrigin}, {TunnelOrigin}", 
+    app.Environment.EnvironmentName, 
+    builder.Configuration["ConnectionSettings:LocalOrigin"], 
+    builder.Configuration["ConnectionSettings:TunnelOrigin"]);
 
 app.Run();

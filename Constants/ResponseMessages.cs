@@ -31,6 +31,23 @@ namespace vet_api_Net.Constants
 
 
     }
+    public static class ResponseMessagesPasswordRecovery
+    {
+        public const string RequiredEmail = "El correo electrónico es requerido.";
+        public const string ErrorRequestingCode = "No se encontró ningún usuario con ese correo electrónico o no se pudo enviar el correo.";
+        public const string CodeSentSuccess = "Código de recuperación enviado con éxito.";
+        public const string RequiredCode = "El código de verificación es requerido.";
+        public const string InvalidCode = "Código de verificación inválido, expirado o error al enviar el correo.";
+        public const string CodeVerifiedSuccess = "Código verificado con éxito. Contraseña enviada a su correo.";
+        public const string DefaultSystemName = "Happy Pets";
+        public static string RecoveryCodeSubject(string systemName) => $"Código de Recuperación de Clave - {systemName}";
+        public static string ResendPasswordSubject(string systemName) => $"Restablecer Contraseña - {systemName}";
+        public const string DefaultResetPasswordHtml = "Su código de recuperación es: {{token_codigo}}";
+        public const string DefaultResendPasswordHtml = "Su clave de acceso es: {{nueva_clave}}";
+        public const string RequirePasswordChangeCode = "REQUIRE_PASSWORD_CHANGE";
+        public const string PushNotificationChangePasswordTitle = "Cambio de Contraseña Sugerido";
+        public const string PushNotificationChangePasswordMessage = "Iniciaste sesión con una contraseña temporal. Por tu seguridad, te sugerimos cambiarla lo antes posible desde tu perfil.";
+    }
     public static class ResponseMessagesCitas
     {
         public const string CitaCreada = "Cita creada exitosamente.";
@@ -81,10 +98,22 @@ namespace vet_api_Net.Constants
         public const string DoctorNotFound = "Doctor no encontrado.";
         public const string AdminNotFound = "Administrador no encontrado.";
         public const string SecretarialNotFound = "Secretaria no encontrada.";
+        public const string EmailNotConfigured = "El usuario no tiene un email configurado o el email en uso no funciona.";
         public const string ErrorGettingUser = "Ocurrió un error interno al obtener el usuario.";
         public const string ErrorGettingUsers = "Ocurrió un error interno al obtener los usuarios.";
         public const string ExistingUsername = "El nombre de usuario ya está en uso.";
+        public const string PasswordResetTicketCreated = "Ticket de reseteo de contraseña creado exitosamente.";
+        public const string PasswordResetTicketNotFoundOrExpired = "El ticket de reseteo no es válido, ya fue utilizado o ha expirado.";
+        public const string PasswordResetTicketAccepted = "El ticket de reseteo de contraseña ha sido confirmado correctamente. Puede cerrar esta ventana.";
+        public const string PasswordAssignedSuccess = "La nueva contraseña ha sido asignada correctamente.";
+        public const string PasswordResetAlreadyPending = "Ya existe una solicitud pendiente para este usuario. Espere a que expire (15 minutos).";
+        public const string PasswordResetSubject = "Solicitud de Reseteo de Contraseña";
+        public const string EmailAndNewPasswordRequired = "El email y la nueva contraseña son requeridos.";
+        public const string InvalidToken = "Token inválido o expirado.";
         public static string DeletingUser(int id) => $"Usuario con ID {id} eliminado exitosamente";
+        public static string NotUpdateNameUser = "No se pudo cambiar el nombre del usuario";
+        public static string UpdateNameUser = "Nombre del usuario actualizado exitosamente";
+
         public static class UsersVariable
         {
             public const string UserStatusActivo = "enabled";
@@ -117,7 +146,7 @@ namespace vet_api_Net.Constants
         public const string OnlyCitaAllowed = "La Recibo solo puede generarse para citas completadas.";
         public const string ErrorProcessingInvoice = "Error al procesar la Recibos internamente. Consulta creada pero no se pudo generar la factura.";
         public const string InvoiceGenerationError = "Error al guardar la información de la Recibo generada. Sin embargo, el PDF se ha creado correctamente.";
-        
+
     }
     public static class PdfText
     {
@@ -169,7 +198,7 @@ namespace vet_api_Net.Constants
         public const string NotAssisted = "no_asistida";
         public const string Active = "activo";
         public const string Inactive = "inactivo";
-        public const string InvoicePending = "factura_pendiente"; 
+        public const string InvoicePending = "factura_pendiente";
 
     }
     public static class ResponseMessagesFactura
@@ -179,7 +208,7 @@ namespace vet_api_Net.Constants
         public const string ErrorInterno = "Ocurrió un error interno al procesar la solicitud de recibo.";
         public const string FacturaActualizada = "Recibo actualizado exitosamente.";
         public const string EmptyProducts = "No se pueden generar Recibo sin productos asociados.";
-        public const string NoData = "N/A";
+        public const string NA = "N/A";
         public const int EmptyProductId = 0;
         public const string EmptyProductName = "Sin productos asociados";
         public const string EmptyProductDescription = "No se encontraron productos vinculados a esta factura.";
@@ -190,7 +219,7 @@ namespace vet_api_Net.Constants
         public const string NotFactura = "No hay Recibo registradas en el sistema.";
         public const string DeleteReceiptsNotificactionTittle = "Eliminacion de Recibo";
         public const string DeleteReceiptsNotificactionDesc = "Se ha eliminado el Recibo de ${cliente_name}, para generarlo nuevamente ir a centro de recibos";
-        
+
     }
     public static class MessagePoller
     {
@@ -229,7 +258,7 @@ namespace vet_api_Net.Constants
         public const string Filtre = "{}";
         public const string ReportgeneratedTittle = "Se ha generado un reporte del sistema";
         public const string ReportgeneratedDescription = "El reporte se ha generado correctamente. puedes descargarlo en Ajustes| Accesos Y Seguridad | Repor.";
-        
+
     }
     public static class ResponseMessagesAuthController
     {
@@ -254,7 +283,10 @@ namespace vet_api_Net.Constants
         public const string RequireNameFile = "Nombre del archivo requerido";
         public const string StatusPagoIsRequired = "estado_pago es requerido";
 
-
+    }
+    public static class ResponseMessagesConsultas
+    {
+        public const string ErrorCreated = "Error al crear la consulta";
     }
     public static class ResponseMessagesHealthController
     {
@@ -376,7 +408,7 @@ namespace vet_api_Net.Constants
         public const string SessionNotFound = "No se encontró información o la instancia de WhatsApp no está inicializada.";
         public const string SessionStatusCriticalFailure = "Hubo un error crítico al recuperar el estado del canal.";
     }
-    
+
     public static class ResponseMessagesEmailsController
     {
         public const string DispatchSuccess = "Correo enviado exitosamente al cliente {0}";
@@ -387,7 +419,7 @@ namespace vet_api_Net.Constants
         public const string TestEmailFailure = "Error al intentar enviar el correo de prueba. Revisa los logs de la consola.";
         public const string TestEmailSubject = "Correo de Prueba - HappyPets";
         public const string TestEmailBody = "<h1>¡Hola!</h1><p>Esta es una prueba de envío exitosa de HappyPets utilizando la API de <strong>Resend</strong>.</p>";
-        
+
         public const string ClientNoEmail = "El cliente no tiene un correo electrónico registrado para el envío de factura.";
         public const string PdfNotFound = "No se encontró el archivo PDF para la factura {0}.";
         public const string TemplateNotFound = "<h1>Plantilla no encontrada</h1>";
@@ -397,9 +429,9 @@ namespace vet_api_Net.Constants
         public const string InvalidPayload = "Datos de actualización inválidos.";
 
         public const string SendEmailError = "Se ha producido un error al intentar enviar el correo, por favor intente de nuevo.";
-        public const string ProviderError = "ERROR. Solicite revicion del servicio de envio de correos Resend";
+        public const string ProviderError = "ERROR. Hubo un error al intentar enviar el correo, por favor intente de nuevo.";
         public const string ConnectionFailed = "No se pudo establecer conexión con el proveedor de correos (Resend). Verifique su conexión de red.";
-        public const string UnexpectedError = "Ocurrió un error inesperado al enviar el correo: {0}";
+        public const string UnexpectedError = "Ocurrió un error inesperado al enviar el correo.";
     }
 
     public static class EmailTypes
@@ -418,5 +450,33 @@ namespace vet_api_Net.Constants
                 _ => "Unknown"
             };
         }
+    }
+
+    public static class ResponseMessagesDashboard
+    {
+        public const string ErrorRetrievingStats = "Error al obtener las estadísticas del Dashboard.";
+        public const string NoDefinido = "No Definido";
+        public const string UnknownMonth = "Desconocido";
+        public const string Cancelado = "cancelado";
+
+        public static class Months
+        {
+            public const string Ene = "Ene";
+            public const string Feb = "Feb";
+            public const string Mar = "Mar";
+            public const string Abr = "Abr";
+            public const string May = "May";
+            public const string Jun = "Jun";
+            public const string Jul = "Jul";
+            public const string Ago = "Ago";
+            public const string Sep = "Sep";
+            public const string Oct = "Oct";
+            public const string Nov = "Nov";
+            public const string Dic = "Dic";
+        }
+    }
+    public static class ResponseMessagesUtilties
+    {
+        public const string ErroConverMoney = "Hubo un error al hacer la conversion de monedas";
     }
 }

@@ -1,22 +1,27 @@
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using DTOs;
 using vet_api_Net.Models;
 using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Infrastructure.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace vet_api_Net.Services;
 
 public class ConsultasService : IConsultasService
 {
     private readonly IConsultasRepository _repository;
-
-    public ConsultasService(IConsultasRepository repository)
+    private readonly ApiSettingsOptions _apiSettings;
+    public ConsultasService(IConsultasRepository repository, IOptions<ApiSettingsOptions> apiSettingsOptions)
     {
         _repository = repository;
+        _apiSettings = apiSettingsOptions.Value;
     }
+
 
     public async Task<ConsultaRequestDTO?> CreateConsultaAsync(CreateConsultaDTO dto)
     {
@@ -91,13 +96,18 @@ public class ConsultasService : IConsultasService
         }
         catch (Exception ex)
         {
-            throw new Exception($"Error al crear la consulta: {ex.Message}");
+            throw new Exception($"{ResponseMessagesConsultas.ErrorCreated} {ex.Message}");
         }
     }
 
     public async Task<ConsultaRequestDTO?> GetConsultaByIdAsync(int id)
     {
         return await _repository.GetConsultaDtoByIdAsync(id);
+    }
+
+    public async Task<IEnumerable<ConsultaRequestDTO>> GetConsultasAsync()
+    {
+        return await _repository.GetConsultasAsync();
     }
 
     private async Task ProcessInternalBillingAsync(int recordId, Cita appointment, Mascota pet)
@@ -124,10 +134,10 @@ public class ConsultasService : IConsultasService
                     else if (normalizedName.Contains(PaymentMethods.Contain4)) paymentMethod = PaymentMethods.MobilePayment;
                 }
             }
-
+            
             var invoice = new Factura
             {
-                NumeroFactura = $"F-{DateTime.UtcNow:yyyyMMddHHmmss}-{recordId}",
+                NumeroFactura = $"R-{DateTime.UtcNow:dd-MM-yyyy}-{recordId}",
                 ClienteId = pet.ClienteId,
                 MascotaId = pet.Id,
                 ConsultaId = recordId,
@@ -137,7 +147,7 @@ public class ConsultasService : IConsultasService
                 Descuento = discount,
                 Total = total,
                 MetodoPago = paymentMethod,
-                EstadoPago = "pendiente",
+                EstadoPago = Status.Pending,
                 Notas = targetRecord.Receta ?? targetRecord.Observaciones,
                 Creado = DateTime.UtcNow,
                 Actualizado = DateTime.UtcNow

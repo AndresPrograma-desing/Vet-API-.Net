@@ -10,5 +10,6 @@ public record MoneyTypesDTO
     
     [JsonPropertyName("money_name")]
     public string MoneyName { get; set; } = string.Empty;
-
+    public string? TypeMoney {get; set;} 
+    public decimal TasaBcv { get; set;}
 }

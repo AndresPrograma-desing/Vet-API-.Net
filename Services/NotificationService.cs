@@ -46,12 +46,12 @@ public class NotificationService : INotificationService
 
         var nuevaAlerta = new AlertasInterna
         {
-            Titulo = dto.Titulo,
-            Mensaje = dto.Mensaje,
-            Tipo = dto.Tipo,
-            Prioridad = dto.Prioridad,
+            Titulo = dto.Titulo ?? string.Empty,
+            Mensaje = dto.Mensaje ?? string.Empty,
+            Tipo = dto.Tipo ?? string.Empty,
+            Prioridad = dto.Prioridad ?? string.Empty,
             DestinatarioRol = dto.Destino,
-            DestinatarioId = creatorId, // Almacena quién creó el ticket para mandarle la notificación cuando sea leído
+            DestinatarioId = creatorId,  
             Completada = dto.Completada,
             ReferenciaTabla = dto.Origen,
             Leida = dto.Leida,
@@ -66,26 +66,21 @@ public class NotificationService : INotificationService
     }
    public async Task<bool> MarkAsReadAsync(int alertId, int userId)
 {
-    // 1. Ejecuta la actualización del estado persistente en la DB
     bool success = await _alertsRepository.MarkAsReadAsync(alertId);
     
     if (success)
     {
-        // 2. Buscamos los datos para armar el mensaje y deducir el destino
-        var user = await _usersRepository.GetByIdAsync(userId); // El usuario que hace la acción (ej: Veterinario)
-        var alert = await _alertsRepository.GetByIdAsync(alertId); // Cargamos la alerta de la DB
+        var user = await _usersRepository.GetByIdAsync(userId); 
+        var alert = await _alertsRepository.GetByIdAsync(alertId);  
 
         if (user != null && alert != null)
-        {
-            // AUTO-DESCUBRIMIENTO: Extraemos el id del destinatario original del ticket
+        { 
             int targetUserId = alert.DestinatarioId ?? 0; 
             
             if (targetUserId > 0)
-            {
-                // Reemplazamos las variables dinámicas del mensaje de tu constante
+            { 
                 string message = ResponseMessagesNotificationPush.PushTicket.Replace("${user_name}", user.Nombre);
                 
-                // DISPARO PUSH: Llama a SignalR en memoria sin afectar la velocidad de la petición
                 await _pushService.SendPushToUserAsync(targetUserId, message, alertId);
             }
         }

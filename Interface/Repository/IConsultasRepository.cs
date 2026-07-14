@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using vet_api_Net.Models;
 using DTOs;
 
@@ -18,4 +19,5 @@ public interface IConsultasRepository
     void AddDetalleFactura(DetallesFactura invoiceDetail);
     Task<bool> SaveChangesAsync();
     Task<ConsultaRequestDTO?> GetConsultaDtoByIdAsync(int id);
+    Task<IEnumerable<ConsultaRequestDTO>> GetConsultasAsync();
 }

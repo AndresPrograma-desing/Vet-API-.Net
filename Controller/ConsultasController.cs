@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using DTOs;
@@ -54,6 +55,20 @@ public class ConsultasController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { message = "Error retrieving specific record description.", details = ex.Message });
+        }
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<ConsultaRequestDTO>>> GetAll()
+    {
+        try
+        {
+            var result = await _consultasService.GetConsultasAsync();
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { ex.Message });
         }
     }
 }

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Ticket Confirmado</title>
+    <style>
+        body { 
+              font-family: 'Segoe UI', Helvetica, Arial, sans-serif; 
+            background-color: #f4f6f8; 
+            margin: 0; 
+            padding: 40px 20px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center; 
+            -webkit-font-smoothing: antialiased;
+        }
+        .card { 
+            max-width: 500px; 
+            margin: 0 auto; 
+            background-color: #ffffff; 
+            padding: 40px 30px; 
+            border-radius: 8px; 
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .icon-box {
+            width: 56px;
+            height: 56px;
+            background-color: #f0fdf4;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .icon {
+            color: #16a34a;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        h3 { 
+            color: #0f172a; 
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0 0 12px 0;
+        }
+        p {
+            color: #475569;
+            font-size: 15px;
+            line-height: 1.6;
+            margin: 0;
+        }
+        .advertenciaError{
+          color: red;
+          margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class='card'>
+        <div class='icon-box'>
+            <span class='icon'>✓</span>
+        </div>
+        <h3>Operación Exitosa</h3>
+        <p>{message}</p>
+        <div class="advertenciaError">Hasta que no se asigne una nueva contraseña, tu cuenta permanecera bloqueada durante 15 minutos.</div>
+    </div>
+</body>
+</html>

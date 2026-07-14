@@ -2,8 +2,8 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using vet_api_Net.Data;
 
 #nullable disable
@@ -17,56 +17,46 @@ namespace vet_api_Net.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .UseCollation("utf8mb4_spanish2_ci")
                 .HasAnnotation("ProductVersion", "9.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            MySqlModelBuilderExtensions.HasCharSet(modelBuilder, "utf8mb4");
-            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("vet_api_Net.Models.AlertasInterna", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<bool?>("AccionRequerida")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("accion_requerida")
-                        .HasDefaultValueSql("'0'");
+                        .HasColumnType("boolean")
+                        .HasColumnName("accion_requerida");
 
                     b.Property<bool?>("Completada")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("completada")
-                        .HasDefaultValueSql("'0'");
+                        .HasColumnType("boolean")
+                        .HasColumnName("completada");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<int?>("DestinatarioId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("destinatario_id");
 
                     b.Property<string>("DestinatarioRol")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("enum('admin','doctor','secretaria','todos')")
-                        .HasColumnName("destinatario_rol")
-                        .HasDefaultValueSql("'todos'");
+                        .HasColumnType("text")
+                        .HasColumnName("destinatario_rol");
 
                     b.Property<DateTime?>("FechaCompletado")
-                        .HasColumnType("timestamp")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("fecha_completado");
 
                     b.Property<DateTime?>("FechaLectura")
-                        .HasColumnType("timestamp")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("fecha_lectura");
 
                     b.Property<DateOnly?>("FechaLimite")
@@ -74,13 +64,11 @@ namespace vet_api_Net.Migrations
                         .HasColumnName("fecha_limite");
 
                     b.Property<bool?>("Leida")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("leida")
-                        .HasDefaultValueSql("'0'");
+                        .HasColumnType("boolean")
+                        .HasColumnName("leida");
 
                     b.Property<int?>("LeidaPor")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("leida_por");
 
                     b.Property<string>("Mensaje")
@@ -88,33 +76,30 @@ namespace vet_api_Net.Migrations
                         .HasColumnName("mensaje");
 
                     b.Property<string>("Prioridad")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("enum('baja','media','alta','urgente')")
-                        .HasColumnName("prioridad")
-                        .HasDefaultValueSql("'media'");
+                        .HasColumnType("text")
+                        .HasColumnName("prioridad");
 
                     b.Property<int?>("ReferenciaId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("referencia_id");
 
                     b.Property<string>("ReferenciaTabla")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("referencia_tabla");
 
                     b.Property<string>("Tipo")
                         .IsRequired()
-                        .HasColumnType("enum('stock_bajo','producto_vencido','cita_pendiente','tarea_admin','factura_pendiente','seguimiento_medico','sistema')")
+                        .HasColumnType("text")
                         .HasColumnName("tipo");
 
                     b.Property<string>("Titulo")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)")
+                        .HasColumnType("character varying(200)")
                         .HasColumnName("titulo");
 
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id");
 
                     b.HasIndex(new[] { "DestinatarioId" }, "destinatario_id");
 
@@ -127,38 +112,28 @@ namespace vet_api_Net.Migrations
                     b.HasIndex(new[] { "LeidaPor" }, "leida_por");
 
                     b.ToTable("alertas_internas", (string)null);
-
-                    MySqlEntityTypeBuilderExtensions.UseCollation(b, "utf8mb4_general_ci");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.CategoriasProducto", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<bool?>("Activo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("activo")
-                        .HasDefaultValueSql("'1'");
+                        .HasColumnType("boolean")
+                        .HasColumnName("activo");
 
                     b.Property<DateTime>("Actualizado")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("actualizado")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("Actualizado"));
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("actualizado");
 
                     b.Property<DateTime>("Creado")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("creado")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado");
 
                     b.Property<string>("Descripcion")
                         .HasColumnType("text")
@@ -167,53 +142,48 @@ namespace vet_api_Net.Migrations
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("nombre");
 
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id");
 
                     b.HasIndex(new[] { "Nombre" }, "nombre")
                         .IsUnique();
 
                     b.ToTable("categorias_productos", (string)null);
-
-                    MySqlEntityTypeBuilderExtensions.UseCollation(b, "utf8mb4_general_ci");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.Cita", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("DoctorId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("doctor_id");
 
                     b.Property<string>("Estado")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("enum('programada','completada','cancelada','no_asistida','en_curso')")
-                        .HasColumnName("estado")
-                        .HasDefaultValueSql("'programada'");
+                        .HasColumnType("text")
+                        .HasColumnName("estado");
 
                     b.Property<DateTime>("FechaCita")
-                        .HasColumnType("datetime")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("fecha_cita");
 
                     b.Property<TimeOnly>("HoraCita")
-                        .HasColumnType("time")
+                        .HasColumnType("time without time zone")
                         .HasColumnName("hora_cita");
 
                     b.Property<int>("MascotaId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("mascota_id");
 
                     b.Property<int?>("MetodoPagoId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("metodo_pago_id");
 
                     b.Property<string>("Motivo")
@@ -226,17 +196,14 @@ namespace vet_api_Net.Migrations
                         .HasColumnName("notas");
 
                     b.Property<int?>("SecretariaId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("secretaria_id");
 
                     b.Property<string>("TipoCita")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("enum('consulta','vacunacion','cirugia','emergencia','seguimiento')")
-                        .HasColumnName("tipo_cita")
-                        .HasDefaultValueSql("'consulta'");
+                        .HasColumnType("text")
+                        .HasColumnName("tipo_cita");
 
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id");
 
                     b.HasIndex(new[] { "DoctorId", "FechaCita" }, "idx_doctor_fecha");
 
@@ -254,38 +221,30 @@ namespace vet_api_Net.Migrations
                         .IsUnique();
 
                     b.ToTable("citas", (string)null);
-
-                    MySqlEntityTypeBuilderExtensions.UseCollation(b, "utf8mb4_general_ci");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.Cliente", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Actualizado")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("actualizado")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("Actualizado"));
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("actualizado");
 
                     b.Property<string>("Apellido")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("apellido");
 
                     b.Property<DateTime>("Creado")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("creado")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado");
 
                     b.Property<string>("Direccion")
                         .HasColumnType("text")
@@ -294,18 +253,18 @@ namespace vet_api_Net.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("email");
 
                     b.Property<string>("Identificacion")
                         .HasMaxLength(20)
-                        .HasColumnType("varchar(20)")
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("identificacion");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("nombre");
 
                     b.Property<string>("Nota")
@@ -314,11 +273,10 @@ namespace vet_api_Net.Migrations
 
                     b.Property<string>("Telefono")
                         .HasMaxLength(20)
-                        .HasColumnType("varchar(20)")
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("telefono");
 
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id");
 
                     b.HasIndex(new[] { "Email" }, "email")
                         .IsUnique();
@@ -333,48 +291,42 @@ namespace vet_api_Net.Migrations
                     b.HasIndex(new[] { "Telefono" }, "idx_telefono");
 
                     b.ToTable("clientes", (string)null);
-
-                    MySqlEntityTypeBuilderExtensions.UseCollation(b, "utf8mb4_general_ci");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.Consulta", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CitaId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("cita_id");
 
                     b.Property<decimal?>("ConsultaPrice")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("numeric");
 
                     b.Property<DateTime>("Creado")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("creado")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado");
 
                     b.Property<string>("Diagnostico")
                         .HasColumnType("text")
                         .HasColumnName("diagnostico");
 
                     b.Property<int>("DoctorId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("doctor_id");
 
                     b.Property<DateTime>("FechaConsulta")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("fecha_consulta")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("fecha_consulta");
 
                     b.Property<int>("MascotaId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("mascota_id");
 
                     b.Property<string>("Observaciones")
@@ -383,7 +335,7 @@ namespace vet_api_Net.Migrations
 
                     b.Property<decimal?>("PesoActual")
                         .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)")
+                        .HasColumnType("numeric(5,2)")
                         .HasColumnName("peso_actual");
 
                     b.Property<string>("Receta")
@@ -397,15 +349,14 @@ namespace vet_api_Net.Migrations
 
                     b.Property<decimal?>("Temperatura")
                         .HasPrecision(4, 1)
-                        .HasColumnType("decimal(4,1)")
+                        .HasColumnType("numeric(4,1)")
                         .HasColumnName("temperatura");
 
                     b.Property<string>("Tratamiento")
                         .HasColumnType("text")
                         .HasColumnName("tratamiento");
 
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id");
 
                     b.HasIndex(new[] { "CitaId" }, "cita_id");
 
@@ -416,52 +367,46 @@ namespace vet_api_Net.Migrations
                     b.HasIndex(new[] { "MascotaId" }, "idx_mascota");
 
                     b.ToTable("consultas", (string)null);
-
-                    MySqlEntityTypeBuilderExtensions.UseCollation(b, "utf8mb4_general_ci");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.ConsultasProducto", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("AplicadoPor")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("aplicado_por");
 
                     b.Property<int>("Cantidad")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
-                        .HasColumnName("cantidad")
-                        .HasDefaultValueSql("'1'");
+                        .HasColumnType("integer")
+                        .HasColumnName("cantidad");
 
                     b.Property<int>("ConsultaId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("consulta_id");
 
                     b.Property<DateTime>("Creado")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("creado")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado");
 
                     b.Property<string>("Dosis")
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("dosis");
 
                     b.Property<string>("Duracion")
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("duracion");
 
                     b.Property<string>("Frecuencia")
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("frecuencia");
 
                     b.Property<string>("Instrucciones")
@@ -470,20 +415,19 @@ namespace vet_api_Net.Migrations
 
                     b.Property<decimal>("PrecioUnitario")
                         .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)")
+                        .HasColumnType("numeric(10,2)")
                         .HasColumnName("precio_unitario");
 
                     b.Property<int>("ProductoId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("producto_id");
 
                     b.Property<string>("ViaAdministracion")
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("via_administracion");
 
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id");
 
                     b.HasIndex(new[] { "AplicadoPor" }, "aplicado_por");
 
@@ -492,57 +436,52 @@ namespace vet_api_Net.Migrations
                     b.HasIndex(new[] { "ProductoId" }, "producto_id");
 
                     b.ToTable("consultas_productos", (string)null);
-
-                    MySqlEntityTypeBuilderExtensions.UseCollation(b, "utf8mb4_general_ci");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.DetallesFactura", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Cantidad")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("cantidad");
 
                     b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("created")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("created");
 
                     b.Property<string>("Descripcion")
                         .HasColumnType("text")
                         .HasColumnName("descripcion");
 
                     b.Property<int>("FacturaId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("factura_id");
 
                     b.Property<decimal>("PrecioUnitario")
                         .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)")
+                        .HasColumnType("numeric(10,2)")
                         .HasColumnName("precio_unitario");
 
                     b.Property<int>("ProductoId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("producto_id");
 
                     b.Property<int?>("ProductosConsultasId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("productos_consultas_id");
 
                     b.Property<decimal>("Total")
                         .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)")
+                        .HasColumnType("numeric(10,2)")
                         .HasColumnName("total");
 
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id");
 
                     b.HasIndex(new[] { "FacturaId" }, "idx_factura");
 
@@ -552,67 +491,79 @@ namespace vet_api_Net.Migrations
                     b.HasIndex(new[] { "ProductosConsultasId" }, "productos_consultas_id");
 
                     b.ToTable("detalles_factura", (string)null);
+                });
 
-                    MySqlEntityTypeBuilderExtensions.UseCollation(b, "utf8mb4_general_ci");
+            modelBuilder.Entity("vet_api_Net.Models.EmailTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("HtmlCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TypeEmail")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Update")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EmailTemplates");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.Factura", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Actualizado")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("actualizado")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("Actualizado"));
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("actualizado");
 
                     b.Property<int>("ClienteId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("cliente_id");
 
                     b.Property<int?>("ConsultaId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("consulta_id");
 
                     b.Property<DateTime>("Creado")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("creado")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado");
 
                     b.Property<decimal?>("Descuento")
-                        .ValueGeneratedOnAdd()
                         .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)")
-                        .HasColumnName("descuento")
-                        .HasDefaultValueSql("'0.00'");
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("descuento");
 
                     b.Property<string>("EstadoPago")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("enum('pendiente','pagada','cancelada')")
-                        .HasColumnName("estado_pago")
-                        .HasDefaultValueSql("'pendiente'");
+                        .HasColumnType("text")
+                        .HasColumnName("estado_pago");
 
                     b.Property<DateTime>("FechaEmision")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("fecha_emision")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("fecha_emision");
 
                     b.Property<int?>("MascotaId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("mascota_id");
 
                     b.Property<string>("MetodoPago")
                         .IsRequired()
-                        .HasColumnType("enum('efectivo','tarjeta','transferencia','pago movil','otro')")
+                        .HasColumnType("text")
                         .HasColumnName("metodo_pago");
 
                     b.Property<string>("Notas")
@@ -622,30 +573,29 @@ namespace vet_api_Net.Migrations
                     b.Property<string>("NumeroFactura")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("numero_factura");
 
                     b.Property<int>("SecretariaId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("secretaria_id");
 
                     b.Property<decimal>("Subtotal")
                         .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)")
+                        .HasColumnType("numeric(10,2)")
                         .HasColumnName("subtotal");
 
                     b.Property<decimal>("Total")
                         .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)")
+                        .HasColumnType("numeric(10,2)")
                         .HasColumnName("total");
 
                     b.Property<string>("UrlDocx")
                         .HasMaxLength(512)
-                        .HasColumnType("varchar(512)")
+                        .HasColumnType("character varying(512)")
                         .HasColumnName("url_docx");
 
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id");
 
                     b.HasIndex(new[] { "ConsultaId" }, "consulta_id");
 
@@ -667,29 +617,27 @@ namespace vet_api_Net.Migrations
                         .HasDatabaseName("secretaria_id1");
 
                     b.ToTable("facturas", (string)null);
-
-                    MySqlEntityTypeBuilderExtensions.UseCollation(b, "utf8mb4_general_ci");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.FacturaConfig", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Days")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<bool>("GenerateEnabled")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsEnabled")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("boolean");
 
                     b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("timestamp without time zone");
 
                     b.HasKey("Id");
 
@@ -700,16 +648,14 @@ namespace vet_api_Net.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("FechaCambio")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("fecha_cambio")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("fecha_cambio");
 
                     b.Property<string>("Motivo")
                         .HasColumnType("text")
@@ -717,75 +663,70 @@ namespace vet_api_Net.Migrations
 
                     b.Property<decimal>("PrecioAnterior")
                         .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)")
+                        .HasColumnType("numeric(10,2)")
                         .HasColumnName("precio_anterior");
 
                     b.Property<decimal>("PrecioNuevo")
                         .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)")
+                        .HasColumnType("numeric(10,2)")
                         .HasColumnName("precio_nuevo");
 
                     b.Property<int>("ProductoId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("producto_id");
 
                     b.Property<int>("UsuarioId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("usuario_id");
 
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id");
 
                     b.HasIndex(new[] { "ProductoId", "FechaCambio" }, "idx_producto_fecha");
 
                     b.HasIndex(new[] { "UsuarioId" }, "usuario_id");
 
                     b.ToTable("historial_precios", (string)null);
-
-                    MySqlEntityTypeBuilderExtensions.UseCollation(b, "utf8mb4_general_ci");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.LogsSistema", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Accion")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("accion");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("DatosNuevos")
-                        .HasColumnType("json")
+                        .HasColumnType("text")
                         .HasColumnName("datos_nuevos");
 
                     b.Property<string>("DatosPrevios")
-                        .HasColumnType("json")
+                        .HasColumnType("text")
                         .HasColumnName("datos_previos");
 
                     b.Property<string>("IpAddress")
                         .HasMaxLength(45)
-                        .HasColumnType("varchar(45)")
+                        .HasColumnType("character varying(45)")
                         .HasColumnName("ip_address");
 
                     b.Property<int?>("RegistroId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("registro_id");
 
                     b.Property<string>("TablaAfectada")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("tabla_afectada");
 
                     b.Property<string>("UserAgent")
@@ -793,49 +734,42 @@ namespace vet_api_Net.Migrations
                         .HasColumnName("user_agent");
 
                     b.Property<int?>("UsuarioId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("usuario_id");
 
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id");
 
                     b.HasIndex(new[] { "CreatedAt" }, "idx_fecha_log");
 
                     b.HasIndex(new[] { "UsuarioId" }, "idx_usuario_log");
 
                     b.ToTable("logs_sistema", (string)null);
-
-                    MySqlEntityTypeBuilderExtensions.UseCollation(b, "utf8mb4_general_ci");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.Mascota", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Actualizado")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("actualizado")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("Actualizado"));
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("actualizado");
 
                     b.Property<string>("Alergias")
                         .HasColumnType("text")
                         .HasColumnName("alergias");
 
                     b.Property<int>("ClienteId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("cliente_id");
 
                     b.Property<string>("Color")
                         .HasMaxLength(30)
-                        .HasColumnType("varchar(30)")
+                        .HasColumnType("character varying(30)")
                         .HasColumnName("color");
 
                     b.Property<string>("CondicionesMedicas")
@@ -843,21 +777,17 @@ namespace vet_api_Net.Migrations
                         .HasColumnName("condiciones_medicas");
 
                     b.Property<DateTime>("Creado")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("creado")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado");
 
                     b.Property<string>("Especie")
                         .IsRequired()
-                        .HasColumnType("enum('perro','gato')")
+                        .HasColumnType("text")
                         .HasColumnName("especie");
 
                     b.Property<bool?>("Esterilizado")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("esterilizado")
-                        .HasDefaultValueSql("'0'");
+                        .HasColumnType("boolean")
+                        .HasColumnName("esterilizado");
 
                     b.Property<DateOnly?>("FechaNacimiento")
                         .HasColumnType("date")
@@ -865,32 +795,31 @@ namespace vet_api_Net.Migrations
 
                     b.Property<string>("IdenteficacionMascota")
                         .HasMaxLength(20)
-                        .HasColumnType("varchar(20)")
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("identeficacion_mascota");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("nombre");
 
                     b.Property<decimal?>("Peso")
                         .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)")
+                        .HasColumnType("numeric(5,2)")
                         .HasColumnName("peso");
 
                     b.Property<string>("Raza")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("raza");
 
                     b.Property<string>("Sexo")
                         .IsRequired()
-                        .HasColumnType("enum('macho','hembra')")
+                        .HasColumnType("text")
                         .HasColumnName("sexo");
 
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id");
 
                     b.HasIndex(new[] { "IdenteficacionMascota" }, "identeficacion_mascota")
                         .IsUnique();
@@ -902,18 +831,16 @@ namespace vet_api_Net.Migrations
                     b.HasIndex(new[] { "Nombre" }, "idx_nombre_mascota");
 
                     b.ToTable("mascotas", (string)null);
-
-                    MySqlEntityTypeBuilderExtensions.UseCollation(b, "utf8mb4_general_ci");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.Mensaje", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Contenido")
                         .IsRequired()
@@ -921,99 +848,83 @@ namespace vet_api_Net.Migrations
                         .HasColumnName("contenido");
 
                     b.Property<int>("EmisorId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("emisor_id");
 
                     b.Property<DateTime>("FechaEnvio")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("fecha_envio")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("fecha_envio");
 
                     b.Property<bool?>("Leido")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("leido")
-                        .HasDefaultValueSql("'0'");
+                        .HasColumnType("boolean")
+                        .HasColumnName("leido");
 
                     b.Property<int>("ReceptorId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("receptor_id");
 
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id");
 
                     b.HasIndex("EmisorId");
 
                     b.HasIndex("ReceptorId");
 
                     b.ToTable("mensajes", (string)null);
-
-                    MySqlEntityTypeBuilderExtensions.UseCollation(b, "utf8mb4_general_ci");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.MetodoPago", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Actualizado")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("actualizado")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("Actualizado"));
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("actualizado");
 
                     b.Property<DateTime>("Creado")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("creado")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("nombre");
 
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id");
 
                     b.HasIndex(new[] { "Nombre" }, "nombre")
                         .IsUnique()
                         .HasDatabaseName("nombre1");
 
                     b.ToTable("metodos_pago", (string)null);
-
-                    MySqlEntityTypeBuilderExtensions.UseCollation(b, "utf8mb4_general_ci");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.MoneyType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("BcvDollar")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("numeric");
 
                     b.Property<string>("DollarPersistence")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("Fecha")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("MoneyName")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -1024,54 +935,51 @@ namespace vet_api_Net.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Cantidad")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("cantidad");
 
                     b.Property<DateTime>("FechaMovimiento")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("fecha_movimiento")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("fecha_movimiento");
 
                     b.Property<string>("Motivo")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("motivo");
 
                     b.Property<int>("ProductoId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("producto_id");
 
                     b.Property<int?>("ReferenciaId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("referencia_id");
 
                     b.Property<int>("StockAnterior")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("stock_anterior");
 
                     b.Property<int>("StockNuevo")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("stock_nuevo");
 
                     b.Property<string>("TipoMovimiento")
                         .IsRequired()
-                        .HasColumnType("enum('entrada','salida','ajuste')")
+                        .HasColumnType("text")
                         .HasColumnName("tipo_movimiento");
 
                     b.Property<int>("UsuarioId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("usuario_id");
 
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id");
 
                     b.HasIndex(new[] { "FechaMovimiento" }, "idx_fecha_movimiento");
 
@@ -1081,42 +989,77 @@ namespace vet_api_Net.Migrations
                         .HasDatabaseName("usuario_id1");
 
                     b.ToTable("movimientos_inventario", (string)null);
+                });
 
-                    MySqlEntityTypeBuilderExtensions.UseCollation(b, "utf8mb4_general_ci");
+            modelBuilder.Entity("vet_api_Net.Models.PasswordResetTicket", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Creado")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("estado");
+
+                    b.Property<DateTime>("Expiracion")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("expiracion");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("token");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "Token" }, "idx_token")
+                        .IsUnique();
+
+                    b.HasIndex(new[] { "UsuarioId" }, "idx_usuario_id");
+
+                    b.ToTable("password_reset_tickets", (string)null);
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.Producto", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Actualizado")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("actualizado")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("Actualizado"));
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("actualizado");
 
                     b.Property<int?>("CategoriaId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("categoria_id");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("codigo");
 
                     b.Property<DateTime>("Creado")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("creado")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado");
 
                     b.Property<string>("Descripcion")
                         .HasColumnType("text")
@@ -1125,56 +1068,47 @@ namespace vet_api_Net.Migrations
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)")
+                        .HasColumnType("character varying(200)")
                         .HasColumnName("nombre");
 
                     b.Property<decimal>("Precio")
                         .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)")
+                        .HasColumnType("numeric(10,2)")
                         .HasColumnName("precio");
 
                     b.Property<decimal>("PrecioVenta")
                         .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)")
+                        .HasColumnType("numeric(10,2)")
                         .HasColumnName("precio_venta");
 
                     b.Property<string>("Proveedor")
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("proveedor");
 
                     b.Property<bool?>("RequiereReceta")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("requiere_receta")
-                        .HasDefaultValueSql("'0'");
+                        .HasColumnType("boolean")
+                        .HasColumnName("requiere_receta");
 
                     b.Property<int?>("Stock")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
-                        .HasColumnName("stock")
-                        .HasDefaultValueSql("'0'");
+                        .HasColumnType("integer")
+                        .HasColumnName("stock");
 
                     b.Property<int?>("StockMinimo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
-                        .HasColumnName("stock_minimo")
-                        .HasDefaultValueSql("'5'");
+                        .HasColumnType("integer")
+                        .HasColumnName("stock_minimo");
 
                     b.Property<string>("Tipo")
                         .IsRequired()
-                        .HasColumnType("enum('medicamento','alimento','accesorio')")
+                        .HasColumnType("text")
                         .HasColumnName("tipo");
 
                     b.Property<string>("UnidadMedida")
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("varchar(20)")
-                        .HasColumnName("unidad_medida")
-                        .HasDefaultValueSql("'unidad'");
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("unidad_medida");
 
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id");
 
                     b.HasIndex(new[] { "CategoriaId" }, "categoria_id");
 
@@ -1188,29 +1122,27 @@ namespace vet_api_Net.Migrations
                     b.HasIndex(new[] { "Stock" }, "idx_stock");
 
                     b.ToTable("productos", (string)null);
-
-                    MySqlEntityTypeBuilderExtensions.UseCollation(b, "utf8mb4_general_ci");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.ReporConfig", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Days")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<bool>("GenerateEnabled")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsEnabled")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("boolean");
 
                     b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("timestamp without time zone");
 
                     b.HasKey("Id");
 
@@ -1221,97 +1153,142 @@ namespace vet_api_Net.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Categoria")
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<string>("Datos")
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Filtro")
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<string>("GeneradoPor")
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<string>("Titulo")
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.ToTable("Reportes");
                 });
 
+            modelBuilder.Entity("vet_api_Net.Models.SystemConfig", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BackendExternalUrl")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("backend_external_url");
+
+                    b.Property<string>("BcvApiUrl")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("bcv_api_url");
+
+                    b.Property<string>("FrontendUrl")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("frontend_url");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("last_updated");
+
+                    b.Property<string>("ResendApiKey")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("resend_api_key");
+
+                    b.Property<string>("ResendApiUrl")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("resend_api_url");
+
+                    b.Property<string>("ResendFromEmail")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("resend_from_email");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("system_configs");
+                });
+
             modelBuilder.Entity("vet_api_Net.Models.Usuario", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<bool?>("Activo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("activo")
-                        .HasDefaultValueSql("'1'");
+                        .HasColumnType("boolean")
+                        .HasColumnName("activo");
 
                     b.Property<DateTime>("Actualizado")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("actualizado")
-                        .HasDefaultValueSql("current_timestamp()");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlComputedColumn(b.Property<DateTime>("Actualizado"));
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("actualizado");
 
                     b.Property<string>("Apellido")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("apellido");
 
+                    b.Property<DateTime?>("CodeRecoveryExpireDate")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<DateTime>("Creado")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("creado")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("email");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("nombre");
 
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("contraseña");
+
+                    b.Property<string>("PasswordRecoveryCode")
+                        .HasColumnType("text");
 
                     b.Property<string>("Rol")
                         .IsRequired()
-                        .HasColumnType("enum('admin','doctor','secretaria')")
+                        .HasColumnType("text")
                         .HasColumnName("rol");
 
                     b.Property<DateTime?>("UltimoAcceso")
-                        .HasColumnType("datetime")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("ultimo_acceso");
 
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id");
 
                     b.HasIndex(new[] { "Email" }, "email")
                         .IsUnique()
@@ -1321,31 +1298,27 @@ namespace vet_api_Net.Migrations
                         .HasDatabaseName("idx_rol1");
 
                     b.ToTable("usuarios", (string)null);
-
-                    MySqlEntityTypeBuilderExtensions.UseCollation(b, "utf8mb4_general_ci");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.Vacuna", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("ConsultaId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("consulta_id");
 
                     b.Property<DateTime>("Creado")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp")
-                        .HasColumnName("creado")
-                        .HasDefaultValueSql("current_timestamp()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado");
 
                     b.Property<int?>("DoctorId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("doctor_id");
 
                     b.Property<DateOnly>("FechaVacunacion")
@@ -1354,11 +1327,11 @@ namespace vet_api_Net.Migrations
 
                     b.Property<string>("Lote")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("lote");
 
                     b.Property<int>("MascotaId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("mascota_id");
 
                     b.Property<string>("Nota")
@@ -1366,15 +1339,14 @@ namespace vet_api_Net.Migrations
                         .HasColumnName("nota");
 
                     b.Property<int>("ProductoId")
-                        .HasColumnType("int(11)")
+                        .HasColumnType("integer")
                         .HasColumnName("producto_id");
 
                     b.Property<DateOnly?>("ProximaDosis")
                         .HasColumnType("date")
                         .HasColumnName("proxima_dosis");
 
-                    b.HasKey("Id")
-                        .HasName("PRIMARY");
+                    b.HasKey("Id");
 
                     b.HasIndex(new[] { "ConsultaId" }, "consulta_id")
                         .HasDatabaseName("consulta_id1");
@@ -1390,23 +1362,21 @@ namespace vet_api_Net.Migrations
                         .HasDatabaseName("producto_id2");
 
                     b.ToTable("vacunas", (string)null);
-
-                    MySqlEntityTypeBuilderExtensions.UseCollation(b, "utf8mb4_general_ci");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.WSMessageAPIData", b =>
                 {
                     b.Property<string>("ClientId")
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ApiKey")
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<string>("Message")
-                        .HasColumnType("longtext");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("Update")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("timestamp without time zone");
 
                     b.HasKey("ClientId");
 
@@ -1680,6 +1650,18 @@ namespace vet_api_Net.Migrations
                     b.Navigation("Usuario");
                 });
 
+            modelBuilder.Entity("vet_api_Net.Models.PasswordResetTicket", b =>
+                {
+                    b.HasOne("vet_api_Net.Models.Usuario", "Usuario")
+                        .WithMany("PasswordResetTickets")
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_password_reset_usuario");
+
+                    b.Navigation("Usuario");
+                });
+
             modelBuilder.Entity("vet_api_Net.Models.Producto", b =>
                 {
                     b.HasOne("vet_api_Net.Models.CategoriasProducto", "Categoria")
@@ -1818,6 +1800,8 @@ namespace vet_api_Net.Migrations
                     b.Navigation("MensajesReceptor");
 
                     b.Navigation("MovimientosInventarios");
+
+                    b.Navigation("PasswordResetTickets");
 
                     b.Navigation("Vacunas");
                 });

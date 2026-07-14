@@ -28,69 +28,69 @@ public class InvoiceExternalService : IInvoiceExternalService
     }
 
     public async Task<InvoiceDispatchResponseDTO> VerifyAndDispatchInvoiceByCitaAsync(int citaId)
-{
-    var cita = await _repository.GetCitaWithDetailsAsync(citaId)
-        ?? throw new KeyNotFoundException(ResponseMessagesWSMessageAPI.CitaNotFound);
-
-    if (cita.Estado != Status.Completed)
     {
-        throw new InvalidOperationException(ResponseMessagesFacturaErrors.OnlyCitaAllowed);
+        var cita = await _repository.GetCitaWithDetailsAsync(citaId)
+            ?? throw new KeyNotFoundException(ResponseMessagesWSMessageAPI.CitaNotFound);
+
+        if (cita.Estado != Status.Completed)
+        {
+            throw new InvalidOperationException(ResponseMessagesFacturaErrors.OnlyCitaAllowed);
+        }
+
+        var consulta = await _repository.GetConsultaByCitaOrPetAsync(cita.Id, cita.MascotaId)
+            ?? throw new KeyNotFoundException(ResponseMessagesWSMessageAPI.ConsultaNotFound);
+
+        var factura = await _repository.GetFacturaByConsultaIdAsync(consulta.Id)
+            ?? throw new KeyNotFoundException(ResponseMessagesWSMessageAPI.FacturaNotFound);
+
+        var cliente = consulta.Mascota?.Cliente ?? cita.Mascota?.Cliente;
+        if (cliente == null || string.IsNullOrWhiteSpace(cliente.Telefono))
+        {
+            throw new InvalidOperationException(ResponseMessagesWSMessageAPI.ClientErrorNumberPhone);
+        } 
+        
+        var whatsappConfig = await _wsmRepository.GetWSMessageAPIDataAsync();
+        string dbClientId = whatsappConfig?.ClientId ?? string.Empty;
+
+        string petName = consulta.Mascota?.Nombre ?? cita.Mascota?.Nombre ?? ResponseMessagesWSMessageAPI.PetsDefault;
+        string dbMessage = whatsappConfig?.Message ?? ResponseMessagesWSMessageAPI.MessageTempleteDefault;
+
+        string finalMessage = GetPersonalizedMessage(dbMessage, petName);
+
+        var clientFullName = $"{cliente.Nombre} {cliente.Apellido}".Trim();
+        var payload = new WSMessageDTO
+        {
+            ClientId = dbClientId,
+            Numero = cliente.Telefono,
+            Cliente = clientFullName,
+            NombreEmpresa = _apiSettings.SystemName!,
+            Mensaje = finalMessage, 
+            Url = !string.IsNullOrWhiteSpace(factura.UrlDocx)
+                ? factura.UrlDocx
+                : $"https://g27frlv5-5168.use2.devtunnels.ms/facturas/{factura.NumeroFactura}.pdf"
+        };
+
+        bool dispatchResult = await _wsMessageService.EnviarComprobanteAsync(payload);
+
+        return new InvoiceDispatchResponseDTO
+        {
+            InvoiceId = factura.Id,
+            InvoiceNumber = factura.NumeroFactura,
+            IsDispatched = dispatchResult,
+            ClientName = clientFullName,
+            DestinationPhone = cliente.Telefono
+        };
     }
-
-    var consulta = await _repository.GetConsultaByCitaOrPetAsync(cita.Id, cita.MascotaId)
-        ?? throw new KeyNotFoundException(ResponseMessagesWSMessageAPI.ConsultaNotFound);
-
-    var factura = await _repository.GetFacturaByConsultaIdAsync(consulta.Id)
-        ?? throw new KeyNotFoundException(ResponseMessagesWSMessageAPI.FacturaNotFound);
-
-    var cliente = consulta.Mascota?.Cliente ?? cita.Mascota?.Cliente;
-    if (cliente == null || string.IsNullOrWhiteSpace(cliente.Telefono))
-    {
-        throw new InvalidOperationException(ResponseMessagesWSMessageAPI.ClientErrorNumberPhone);
-    } 
-    
-    var whatsappConfig = await _wsmRepository.GetWSMessageAPIDataAsync();
-    string dbClientId = whatsappConfig?.ClientId ?? string.Empty;
-
-    string petName = consulta.Mascota?.Nombre ?? cita.Mascota?.Nombre ?? ResponseMessagesWSMessageAPI.PetsDefault;
-    string dbMessage = whatsappConfig?.Message ?? ResponseMessagesWSMessageAPI.MessageTempleteDefault;
-
-    string finalMessage = GetPersonalizedMessage(dbMessage, petName);
-
-    var clientFullName = $"{cliente.Nombre} {cliente.Apellido}".Trim();
-    var payload = new WSMessageDTO
-    {
-        ClientId = dbClientId,
-        Numero = cliente.Telefono,
-        Cliente = clientFullName,
-        NombreEmpresa = _apiSettings.SystemName!,
-        Mensaje = finalMessage, 
-        Url = !string.IsNullOrWhiteSpace(factura.UrlDocx)
-            ? factura.UrlDocx
-            : $"https://g27frlv5-5168.use2.devtunnels.ms/facturas/{factura.NumeroFactura}.pdf"
-    };
-
-    bool dispatchResult = await _wsMessageService.EnviarComprobanteAsync(payload);
-
-    return new InvoiceDispatchResponseDTO
-    {
-        InvoiceId = factura.Id,
-        InvoiceNumber = factura.NumeroFactura,
-        IsDispatched = dispatchResult,
-        ClientName = clientFullName,
-        DestinationPhone = cliente.Telefono
-    };
-}
-private string GetPersonalizedMessage(string dbMessage, string petName)
-{ 
-    if (dbMessage.Contains("{0}"))
-    {
-        return string.Format(dbMessage, petName);
-    } 
-    if (dbMessage.Contains(ResponseMessagesWSMessageAPI.PetsDefault, StringComparison.OrdinalIgnoreCase))
-    {
-        return dbMessage.Replace(ResponseMessagesWSMessageAPI.PetsDefault, $"{ResponseMessagesWSMessageAPI.PetsDefault} {petName}", StringComparison.OrdinalIgnoreCase);
-    } 
-    return $"{dbMessage} ({petName})";
-}
+    private string GetPersonalizedMessage(string dbMessage, string petName)
+    { 
+        if (dbMessage.Contains("{0}"))
+        {
+            return string.Format(dbMessage, petName);
+        } 
+        if (dbMessage.Contains(ResponseMessagesWSMessageAPI.PetsDefault, StringComparison.OrdinalIgnoreCase))
+        {
+            return dbMessage.Replace(ResponseMessagesWSMessageAPI.PetsDefault, $"{ResponseMessagesWSMessageAPI.PetsDefault} {petName}", StringComparison.OrdinalIgnoreCase);
+        } 
+        return $"{dbMessage} ({petName})";
+    }
 }

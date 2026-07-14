@@ -1,17 +1,19 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DTOs;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Hosting;
+using vet_api_Net.Constants;
 using vet_api_Net.Data;
 using vet_api_Net.Interfaze.Services;
-using DTOs;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using System.Linq;
+using vet_api_Net.Services;
 using vet_api_Net.WorkerSettings;
 
 namespace vet_api_Net.Worker
@@ -30,7 +32,6 @@ namespace vet_api_Net.Worker
             _env = env ?? throw new ArgumentNullException(nameof(env));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _services = services ?? throw new ArgumentNullException(nameof(services));
-
             try
             {
                 var section = config.GetSection("WorkerSettings:DeleteFacturaWorker");
@@ -44,13 +45,23 @@ namespace vet_api_Net.Worker
                     var units = setting.IntervalUnits.Trim().ToLowerInvariant();
                     switch (units)
                     {
-                        case "s": case "sec": case "second": case "seconds":
+                        case "s":
+                        case "sec":
+                        case "second":
+                        case "seconds":
                             _scanInterval = TimeSpan.FromSeconds(setting.IntervalValues); break;
-                        case "m": case "min": case "minute": case "minutes":
+                        case "m":
+                        case "min":
+                        case "minute":
+                        case "minutes":
                             _scanInterval = TimeSpan.FromMinutes(setting.IntervalValues); break;
-                        case "h": case "hour": case "hours":
+                        case "h":
+                        case "hour":
+                        case "hours":
                             _scanInterval = TimeSpan.FromHours(setting.IntervalValues); break;
-                        case "d": case "day": case "days":
+                        case "d":
+                        case "day":
+                        case "days":
                             _scanInterval = TimeSpan.FromDays(setting.IntervalValues); break;
                         default:
                             _scanInterval = TimeSpan.FromMinutes(setting.IntervalValues); break;
@@ -66,13 +77,23 @@ namespace vet_api_Net.Worker
                     var units = setting.RetentionUnits.Trim().ToLowerInvariant();
                     switch (units)
                     {
-                        case "s": case "sec": case "second": case "seconds":
+                        case "s":
+                        case "sec":
+                        case "second":
+                        case "seconds":
                             _threshold = TimeSpan.FromSeconds(setting.RetentionValues); break;
-                        case "m": case "min": case "minute": case "minutes":
+                        case "m":
+                        case "min":
+                        case "minute":
+                        case "minutes":
                             _threshold = TimeSpan.FromMinutes(setting.RetentionValues); break;
-                        case "h": case "hour": case "hours":
+                        case "h":
+                        case "hour":
+                        case "hours":
                             _threshold = TimeSpan.FromHours(setting.RetentionValues); break;
-                        case "d": case "day": case "days":
+                        case "d":
+                        case "day":
+                        case "days":
                             _threshold = TimeSpan.FromDays(setting.RetentionValues); break;
                         default:
                             _threshold = TimeSpan.FromMinutes(setting.RetentionValues); break;
@@ -117,6 +138,7 @@ namespace vet_api_Net.Worker
                         using var scope = _services.CreateScope();
                         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                         var messagingService = scope.ServiceProvider.GetService<IMessagingService>();
+                        var notificationsPushService = scope.ServiceProvider.GetRequiredService<INotificationsPushService>();
                         var dbSetting = await db.FacturaConfigs.FirstOrDefaultAsync(stoppingToken);
 
                         var effectiveThreshold = _threshold;
@@ -143,6 +165,7 @@ namespace vet_api_Net.Worker
                                         .Where(u => u.Rol == "secretaria" && (u.Activo == null || u.Activo == true))
                                         .ToListAsync();
 
+
                                     var messageText = $"La factura {fileName} ha expirado y fue eliminada automáticamente.";
 
                                     if (botId.HasValue && messagingService != null)
@@ -167,6 +190,7 @@ namespace vet_api_Net.Worker
                                     {
                                         var escapedName = Uri.EscapeDataString(fileName);
                                         var facturasToUpdate = await db.Facturas
+                                            .Include(f => f.Cliente)
                                             .Where(f => !string.IsNullOrEmpty(f.UrlDocx) && (EF.Functions.Like(f.UrlDocx, "%" + fileName + "%") || EF.Functions.Like(f.UrlDocx, "%" + escapedName + "%")))
                                             .ToListAsync();
 
@@ -178,6 +202,22 @@ namespace vet_api_Net.Worker
                                                 db.Facturas.Update(fac);
                                             }
                                             await db.SaveChangesAsync();
+                                            var clienteName = "Cliente";
+                                            var firstFac = facturasToUpdate.FirstOrDefault();
+                                            if (firstFac?.Cliente != null)
+                                            {
+                                                clienteName = $"{firstFac.Cliente.Nombre} {firstFac.Cliente.Apellido}".Trim();
+                                            }
+
+                                            var data = new PushNotificationDTO
+                                            {
+                                                Message = ResponseMessagesFactura.DeleteReceiptsNotificactionDesc.Replace("${cliente_name}", clienteName),
+                                                Type = ResponseMessageNotificactionPush.Worker,
+                                                Title = ResponseMessagesFactura.DeleteReceiptsNotificactionTittle,
+                                                UserId = ResponseMessageNotificactionPush.Admin,
+                                                NameUser = ResponseMessageNotificactionPush.Admin
+                                            };
+                                            await notificationsPushService.SendNotificationAsync(data);
                                         }
                                     }
                                     catch (Exception exUpd)
