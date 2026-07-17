@@ -116,6 +116,9 @@ public async Task<(Producto Product, bool HasChanges)> UpdateProductAsync(int id
     if ((updatedProductDto.Precio.HasValue && updatedProductDto.Precio < 0) || (updatedProductDto.PrecioVenta.HasValue && updatedProductDto.PrecioVenta < 0))
         throw new ArgumentException(ResponseMessagesProduct.ProductCantNegative);
 
+    if (updatedProductDto.PrecioVenta < updatedProductDto.Precio)
+        throw new ArgumentException(ResponseMessagesProduct.ProductCantEqualOrLessThan);
+
     var existingProduct = await _repository.GetProductByIdAsync(id);
     if (existingProduct == null)
         throw new KeyNotFoundException(ResponseMessagesProduct.ProductNotFound);
