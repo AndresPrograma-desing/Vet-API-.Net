@@ -10,5 +10,11 @@ namespace DTOs
 
         [JsonPropertyName("newUserName")]
         public string? NewUserName { get; set; }
+
+        [JsonPropertyName("newLastName")]
+        public string? NewLastName { get; set; }
+        [JsonPropertyName("email")]
+        public string? NewEmail { get; set; }
+        public string? NewPhone { get; set; }
     }
 }

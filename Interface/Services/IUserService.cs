@@ -25,5 +25,7 @@ public interface IUserService
     Task<List<ResetStatusResponseDTO>> GetPendingPasswordResetsAsync();
     Task<bool> AssignNewPasswordAsync(string email, string newPassword);
     Task<string?> GetTemplatePasswordResetPage(string message);
-    Task<ChangeNameUsersDTO?> ChangeNameUsersAsync(int id, string newName);
+    Task<ChangeNameUsersDTO?> ChangeNameUsersAsync(int id, string newName, string newLastName, string newEmail, string newPhone);
+    Task<Usuario?> SaveAvatarUrl(int userId, string avatarUrl);
+    // Task<Usuario?> UpdateUserDataAsync(int id, Usuario userDto);
 }

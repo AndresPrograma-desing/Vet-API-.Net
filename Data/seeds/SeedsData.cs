@@ -96,11 +96,32 @@ namespace vet_api_Net.Data.seeds
                         Rol = userEntry.Rol,
                         Nombre = userEntry.Nombre,
                         Apellido = userEntry.Apellido,
+                        AvatarUrl = userEntry.AvatarUrl,
                         Activo = true,
                         Creado = DateTime.Now,
                         Actualizado = DateTime.Now
                     });
                 }
+                context.SaveChanges();
+            }
+
+            // Asegurar que el usuario de Groq / Asistente IA existe en la BD
+            var groqEmail = "groq@happy-pets.dev";
+            var groqUser = context.Usuarios.FirstOrDefault(u => u.Email == groqEmail);
+            if (groqUser == null)
+            {
+                context.Usuarios.Add(new Usuario
+                {
+                    Nombre = "Asistente Groq",
+                    Apellido = "IA",
+                    Email = groqEmail,
+                    Password = BCrypt.Net.BCrypt.HashPassword("groq_secure_system_pass_123!"),
+                    Rol = "assistant",
+                    AvatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=groq",
+                    Activo = true,
+                    Creado = DateTime.Now,
+                    Actualizado = DateTime.Now
+                });
                 context.SaveChanges();
             }
 
@@ -586,7 +607,28 @@ namespace vet_api_Net.Data.seeds
             context.Consultas.AddRange(consultas);
             context.SaveChanges();
 
-
+            // Seed a vaccine for mascotas[0] to test the clinical history service with vaccines data.
+            var vaccineProduct = context.Productos.FirstOrDefault(p => p.Codigo == "P-001");
+            if (vaccineProduct != null)
+            {
+                var vacunas = new List<Vacuna>
+                {
+                    new Vacuna
+                    {
+                        MascotaId = mascotas[0].Id,
+                        ProductoId = vaccineProduct.Id,
+                        ConsultaId = consultas[0].Id,
+                        FechaVacunacion = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1)),
+                        ProximaDosis = DateOnly.FromDateTime(DateTime.Now.AddMonths(11)),
+                        Lote = "LOT-12345",
+                        DoctorId = doctor.Id,
+                        Nota = "Refuerzo anual administrado",
+                        Creado = DateTime.Now
+                    }
+                };
+                context.Vacunas.AddRange(vacunas);
+                context.SaveChanges();
+            }
 
             if (!context.SystemConfigs.Any())
             {
@@ -601,6 +643,20 @@ namespace vet_api_Net.Data.seeds
                     LastUpdated = DateTime.UtcNow
                 };
                 context.SystemConfigs.Add(systemConfig);
+                context.SaveChanges();
+            }
+
+            if (!context.IaConocimientos.Any())
+            {
+                var defaultIaConfig = new IaConocimiento
+                {
+                    Categoria = "general",
+                    ReglasRespuesta = "1. Responder con tono profesional y empático.\n2. Si hay dudas médicas complejas, sugerir consultar con un veterinario.",
+                    BaseConocimiento = "Happy Pets es una clínica veterinaria con servicios de consulta, vacunación y hospitalización. Contamos con médicos especialistas en caninos y felinos.",
+                    Creado = DateTime.Now,
+                    Actualizado = DateTime.Now
+                };
+                context.IaConocimientos.Add(defaultIaConfig);
                 context.SaveChanges();
             }
         }

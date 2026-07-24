@@ -1,13 +1,13 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
+using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using System;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using vet_api_Net.Constants;
-using vet_api_Net.Routes;
-using vet_api_Net.Interfaze.Services;
 using vet_api_Net.DTOs;
 using vet_api_Net.Infrastructure.Configuration;
+using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Routes;
 
 namespace vet_api_Net.Controllers;
 
@@ -53,7 +53,7 @@ public class AuthController : ControllerBase
         catch (InvalidOperationException ex)
         {
             var error = ex;
-            
+
             return BadRequest(new { error = ex.Message });
         }
         catch (Exception ex)
@@ -75,7 +75,7 @@ public class AuthController : ControllerBase
             }
 
             var user = await _authService.GetUserByIdAsync(userId);
-            if (user == null) 
+            if (user == null)
             {
                 return Unauthorized(new { error = ResponseMessagesUsers.UserNotFound });
             }
@@ -89,7 +89,9 @@ public class AuthController : ControllerBase
                 id = user.Id.ToString(),
                 name,
                 email = user.Email,
+                phone = user.Telefono,
                 rol = user.Rol,
+                avatar = user.AvatarUrl,
                 doctor_id = (int?)null
             });
         }

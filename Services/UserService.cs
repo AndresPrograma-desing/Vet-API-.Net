@@ -24,9 +24,9 @@ public class UserService : IUserService
     private readonly ApiSettingsOptions _apiSettings;
 
     public UserService(
-        IPasswordResetTicketRepository ticketRepository, 
+        IPasswordResetTicketRepository ticketRepository,
         IUsersRepository userRepository,
-        IEmailSenderService emailSenderService, 
+        IEmailSenderService emailSenderService,
         IHubContext<NotificactionsPush> hubContext,
         IEmailTemplateRepository templateRepository,
         IOptions<TemplatesHTML> templatesHTML,
@@ -45,14 +45,14 @@ public class UserService : IUserService
     {
         var rows = await _userRepository.GetAllUsersAsync();
 
- 
+
         rows.ForEach(u => u.Password = string.Empty);
         return rows;
     }
 
     public async Task<Usuario?> VerifyCredentialsAsync(string email, string password)
     {
-         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrEmpty(password))
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrEmpty(password))
             return null;
 
         var user = await _userRepository.GetByEmailAsync(email);
@@ -60,7 +60,7 @@ public class UserService : IUserService
 
         var stored = user.Password ?? string.Empty;
         bool valid = false;
- 
+
         if (stored.StartsWith("$2a$") || stored.StartsWith("$2b$") || stored.StartsWith("$2y$") || stored.StartsWith("$2x$"))
         {
             try
@@ -74,7 +74,7 @@ public class UserService : IUserService
         }
         else
         {
- 
+
             if (string.Equals(password, stored, StringComparison.Ordinal))
             {
                 valid = true;
@@ -94,19 +94,62 @@ public class UserService : IUserService
 
     public async Task<Usuario> CreateUserAsync(CreateUserDTO userDto)
     {
+        if (userDto == null)
+        {
+            throw new ArgumentNullException(nameof(userDto));
+        }
+
+        if (string.IsNullOrWhiteSpace(userDto.Email))
+        {
+            throw new ArgumentException(ResponseMessagesUsers.EmailRequired);
+        }
+
+        if (string.IsNullOrWhiteSpace(userDto.Nombre) || string.IsNullOrWhiteSpace(userDto.Apellido))
+        {
+            throw new ArgumentException(ResponseMessagesUsers.NameRequired);
+        }
+
+        var existingUserByEmail = await _userRepository.GetByEmailAsync(userDto.Email);
+        if (existingUserByEmail != null)
+        {
+            throw new InvalidOperationException(ResponseMessagesUsers.ExistingEmail);
+        }
+
+        var existingUserByName = await _userRepository.GetByNameAndApellidoAsync(userDto.Nombre, userDto.Apellido);
+        if (existingUserByName != null)
+        {
+            throw new InvalidOperationException(ResponseMessagesUsers.ExistingUsername);
+        }
+
         var user = new Usuario
         {
-            Nombre = userDto.Nombre,
-            Apellido = userDto.Apellido,
-            Email = userDto.Email,
+            Nombre = userDto.Nombre.Trim(),
+            Apellido = userDto.Apellido.Trim(),
+            Email = userDto.Email.Trim(),
+            Telefono = userDto.Telefono?.Trim() ?? string.Empty,
             Password = string.IsNullOrWhiteSpace(userDto.Password) ? string.Empty : BCrypt.Net.BCrypt.HashPassword(userDto.Password),
             Rol = userDto.Rol,
-            Activo = true
+            Activo = true,
+            Creado = DateTime.Now,
+            Actualizado = DateTime.Now
         };
 
-        await _userRepository.AddUserAsync(user);
-        await _userRepository.SaveChangesAsync();
- 
+        try
+        {
+            await _userRepository.AddUserAsync(user);
+            await _userRepository.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            var detailMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+            throw new InvalidOperationException(detailMessage, ex);
+        }
+        catch (Exception ex)
+        {
+            var detailMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+            throw new Exception(detailMessage, ex);
+        }
+
         user.Password = string.Empty;
         return user;
     }
@@ -118,39 +161,50 @@ public class UserService : IUserService
         return rows;
     }
 
-public async Task<Usuario?> UpdateUserStatusAsync(int id, bool status)
-{
-    var user = await _userRepository.GetByIdAsync(id);
-    if (user == null) return null;
-
-    user.Activo = status;
-    
-    await _userRepository.SaveChangesAsync();
-
-    user.Password = string.Empty; 
-    return user;
-}
-
-public async Task<Usuario?> DisableUserAsync(int id) => await UpdateUserStatusAsync(id, false);
-public async Task<Usuario?> EnableUserAsync(int id) => await UpdateUserStatusAsync(id, true);
-
-public async Task<Usuario?> DeleteUserAsync(int id)
+    public async Task<Usuario?> UpdateUserStatusAsync(int id, bool status)
     {
         var user = await _userRepository.GetByIdAsync(id);
         if (user == null) return null;
 
-        await _userRepository.DeleteUserAsync(user);
+        user.Activo = status;
+
         await _userRepository.SaveChangesAsync();
 
-        user.Password = string.Empty; 
+        user.Password = string.Empty;
+        return user;
+    }
+
+    public async Task<Usuario?> DisableUserAsync(int id) => await UpdateUserStatusAsync(id, false);
+    public async Task<Usuario?> EnableUserAsync(int id) => await UpdateUserStatusAsync(id, true);
+
+    public async Task<Usuario?> DeleteUserAsync(int id)
+    {
+        var user = await _userRepository.GetByIdAsync(id);
+        if (user == null) return null;
+        try
+        {
+            await _userRepository.DeleteUserAsync(user);
+            await _userRepository.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new InvalidOperationException(ResponseMessagesUsers.CannotDeleteUserWithDependencies, ex);
+        }
+        catch (Exception ex)
+        {
+            var detailMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+            throw new Exception(detailMessage, ex);
+        }
+
+        user.Password = string.Empty;
         return user;
     }
     public async Task<string?> UserStatusAsync(int id)
     {
         var user = await _userRepository.GetByIdAsync(id);
         if (user == null) return null;
-        
-     return (user.Activo ?? false) ? ResponseMessagesUsers.UsersVariable.UserStatusActivo : ResponseMessagesUsers.UsersVariable.UserStatusInactivo;
+
+        return (user.Activo ?? false) ? ResponseMessagesUsers.UsersVariable.UserStatusActivo : ResponseMessagesUsers.UsersVariable.UserStatusInactivo;
     }
 
     public async Task<bool> RequestPasswordResetAsync(string email, string resetLinkBase)
@@ -167,7 +221,7 @@ public async Task<Usuario?> DeleteUserAsync(int id)
 
         user.Activo = false;
         _userRepository.Update(user);
-        
+
         var ticket = new PasswordResetTicket
         {
             UsuarioId = user.Id,
@@ -182,7 +236,7 @@ public async Task<Usuario?> DeleteUserAsync(int id)
         await _ticketRepository.SaveChangesAsync();
 
         string confirmLink = $"{resetLinkBase}?token={ticket.Token}";
-        
+
         var template = await _templateRepository.GetTemplateByTypeAsync(_templatesHTML.ConfirmChangePass ?? string.Empty);
         if (template == null) throw new InvalidOperationException("Template HTML no encontrado.");
 
@@ -273,19 +327,35 @@ public async Task<Usuario?> DeleteUserAsync(int id)
         if (template == null) throw new InvalidOperationException("Template HTML no encontrado.");
         return template.HtmlCode.Replace("{message}", message);
     }
-    public async Task<ChangeNameUsersDTO?> ChangeNameUsersAsync(int id, string newName)
+    public async Task<ChangeNameUsersDTO?> ChangeNameUsersAsync(int id, string newName, string newLastName, string newEmail, string newPhone)
     {
         try
         {
-            var userName = await _userRepository.ChangeNameUsersAsync(id, newName);
+            var userName = await _userRepository.ChangeNameUsersAsync(id, newName, newLastName, newEmail, newPhone);
 
             if (userName == null) return null;
 
             return new ChangeNameUsersDTO
             {
                 IdUser = userName.IdUser,
-                NewUserName = userName.NewUserName
-            }; 
+                NewUserName = userName.NewUserName,
+                NewLastName = userName.NewLastName,
+                NewEmail = userName.NewEmail,
+                NewPhone = userName.NewPhone,
+            };
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(ex.Message);
+        }
+    }
+    public async Task<Usuario?> SaveAvatarUrl(int userId, string avatarUrl)
+    {
+        try
+        {
+            var user = await _userRepository.SaveAvatarUrl(userId, avatarUrl);
+            if (user == null) throw new InvalidOperationException(ResponseMessagesUsers.UserNotFound);
+            return user;
         }
         catch (Exception ex)
         {
@@ -293,4 +363,3 @@ public async Task<Usuario?> DeleteUserAsync(int id)
         }
     }
 }
-    

@@ -8,6 +8,7 @@ public interface IUsersRepository
 {
     Task<Usuario?> GetByEmailAndRolAsync(string email, string rol);
     Task<Usuario?> GetByEmailAsync(string email);
+    Task<Usuario?> GetByNameAndApellidoAsync(string nombre, string apellido);
     Task<Usuario?> GetByIdAsync(int id);
     void Update(Usuario usuario);
     Task<bool> SaveChangesAsync();
@@ -17,6 +18,6 @@ public interface IUsersRepository
     Task<List<Usuario>> GetUsersByRoleAsync(string role);
     Task AddUserAsync(Usuario user);
     Task DeleteUserAsync(Usuario user);
-    Task<ChangeNameUsersDTO?> ChangeNameUsersAsync(int id, string newName);
-
+    Task<ChangeNameUsersDTO?> ChangeNameUsersAsync(int id, string newName, string newLastName, string newEmail, string newPhone);
+    Task<Usuario?> SaveAvatarUrl(int userId, string avatarUrl);
 }
