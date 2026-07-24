@@ -26,9 +26,19 @@ public class UsersRepository : IUsersRepository
         return await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email);
     }
 
+    public async Task<Usuario?> GetByNameAndApellidoAsync(string nombre, string apellido)
+    {
+        return await _context.Usuarios.FirstOrDefaultAsync(u => u.Nombre == nombre && u.Apellido == apellido);
+    }
+
     public async Task<Usuario?> GetByIdAsync(int id)
     {
-        return await _context.Usuarios.FindAsync(id);
+        var users = await _context.Usuarios
+        .Where(u => u.Rol != "assistant")
+        .Where(u => u.Id == id)
+        .FirstOrDefaultAsync();
+
+        return users;
     }
 
     public void Update(Usuario usuario)
@@ -41,17 +51,17 @@ public class UsersRepository : IUsersRepository
         return await _context.SaveChangesAsync() > 0;
     }
 
-   public async Task<bool> IsUserDisabledAsync(string email)
-{
-    var user = await _context.Usuarios
-        .Where(u => u.Email == email)
-        .Select(u => new { u.Activo }) 
-        .FirstOrDefaultAsync();
+    public async Task<bool> IsUserDisabledAsync(string email)
+    {
+        var user = await _context.Usuarios
+            .Where(u => u.Email == email)
+            .Select(u => new { u.Activo })
+            .FirstOrDefaultAsync();
 
-    if (user == null) return false;
+        if (user == null) return false;
 
-    return user.Activo == null || user.Activo == false;
-}
+        return user.Activo == null || user.Activo == false;
+    }
 
     public async Task<string?> GetRoleByEmailAsync(string email)
     {
@@ -62,34 +72,50 @@ public class UsersRepository : IUsersRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<ChangeNameUsersDTO?> ChangeNameUsersAsync(int id, string newName)
+    public async Task<ChangeNameUsersDTO?> ChangeNameUsersAsync(int id, string newName, string newLastName, string newEmail, string newPhone)
     {
         var user = await _context.Usuarios.FindAsync(id);
         if (user == null) return null;
 
-        if (user.Nombre == newName)
+        string cleanName = (newName ?? "").Trim();
+        string cleanLastName = (newLastName ?? "").Trim();
+        string cleanEmail = (newEmail ?? "").Trim();
+        string cleanPhone = (newPhone ?? "").Trim();
+
+        if (string.IsNullOrEmpty(cleanName)) cleanName = user.Nombre;
+        if (string.IsNullOrEmpty(cleanLastName)) cleanLastName = user.Apellido;
+        if (string.IsNullOrEmpty(cleanEmail)) cleanEmail = user.Email;
+        if (string.IsNullOrEmpty(cleanPhone)) cleanPhone = user.Telefono;
+
+        bool hasChanges = user.Nombre != cleanName ||
+                          user.Apellido != cleanLastName ||
+                          user.Email != cleanEmail ||
+                          user.Telefono != cleanPhone;
+
+        if (hasChanges)
         {
-            return new ChangeNameUsersDTO
-            {
-                IdUser = user.Id,
-                NewUserName = user.Nombre
-            };
+            user.Nombre = cleanName;
+            user.Apellido = cleanLastName;
+            user.Email = cleanEmail;
+            user.Telefono = cleanPhone;
+            user.Actualizado = DateTime.Now;
+            await _context.SaveChangesAsync();
         }
 
-        user.Nombre = newName;
-        user.Actualizado = DateTime.Now;
-        await _context.SaveChangesAsync();
-        
         return new ChangeNameUsersDTO
         {
             IdUser = user.Id,
-            NewUserName = user.Nombre
+            NewUserName = user.Nombre,
+            NewLastName = user.Apellido,
+            NewEmail = user.Email,
+            NewPhone = user.Telefono
         };
     }
 
     public async Task<List<Usuario>> GetAllUsersAsync()
     {
         return await _context.Usuarios
+            .Where(u => u.Rol != "assistant")
             .OrderBy(u => u.Id)
             .ToListAsync();
     }
@@ -112,5 +138,16 @@ public class UsersRepository : IUsersRepository
     {
         _context.Usuarios.Remove(user);
         return Task.CompletedTask;
+    }
+
+    public async Task<Usuario?> SaveAvatarUrl(int userId, string avatarUrl)
+    {
+        var user = await _context.Usuarios.FindAsync(userId);
+        if (user == null) return null;
+
+        user.AvatarUrl = avatarUrl;
+        user.Actualizado = DateTime.Now;
+        await _context.SaveChangesAsync();
+        return user;
     }
 }

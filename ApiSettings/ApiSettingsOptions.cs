@@ -10,6 +10,9 @@ public class ApiSettingsOptions
     public string? ApiName { get; set; }
     public string? SystemName { get; set; }
     public int PasswordRecoveryExpirationMinutes { get; set; } = 1;
+    public string? GroqApiKey { get; set; }
+    public string? GroqApiUrl { get; set; }
+    public string? GroqModel { get; set; }
 }
 
 public class TokenTemporalOptions
@@ -37,6 +40,7 @@ public class UserData
     public string Rol { get; set; } = string.Empty;
     public string Nombre { get; set; } = string.Empty;
     public string Apellido { get; set; } = string.Empty;
+    public string? AvatarUrl { get; set; }
 }
 public class TemplatesHTML
 {
@@ -48,4 +52,12 @@ public class TemplatesHTML
     public string? ConfirmChangePassPage { get; set; }
     public string? BirthdayPets { get; set; }
 
+}
+
+public class SupabaseSettingsOptions
+{
+    public const string SectionName = "Supabase";
+    public string? Url { get; set; }
+    public string? Key { get; set; }
+    public string? Bucket { get; set; } = "avatars";
 }

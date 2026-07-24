@@ -1,6 +1,7 @@
 using DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Models;
@@ -14,15 +15,18 @@ namespace vet_api_Net.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly ILogger<UsersController> _logger;
 
-    public UsersController(IUserService userService)
+    public UsersController(IUserService userService, ILogger<UsersController> logger)
     {
         _userService = userService;
+        _logger = logger;
     }
 
     [Authorize]
     [HttpGet]
-    public async Task<IActionResult> GetAllUsers(){
+    public async Task<IActionResult> GetAllUsers()
+    {
         try
         {
             var users = await _userService.GetAllUserAsync();
@@ -44,6 +48,14 @@ public class UsersController : ControllerBase
             var user = await _userService.CreateUserAsync(userDto);
             return Ok(user);
         }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
         catch (Exception ex)
         {
             return StatusCode(500, new { error = ex.Message });
@@ -51,7 +63,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet(Endpoints.Users.Secretaries)]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,secretaria,doctor")]
     public async Task<IActionResult> GetSecretarias()
     {
         try
@@ -66,11 +78,11 @@ public class UsersController : ControllerBase
         }
     }
 
-  [HttpPatch(Endpoints.Users.UserDisabled)]
+    [HttpPatch(Endpoints.Users.UserDisabled)]
     public async Task<IActionResult> Disable(int id)
     {
         var user = await _userService.DisableUserAsync(id);
-        
+
         if (user == null)
         {
             return NotFound(new { message = $"{ResponseMessagesUsersController.UserIdNotFound} {id}" });
@@ -83,7 +95,7 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> Enable(int id)
     {
         var user = await _userService.EnableUserAsync(id);
-        
+
         if (user == null)
         {
             return NotFound(new { message = $"{ResponseMessagesUsersController.UserIdNotFound} {id}" });
@@ -95,15 +107,31 @@ public class UsersController : ControllerBase
     [HttpDelete(Endpoints.Users.Delete)]
     public async Task<IActionResult> Delete(int id)
     {
-        var user = await _userService.DeleteUserAsync(id);
-        
-        if (user == null)
+        try
         {
-            return NotFound(new { message = $"{ResponseMessagesUsersController.UserIdNotFound} {id}" });
-        }
+            var user = await _userService.DeleteUserAsync(id);
 
-        return Ok(new { message = ResponseMessagesUsers.DeletingUser(id) });
-}
+            if (user == null)
+            {
+                _logger.LogInformation($"Usuario {id} no encontrado");
+                return NotFound(new { message = $"{ResponseMessagesUsersController.UserIdNotFound} {id}" });
+            }
+
+            return Ok(new { message = ResponseMessagesUsers.DeletingUser(id) });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
 
     [HttpGet(Endpoints.Users.Status)]
     public async Task<IActionResult> GetStatus(int id)
@@ -129,7 +157,7 @@ public class UsersController : ControllerBase
         {
             var baseUrl = $"{Request.Scheme}://{Request.Host}/api/users/confirm-ticket";
             var result = await _userService.RequestPasswordResetAsync(request.Email, baseUrl);
-            
+
             if (!result) return BadRequest(new { error = ResponseMessagesUsers.UserNotFound });
 
             return Ok(new { message = ResponseMessagesUsers.PasswordResetTicketCreated });
@@ -219,7 +247,7 @@ public class UsersController : ControllerBase
             return StatusCode(500, new { error = ex.Message });
         }
     }
-    
+
     [HttpPatch(Endpoints.Users.UpdateUserName)]
     public async Task<IActionResult> UpdateUserName([FromBody] ChangeNameUsersDTO request)
     {
@@ -228,8 +256,15 @@ public class UsersController : ControllerBase
 
         try
         {
-            var result = await _userService.ChangeNameUsersAsync(request.IdUser, request.NewUserName);
-            if (result == null || string.IsNullOrEmpty(result.NewUserName)) return BadRequest(new { error = ResponseMessagesUsers.NotUpdateNameUser });
+            var result = await _userService.ChangeNameUsersAsync(request.IdUser, request.NewUserName, request.NewLastName, request.NewEmail, request.NewPhone);
+            if (result == null ||
+             string.IsNullOrEmpty(result.NewUserName) ||
+             string.IsNullOrEmpty(result.NewLastName) ||
+             string.IsNullOrEmpty(result.NewEmail) ||
+             string.IsNullOrEmpty(result.NewPhone))
+            {
+                return BadRequest(new { error = ResponseMessagesUsers.NotUpdateNameUser });
+            }
 
             return Ok(new { message = ResponseMessagesUsers.UpdateNameUser });
         }

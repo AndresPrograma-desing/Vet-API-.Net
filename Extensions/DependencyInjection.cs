@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using MySqlConnector;
 using Npgsql;
 using QuestPDF.Infrastructure;
@@ -24,6 +25,7 @@ using vet_api_Net.Utilities;
 using vet_api_Net.Services.WSMessage;
 using vet_api_Net.Worker;
 using vet_api_Net.Workers;
+using vet_api_Net.Services.Supabase;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -208,7 +210,35 @@ public static class DependencyInjection
 
         //  Swagger, SignalR y HealthChecks
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new OpenApiInfo { Title = "Vet API", Version = "v1" });
+
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Ingresa el token JWT."
+            });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+        });
         services.AddSignalR();
         services.AddHealthChecks();
 
@@ -227,6 +257,8 @@ public static class DependencyInjection
         services.AddScoped<IPasswordRecoveryRepository, PasswordRecoveryRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<ISystemConfigRepository, SystemConfigRespository>();
+        services.AddScoped<IHistoriaClinicaRepository, HistoriaClinicaRepository>();
+        services.AddScoped<IIaConocimientoRepository, IaConocimientoRepository>();
         services.AddScoped<IPasswordResetTicketRepository, PasswordResetTicketRepository>();
 
         // Servicios de la Aplicación
@@ -255,6 +287,10 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IPasswordRecoveryService, PasswordRecoveryService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<ISupabaseService, SupabaseService>();
+        services.AddScoped<IHistoriaClinicaService, HistoriaClinicaService>();
+        services.AddScoped<IGroqService, GroqService>();
+        services.AddScoped<IIaConocimientoService, IaConocimientoService>();
         services.AddHttpClient<IEmailSenderService, vet_api_Net.HttpServices.ResendEmailService>()
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {
@@ -263,7 +299,9 @@ public static class DependencyInjection
 
         //Utilities
         services.AddSingleton<IFailureTracker, FailureTracker>();
+        services.AddScoped<IHistoriaClinicaAnalizador, HistoriaClinicaAnalizador>();
         services.AddScoped<ICurrencyService, CurrencyService>();
+        services.AddScoped<IExcelGenerator, ExcelGenerator>();
         // Workers / Background Services
         services.AddHostedService<MessagePollerService>();
         services.AddHostedService<DeleteFacturaWorker>();

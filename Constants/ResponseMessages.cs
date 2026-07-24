@@ -5,7 +5,7 @@ namespace vet_api_Net.Constants
 {
     public static class ResponseErrors
     {
-        public const string InternalServerError = "Error interno del servidor.";
+        public const string InternalServerError = "Ocurrio un error interno del servidor.";
         public const string NotFound = "Recurso no encontrado.";
         public const string BadRequest = "Solicitud incorrecta.";
         public const string Unauthorized = "No autorizado.";
@@ -90,7 +90,25 @@ namespace vet_api_Net.Constants
         public const string ExistingEmail = "El correo electrónico ya está en uso.";
         public const string RequireIdentificacion = "La identificación es requerida para crear un cliente.";
         public const string RequireIdentificacionMascota = "La identificación de la mascota ya existe en el sistema, por favor ingrese una identificación única.";
+        public const string DeleteClientError = "Hubo un error al eliminar el cliente.";
+        public const string ClientDeletedSuccess = "Cliente eliminado exitosamente.";
+        public const string NotClientDeleted = "El Cliente no existe o no encontrado.";
 
+    }
+    public static class ResponseMessagesHistoriaClinica
+    {
+        public const string MascotaNotFound = "La mascota especificada no existe.";
+        public const string HistoriaClinicaNotFound = "La historia clínica solicitada no existe.";
+        public const string UpdateSuccess = "Historia clínica actualizada exitosamente.";
+        public const string RefreshIaSuccess = "Análisis inteligente de la historia clínica actualizado con éxito.";
+        public const string ErrorGettingHistoria = "Ocurrió un error al obtener la historia clínica.";
+        public const string ErrorUpdatingHistoria = "Ocurrió un error al actualizar la historia clínica.";
+        public const string ErrorRefreshingIa = "Ocurrió un error al ejecutar el análisis clínico inteligente.";
+        // public const string 
+    }
+    public static class ResponseMessagesGroq
+    {
+        public const string InvalidQuestion = "La pregunta enviada no puede estar vacía o nula.";
     }
     public static class ResponseMessagesUsers
     {
@@ -102,6 +120,9 @@ namespace vet_api_Net.Constants
         public const string ErrorGettingUser = "Ocurrió un error interno al obtener el usuario.";
         public const string ErrorGettingUsers = "Ocurrió un error interno al obtener los usuarios.";
         public const string ExistingUsername = "El nombre de usuario ya está en uso.";
+        public const string EmailRequired = "El correo electrónico es requerido.";
+        public const string NameRequired = "El nombre y apellido son requeridos.";
+        public const string ExistingEmail = "El correo electrónico ya está en uso.";
         public const string PasswordResetTicketCreated = "Ticket de reseteo de contraseña creado exitosamente.";
         public const string PasswordResetTicketNotFoundOrExpired = "El ticket de reseteo no es válido, ya fue utilizado o ha expirado.";
         public const string PasswordResetTicketAccepted = "El ticket de reseteo de contraseña ha sido confirmado correctamente. Puede cerrar esta ventana.";
@@ -113,6 +134,7 @@ namespace vet_api_Net.Constants
         public static string DeletingUser(int id) => $"Usuario con ID {id} eliminado exitosamente";
         public static string NotUpdateNameUser = "No se pudo cambiar el nombre del usuario";
         public static string UpdateNameUser = "Nombre del usuario actualizado exitosamente";
+        public const string CannotDeleteUserWithDependencies = "No se puede eliminar el usuario porque tiene registros o historial asociados en el sistema. Considere deshabilitar la cuenta en su lugar.";
 
         public static class UsersVariable
         {
@@ -242,6 +264,7 @@ namespace vet_api_Net.Constants
         public const string ProductCantNegative = "El precio no puede ser negativo.";
         public const string UpdateProductSuccess = "Producto actualizado exitosamente.";
         public const string UpdateProductNoChanges = "No se aplicaron cambios.";
+        public const string ProductCantEqualOrLessThan = "El precio de venta no puede ser menor o igual al precio de compra.";
 
         public static class ResponseMessagesProductCreate
         {
@@ -287,6 +310,7 @@ namespace vet_api_Net.Constants
     public static class ResponseMessagesConsultas
     {
         public const string ErrorCreated = "Error al crear la consulta";
+        public const string TemperaturaInvalid = "La temperatura no puede superar los 100 grados";
     }
     public static class ResponseMessagesHealthController
     {
@@ -478,5 +502,51 @@ namespace vet_api_Net.Constants
     public static class ResponseMessagesUtilties
     {
         public const string ErroConverMoney = "Hubo un error al hacer la conversion de monedas";
+    }
+    public static class ResponseMessagesProfileController
+    {
+        public const string ProfileUpdated = "Perfil actualizado correctamente.";
+        public const string InvalidUser = "Usuario no autenticado o sesión inválida.";
+        public const string ErrorUpdatingProfile = "Ocurrió un error interno al actualizar el perfil.";
+    }
+    public static class ResponseMessagesSupabase
+    {
+        public const string EmptyFile = "El archivo de imagen es requerido.";
+        public const string InvalidFileType = "Formato de imagen no soportado. Use JPG, PNG, WEBP o GIF.";
+        public const string FileTooLarge = "La imagen supera el tamaño máximo permitido de 5MB.";
+        public const string ErrorUploadingAvatar = "Ocurrió un error al subir la imagen a Supabase Storage.";
+        public const string AvatarsBucket = "avatars";
+        public static readonly string[] AllowedContentTypes = { "image/jpeg", "image/png", "image/webp", "image/gif" };
+        public const long MaxFileSizeBytes = 5 * 1024 * 1024;
+        public const string SaveAvatarError = "No se pudo guardar el avatar: no existe el usuario con id {0}";
+        // public const string 
+    }
+    public static class ResponseMessagesIaConocimiento
+    {
+        public const string CategoryRequired = "La categoría es requerida.";
+        public const string CategoryNotEmpty = "La categoria no puede estar vacia.";
+        public const string ConfigSaved = "Configuración de IA guardada exitosamente.";
+        public const string ConfigNotFound = "Configuración no encontrada para la categoría especificada.";
+    }
+
+    public static class ResponseMessagesGroqServices
+    {
+        public const string GroqComunicationError = "Error al comunicarse con api externa de NowGroq.ia";
+        public const string GroqApiError = "Hay un error de configuración en la solicitud enviada a NowGroq.ia.";
+        public const string GroqResponseInvalid = "El modelo de ia devolvio una respuesta no valida, ";
+
+        public const string GroqApiKeyError = "El Api Key de NowGroq.ia no se encuentra configurada en el sistema.";
+
+        public static class GroqPromts
+        {
+            public const string YouAre = "Eres un asistente veterinario experto e inteligente. Responde las preguntas de manera clara, concisa y profesional en español. Se más profesional con preguntas relacionadas a animales o cosas relacionadas con veterinarios.";
+            public const string GroqRule = "\nReglas de comportamiento que DEBES seguir estrictamente:";
+            public const string GroqBaseKnowledge = "\nBase de conocimiento de la veterinaria que debes usar para responder consultas generales:";
+            public const string GroqResponseHistorial = "Eres un asistente veterinario experto. Debes analizar la información de la mascota y devolver obligatoriamente un objeto JSON con los campos 'resumen_ia' (un resumen clínico fluido y profesional que evalúe también la evolución respecto al historial anterior si se provee, soy grop), 'alertas_riesgo_ia' (alertas de riesgos de salud importantes separadas por ' | ') y 'sugerencias_ia' (sugerencias y recomendaciones veterinarias preventivas separadas por ' | '). No agregues texto adicional fuera del JSON.";
+
+
+
+        }
+
     }
 }

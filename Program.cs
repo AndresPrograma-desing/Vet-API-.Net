@@ -1,14 +1,17 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Supabase;
 using vet_api_Net.Data;
 using vet_api_Net.Hubs;
-using vet_api_Net.Interfaze.Services;
-using vet_api_Net.Services;
-using Microsoft.Extensions.Options;
 using vet_api_Net.Infrastructure.Configuration;
+using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Middleware;
+using vet_api_Net.Services;
+
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +19,23 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpClient<IInvoiceService, InvoiceService>();
 
 builder.Services.AddInfrastructureServices(builder.Configuration);
+
+var supabaseUrl = builder.Configuration["Supabase:Url"];
+var supabaseKey = builder.Configuration["Supabase:Key"];
+if (string.IsNullOrEmpty(supabaseUrl) || string.IsNullOrEmpty(supabaseKey))
+{
+    throw new Exception($"[ERROR] Las credenciales de Supabase no se cargaron correctamente de appsettings.json. URL: '{supabaseUrl}', Key cargada: {(string.IsNullOrEmpty(supabaseKey) ? "NO" : "SI")}");
+}
+builder.Services.AddScoped<global::Supabase.Client>(_ =>
+    new global::Supabase.Client(
+        supabaseUrl,
+        supabaseKey,
+        new global::Supabase.SupabaseOptions
+        {
+            AutoRefreshToken = true
+        }));
+
+builder.Services.AddScoped<vet_api_Net.Interfaze.Services.ISupabaseService, vet_api_Net.Services.Supabase.SupabaseService>();
 
 var app = builder.Build();
 
@@ -40,7 +60,8 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.Use(async (context, next) => {
+app.Use(async (context, next) =>
+{
     Console.WriteLine($"[req] {context.Request.Method} {context.Request.Path}");
     if (context.Request.Method != "OPTIONS")
     {
@@ -49,15 +70,10 @@ app.Use(async (context, next) => {
     await next();
 });
 
-app.UseExceptionHandler(errorApp => {
-    errorApp.Run(async context => {
-        context.Response.StatusCode = 400;
-        context.Response.ContentType = "application/json";
-        await context.Response.WriteAsJsonAsync(new { error = "Error en la solicitud procesada." });
-    });
-});
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
-if (app.Environment.IsDevelopment()) {
+if (app.Environment.IsDevelopment())
+{
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1"));
 }
@@ -74,9 +90,9 @@ app.MapHub<NotificactionsPush>("/hubs/notificaciones");
 app.MapHealthChecks("/health");
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
-logger.LogInformation("Bienvenido a Happy Pets API {EnvironmentName}. Orígenes CORS: {LocalOrigin}, {TunnelOrigin}", 
-    app.Environment.EnvironmentName, 
-    builder.Configuration["ConnectionSettings:LocalOrigin"], 
+logger.LogInformation("Bienvenido a Happy Pets API {EnvironmentName}. Orígenes CORS: {LocalOrigin}, {TunnelOrigin}",
+    app.Environment.EnvironmentName,
+    builder.Configuration["ConnectionSettings:LocalOrigin"],
     builder.Configuration["ConnectionSettings:TunnelOrigin"]);
 
 app.Run();

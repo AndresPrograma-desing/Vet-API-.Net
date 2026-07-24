@@ -14,4 +14,5 @@ public record CreateUserDTO
 
     public string Rol { get; set; } = null!;
 
+    public string? Telefono { get; set; }
 }

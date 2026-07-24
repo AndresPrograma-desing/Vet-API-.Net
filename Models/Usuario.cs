@@ -13,11 +13,12 @@ public partial class Usuario
     public string Apellido { get; set; } = null!;
 
     public required string Email { get; set; } = null!;
+    public string Telefono { get; set; } = null!;
 
     [Column("contraseña")]
     public required string Password { get; set; } = null!;
     public string? PasswordRecoveryCode { get; set; }
-
+    public string? AvatarUrl { get; set; }
     public DateTime? CodeRecoveryExpireDate { get; set; }
 
     public required string Rol { get; set; } = null!;

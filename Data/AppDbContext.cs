@@ -63,6 +63,8 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<Models.WSMessageAPIData> WSMessageAPIData { get; set; }
     public virtual DbSet<Models.EmailTemplate> EmailTemplates { get; set; }
     public virtual DbSet<Models.PasswordResetTicket> PasswordResetTickets { get; set; }
+    public virtual DbSet<HistoriaClinica> HistoriasClinicas { get; set; }
+    public virtual DbSet<IaConocimiento> IaConocimientos { get; set; }
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -832,6 +834,30 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Cliente).WithMany(p => p.Mascota)
                 .HasForeignKey(d => d.ClienteId)
                 .HasConstraintName("mascotas_ibfk_1");
+        });
+
+        modelBuilder.Entity<HistoriaClinica>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.ToTable("historias_clinicas");
+
+            entity.HasIndex(e => e.MascotaId, "idx_hc_mascota");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.MascotaId).HasColumnName("mascota_id");
+            entity.Property(e => e.ResumenIa).HasColumnName("resumen_ia");
+            entity.Property(e => e.AlertasRiesgoIa).HasColumnName("alertas_riesgo_ia");
+            entity.Property(e => e.SugerenciasIa).HasColumnName("sugerencias_ia");
+            entity.Property(e => e.NotasVeterinario).HasColumnName("notas_veterinario");
+            entity.Property(e => e.UltimoAnalisisIa).HasColumnName("ultimo_analisis_ia");
+            entity.Property(e => e.Creado).HasColumnName("creado");
+            entity.Property(e => e.Actualizado).HasColumnName("actualizado");
+
+            entity.HasOne(d => d.Mascota)
+                .WithMany(p => p.HistoriasClinicas)
+                .HasForeignKey(d => d.MascotaId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_historia_clinica_mascota");
         });
 
         modelBuilder.Entity<MovimientosInventario>(entity =>
