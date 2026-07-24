@@ -32,7 +32,7 @@ namespace vet_api_Net.Routes
         {
             public const string GetAllRequests = "requests";
             public const string Delete = "{id}";
-            public const string Update = "{id}";
+            public const string Update = "update/{id}";
             public const string Finalizar = "{id}/finalizar";
             public const string NewStatus = "{id}/statusnew";
             public const string Status = "{id}/status";
@@ -47,8 +47,8 @@ namespace vet_api_Net.Routes
         }
         public static class Clients
         {
-            public const string Update = "{id}";
-            public const string Delete = "{id}";
+            public const string Update = "update/{id}";
+            public const string Delete = "delete/{id}";
         }
         public static class ClientPets
         {
@@ -85,8 +85,8 @@ namespace vet_api_Net.Routes
         public static class PetsController
         {
             public const string GetById = "{id}";
-            public const string Update = "{id}";
-            public const string Delete = "{id}";
+            public const string Update = "update/{id}";
+            public const string Delete = "delete/{id}";
         }
         public static class ProductsController
         {
@@ -118,7 +118,7 @@ namespace vet_api_Net.Routes
             public const string DownloadCitas = "download-citas";
             public const string DownloadClientes = "download-clientes";
         }
-        public static class Groq
+        public static class NowGrod
         {
             public const string Analyze = "analyze";
             public const string Chat = "chat";
@@ -130,9 +130,9 @@ namespace vet_api_Net.Routes
             public const string GetByMascota = "mascota/{mascotaId}";
             public const string Create = "create";
             public const string Update = "{id}";
-            public const string GetByMascotaId = "mascota-id/{id}";
+            public const string GetByMascotaId = "mascota/{mascotaId}";
             public const string UpdateNotes = "{id}/notes";
-            public const string RefreshIa = "{id}/refresh-ia";
+            public const string RefreshIa = "mascota/{mascotaId}/refrescar";
         }
         public static class IaConocimiento
         {

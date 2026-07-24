@@ -1,26 +1,26 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using DTOs;
-using vet_api_Net.Routes;
-using vet_api_Net.Interfaze.Services;
+using Microsoft.AspNetCore.Mvc;
 using vet_api_Net.Constants;
+using vet_api_Net.Interface.Services;
+using vet_api_Net.Routes;
 
 //Describe: Controlador HTTP para interactuar directamente con la inteligencia artificial de Groq para consultas y chats libres.
 namespace vet_api_Net.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class GroqController : ControllerBase
+public class NowGrodController : ControllerBase
 {
-    private readonly IGroqService _groqService;
+    private readonly INowGrodService _groqService;
 
-    public GroqController(IGroqService groqService)
+    public NowGrodController(INowGrodService groqService)
     {
         _groqService = groqService;
     }
 
-    [HttpPost(Endpoints.Groq.Consultar)]
+    [HttpPost(Endpoints.NowGrod.Consultar)]
     public async Task<ActionResult<GroqChatResponseDTO>> Consultar([FromBody] GroqChatRequestDTO dto)
     {
         try

@@ -15,7 +15,7 @@ using vet_api_Net.Interfaze.Utilities;
 using vet_api_Net.Infrastructure.Configuration;
 using vet_api_Net.Constants;
 
-//Describe: Analizador clínico experto que utiliza la API de Groq (Llama 3) para procesar historiales médicos en tiempo real a través del Options Pattern.
+//Describe: Analizador clínico experto que delega el procesamiento de historiales médicos en la API de NowGrod.ia.
 namespace vet_api_Net.Utilities;
 
 public class HistoriaClinicaAnalizador : IHistoriaClinicaAnalizador
@@ -38,7 +38,6 @@ public class HistoriaClinicaAnalizador : IHistoriaClinicaAnalizador
     {
         var apiKey = _options.GroqApiKey;
         var apiUrl = _options.GroqApiUrl;
-        var model = _options.GroqModel;
 
         if (string.IsNullOrEmpty(apiKey))
         {
@@ -52,25 +51,19 @@ public class HistoriaClinicaAnalizador : IHistoriaClinicaAnalizador
             throw new InvalidOperationException(ResponseMessagesGroqServices.GroqApiError);
         }
 
-        if (string.IsNullOrEmpty(model))
-        {
-            _logger.LogError("Groq Model no está configurado en ApiSettings.");
-            throw new InvalidOperationException(ResponseMessagesGroqServices.GroqApiError);
-        }
-
         try
         {
-            var response = await ConsultarGroqApiAsync(apiKey, apiUrl, model, mascota, consultas, vacunas, resumenAnterior);
+            var response = await ConsultarGroqApiAsync(apiKey, apiUrl, mascota, consultas, vacunas, resumenAnterior);
             if (response == null)
             {
                 throw new InvalidOperationException(ResponseMessagesGroqServices.GroqResponseInvalid);
             }
-            _logger.LogInformation("Análisis clínico generado con éxito mediante Groq API.");
+            _logger.LogInformation("Análisis clínico generado con éxito mediante NowGrod.ia API.");
             return response;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al generar el análisis clínico con Groq API.");
+            _logger.LogError(ex, "Error al generar el análisis clínico con NowGrod.ia API.");
             throw;
         }
     }
@@ -78,7 +71,6 @@ public class HistoriaClinicaAnalizador : IHistoriaClinicaAnalizador
     private async Task<ResumenClinicoIAResponseDTO?> ConsultarGroqApiAsync(
         string apiKey, 
         string apiUrl, 
-        string model, 
         Mascota mascota, 
         List<Consulta> consultas, 
         List<Vacuna> vacunas,
@@ -87,29 +79,37 @@ public class HistoriaClinicaAnalizador : IHistoriaClinicaAnalizador
         using var client = _httpClientFactory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
-        var prompt = ConstruirPrompt(mascota, consultas, vacunas, resumenAnterior);
+        var requestUrl = apiUrl.Replace("/chat", "/vet/analizar-historial");
 
         var requestBody = new
         {
-            model = model,
-            messages = new[]
+            mascota = new
             {
-                new
-                {
-                    role = "system",
-                    content = ResponseMessagesGroqServices.GroqPromts.GroqResponseHistorial
-                },
-                new
-                {
-                    role = "user",
-                    content = prompt
-                }
+                nombre = mascota.Nombre,
+                especie = mascota.Especie,
+                raza = mascota.Raza,
+                sexo = mascota.Sexo,
+                esterilizado = mascota.Esterilizado,
+                fechaNacimiento = mascota.FechaNacimiento,
+                peso = mascota.Peso,
+                alergias = mascota.Alergias,
+                condicionesMedicas = mascota.CondicionesMedicas
             },
-            response_format = new
+            consultas = consultas.Select(c => new
             {
-                type = "json_object"
-            },
-            temperature = 0.3
+                fechaConsulta = c.FechaConsulta,
+                sintomas = c.Sintomas,
+                diagnostico = c.Diagnostico,
+                tratamiento = c.Tratamiento,
+                pesoActual = c.PesoActual
+            }).ToList(),
+            vacunas = vacunas.Select(v => new
+            {
+                producto = v.Producto != null ? new { nombre = v.Producto.Nombre } : null,
+                fechaVacunacion = v.FechaVacunacion,
+                proximaDosis = v.ProximaDosis
+            }).ToList(),
+            resumenAnterior = resumenAnterior
         };
 
         var jsonOptions = new JsonSerializerOptions
@@ -119,88 +119,21 @@ public class HistoriaClinicaAnalizador : IHistoriaClinicaAnalizador
 
         var content = new StringContent(JsonSerializer.Serialize(requestBody, jsonOptions), Encoding.UTF8, "application/json");
 
-        var response = await client.PostAsync(apiUrl, content);
+        var response = await client.PostAsync(requestUrl, content);
         if (!response.IsSuccessStatusCode)
         {
             var errorContent = await response.Content.ReadAsStringAsync();
-            _logger.LogError("Error en respuesta de Groq API: {StatusCode}. Detalles: {Error}", response.StatusCode, errorContent);
+            _logger.LogError("Error en respuesta de NowGrod.ia API: {StatusCode}. Detalles: {Error}", response.StatusCode, errorContent);
             return null;
         }
 
         var responseString = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(responseString);
-        var contentResult = doc.RootElement
-            .GetProperty("choices")[0]
-            .GetProperty("message")
-            .GetProperty("content")
-            .GetString();
-
-        if (string.IsNullOrEmpty(contentResult)) return null;
-
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("=================== RESPUESTA DE GROQ ===================");
-        Console.WriteLine(contentResult);
-        Console.WriteLine("=========================================================");
-        Console.ResetColor();
-
+        
         var deserializeOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         };
 
-        return JsonSerializer.Deserialize<ResumenClinicoIAResponseDTO>(contentResult, deserializeOptions);
-    }
-
-    private string ConstruirPrompt(Mascota mascota, List<Consulta> consultas, List<Vacuna> vacunas, string? resumenAnterior)
-    {
-        var sb = new StringBuilder();
-        
-        if (!string.IsNullOrEmpty(resumenAnterior))
-        {
-            sb.AppendLine("=== ANÁLISIS DE EVOLUCIÓN ===");
-            sb.AppendLine($"Aquí tienes el resumen clínico anterior de {mascota.Nombre}:");
-            sb.AppendLine(resumenAnterior);
-            sb.AppendLine("Instrucción crucial: Evalúa cómo ha progresado el estado de salud, peso o tratamientos en comparación con las nuevas consultas que verás abajo.");
-            sb.AppendLine("=====================================\n");
-        }
-
-        sb.AppendLine("Analiza los siguientes datos clínicos actuales de la mascota:");
-        sb.AppendLine($"- Nombre: {mascota.Nombre}");
-        sb.AppendLine($"- Especie: {mascota.Especie}");
-        sb.AppendLine($"- Raza: {mascota.Raza ?? "No especificada"}");
-        sb.AppendLine($"- Sexo: {mascota.Sexo}");
-        sb.AppendLine($"- Esterilizado: {(mascota.Esterilizado == true ? "Sí" : "No")}");
-        sb.AppendLine($"- Fecha de Nacimiento: {mascota.FechaNacimiento?.ToString("dd-MM-yyyy") ?? "Desconocida"}");
-        sb.AppendLine($"- Peso actual registrado: {mascota.Peso?.ToString() ?? "No registrado"} kg");
-        sb.AppendLine($"- Alergias conocidas: {mascota.Alergias ?? "Ninguna"}");
-        sb.AppendLine($"- Condiciones médicas: {mascota.CondicionesMedicas ?? "Sano"}");
-
-        if (consultas != null && consultas.Count > 0)
-        {
-            sb.AppendLine("\nHistorial de Consultas Médicas Recientes (ordenadas de más reciente a más antigua):");
-            foreach (var c in consultas.OrderByDescending(c => c.FechaConsulta).Take(5))
-            {
-                sb.AppendLine($"- Fecha: {c.FechaConsulta:dd-MM-yyyy} | Síntomas: {c.Sintomas} | Diagnóstico: {c.Diagnostico ?? "Sin diagnóstico aún"} | Tratamiento: {c.Tratamiento ?? "Ninguno"} | Peso registrado en consulta: {c.PesoActual ?? mascota.Peso} kg");
-            }
-        }
-        else
-        {
-            sb.AppendLine("\nNo hay consultas médicas previas registradas.");
-        }
-
-        if (vacunas != null && vacunas.Count > 0)
-        {
-            sb.AppendLine("\nHistorial de Inmunización:");
-            foreach (var v in vacunas)
-            {
-                sb.AppendLine($"- Vacuna: {v.Producto?.Nombre ?? "Vacuna"} | Fecha de aplicación: {v.FechaVacunacion:dd-MM-yyyy} | Próxima dosis programada: {v.ProximaDosis?.ToString("dd-MM-yyyy") ?? "No programada"}");
-            }
-        }
-        else
-        {
-            sb.AppendLine("\nNo registra vacunas administradas.");
-        }
-
-        return sb.ToString();
+        return JsonSerializer.Deserialize<ResumenClinicoIAResponseDTO>(responseString, deserializeOptions);
     }
 }

@@ -16,6 +16,7 @@ using QuestPDF.Infrastructure;
 using vet_api_Net.Data;
 using vet_api_Net.HttpServices;
 using vet_api_Net.Infrastructure.Configuration;
+using vet_api_Net.Interface.Services;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Interfaze.Utilities;
@@ -290,7 +291,7 @@ public static class DependencyInjection
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<ISupabaseService, SupabaseService>();
         services.AddScoped<IHistoriaClinicaService, HistoriaClinicaService>();
-        services.AddScoped<IGroqService, GroqService>();
+        services.AddScoped<INowGrodService, NowGrodService>();
         services.AddScoped<IIaConocimientoService, IaConocimientoService>();
         services.AddHttpClient<IEmailSenderService, vet_api_Net.HttpServices.ResendEmailService>()
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler

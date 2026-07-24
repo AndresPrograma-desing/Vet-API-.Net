@@ -9,24 +9,24 @@ using DTOs;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using vet_api_Net.Infrastructure.Configuration;
-using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interface.Services;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Constants;
 
 //Describe: Servicio encargado de la comunicación directa y consultas libres a la API de Groq/NowGroq.
 namespace vet_api_Net.HttpServices;
 
-public class GroqService : IGroqService
+public class NowGrodService : INowGrodService
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ApiSettingsOptions _options;
-    private readonly ILogger<GroqService> _logger;
+    private readonly ILogger<NowGrodService> _logger;
     private readonly IIaConocimientoRepository _iaConocimientoRepository;
 
-    public GroqService(
+    public NowGrodService(
         IHttpClientFactory httpClientFactory,
         IOptions<ApiSettingsOptions> options,
-        ILogger<GroqService> logger,
+        ILogger<NowGrodService> logger,
         IIaConocimientoRepository iaConocimientoRepository)
     {
         _httpClientFactory = httpClientFactory;

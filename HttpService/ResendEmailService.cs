@@ -54,7 +54,35 @@ public class ResendEmailService : IEmailSenderService
                 apiKey = systemConfig?.ResendApiKey;
                 fromEmail = systemConfig?.ResendFromEmail;
                 apiUrl = systemConfig?.ResendApiUrl;
-                
+            }
+
+            // Fallback para appsettings.json en desarrollo local
+            var appSettingsApiKey = _configuration["ResendSettings:ApiKey"];
+            var appSettingsFromEmail = _configuration["ResendSettings:From"];
+            var appSettingsApiUrl = _configuration["ResendSettings:ApiUrl"];
+
+            if (string.IsNullOrWhiteSpace(apiKey) || apiKey == "re_8ihXsxrL_NRxgtRcoyqjou3J75MjbJdFo")
+            {
+                if (!string.IsNullOrWhiteSpace(appSettingsApiKey))
+                {
+                    apiKey = appSettingsApiKey;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(fromEmail) || fromEmail == "HappyPets <onboarding@resend.dev>")
+            {
+                if (!string.IsNullOrWhiteSpace(appSettingsFromEmail))
+                {
+                    fromEmail = appSettingsFromEmail;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(apiUrl) || apiUrl == "https://api.resend.com/emails")
+            {
+                if (!string.IsNullOrWhiteSpace(appSettingsApiUrl))
+                {
+                    apiUrl = appSettingsApiUrl;
+                }
             }
 
             if (_failureTracker.IsBlocked("ResendEmail"))
@@ -98,7 +126,7 @@ public class ResendEmailService : IEmailSenderService
             if (!response.IsSuccessStatusCode)
             {
                 var errorDetails = await response.Content.ReadAsStringAsync();
-                RecordFailureAndThrow(string.Format(ResponseMessagesEmailsController.ProviderError, errorDetails));
+                RecordFailureAndThrow($"{ResponseMessagesEmailsController.ProviderError} Detalles: {errorDetails}");
             }
 
             _failureTracker.Reset("ResendEmail");

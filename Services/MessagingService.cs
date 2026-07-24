@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using vet_api_Net.Constants;
 using vet_api_Net.Data;
 using vet_api_Net.Hubs;
+using vet_api_Net.Interface.Services;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Models;
 
@@ -64,7 +65,7 @@ public class MessagingService : IMessagingService
             {
                 using var scope = _scopeFactory.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var groqService = scope.ServiceProvider.GetRequiredService<IGroqService>();
+                var groqService = scope.ServiceProvider.GetRequiredService<INowGrodService>();
                 var hub = scope.ServiceProvider.GetRequiredService<IHubContext<MessageHub>>();
 
                 try
