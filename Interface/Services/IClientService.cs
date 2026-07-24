@@ -9,4 +9,6 @@ public interface IClientService
 {
     Task<Cliente?> GetClientAsync(int id);
     Task<List<ClientListWithMascotasDTO>> GetAllClientsWithDetailsAsync();
+    Task<Cliente?> DeleteClientAsync(int id);
+    Task<Cliente?> UpdateClientAsync(int id, UpdateClientDTO dto);
 }

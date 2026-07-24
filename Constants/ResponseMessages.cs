@@ -93,25 +93,10 @@ namespace vet_api_Net.Constants
         public const string DeleteClientError = "Hubo un error al eliminar el cliente.";
         public const string ClientDeletedSuccess = "Cliente eliminado exitosamente.";
         public const string NotClientDeleted = "El Cliente no existe o no encontrado.";
-
-    }
-    public static class ResponseMessagesHistoriaClinica
-    {
-        public const string MascotaNotFound = "La mascota especificada no existe.";
-        public const string HistoriaClinicaNotFound = "La historia clínica solicitada no existe.";
-        public const string UpdateSuccess = "Historia clínica actualizada exitosamente.";
-        public const string RefreshIaSuccess = "Análisis inteligente de la historia clínica actualizado con éxito.";
-        public const string ErrorGettingHistoria = "Ocurrió un error al obtener la historia clínica.";
-        public const string ErrorUpdatingHistoria = "Ocurrió un error al actualizar la historia clínica.";
-        public const string ErrorRefreshingIa = "Ocurrió un error al ejecutar el análisis clínico inteligente.";
-        // public const string 
-    }
-    public static class ResponseMessagesGroq
-    {
-        public const string InvalidQuestion = "La pregunta enviada no puede estar vacía o nula.";
     }
     public static class ResponseMessagesUsers
     {
+        public const string CannotDeleteAdmin = "No se puede eliminar a un administrador.";
         public const string UserNotFound = "Usuario no encontrado.";
         public const string DoctorNotFound = "Doctor no encontrado.";
         public const string AdminNotFound = "Administrador no encontrado.";
@@ -311,6 +296,52 @@ namespace vet_api_Net.Constants
     {
         public const string ErrorCreated = "Error al crear la consulta";
         public const string TemperaturaInvalid = "La temperatura no puede superar los 100 grados";
+    }
+    public static class ResponseMessagesGroqServices
+    {
+        public const string ModelNotConfigured = "Modelo no configurado";
+        public const string ErrorFormat = "Error en formato";
+        public const string RequestFailed = "Petición fallida";
+        public const string ServiceError = "Error en servicio";
+        public const string TimeoutError = "Tiempo de espera agotado";
+        public const string GroqComunicationError = "Error al comunicarse con api externa de NowGroq.ia";
+        public const string GroqApiError = "Hay un error de configuración en la solicitud enviada a NowGroq.ia.";
+        public const string GroqResponseInvalid = "El modelo de ia devolvio una respuesta no valida, ";
+        public const string GroqApiKeyError = "El Api Key de NowGroq.ia no se encuentra configurada en el sistema.";
+        
+        public static class GroqPromts
+        {
+            public const string YouAre = "Eres un asistente veterinario experto e inteligente. Responde las preguntas de manera clara, concisa y profesional en español. Se más profesional con preguntas relacionadas a animales o cosas relacionadas con veterinarios.";
+            public const string GroqRule = "\nReglas de comportamiento que DEBES seguir estrictamente:";
+            public const string GroqBaseKnowledge = "\nBase de conocimiento de la veterinaria que debes usar para responder consultas generales:";
+            public const string GroqResponseHistorial = "Eres un asistente veterinario experto. Debes analizar la información de la mascota y devolver obligatoriamente un objeto JSON con los campos 'resumen_ia' (un resumen clínico fluido y profesional que evalúe también la evolución respecto al historial anterior si se provee, soy grop), 'alertas_riesgo_ia' (alertas de riesgos de salud importantes separadas por ' | ') y 'sugerencias_ia' (sugerencias y recomendaciones veterinarias preventivas separadas por ' | '). No agregues texto adicional fuera del JSON.";
+        }
+    }
+    public static class ResponseMessagesGroq
+    {
+        public const string ResponseError = "Error en la respuesta.";
+        public const string MessageRequired = "El mensaje es requerido.";
+        public const string InvalidQuestion = "Pregunta inválida.";
+    }
+    public static class ResponseMessagesIaConocimiento
+    {
+        public const string ErrorRetrieving = "Error al obtener conocimiento";
+        public const string ErrorCreating = "Error al crear conocimiento";
+        public const string NotFound = "Conocimiento no encontrado";
+        public const string InvalidData = "Datos inválidos";
+        public const string CategoryRequired = "La categoría es requerida.";
+        public const string CategoryNotEmpty = "La categoria no puede estar vacia.";
+        public const string ConfigSaved = "Configuración de IA guardada exitosamente.";
+        public const string ConfigNotFound = "Configuración no encontrada para la categoría especificada.";
+    }
+    public static class ResponseMessagesHistoriaClinica
+    {
+        public const string ErrorCreated = "Error al crear historia clínica";
+        public const string NotFound = "Historia clínica no encontrada";
+        public const string InvalidData = "Datos inválidos";
+        public const string ErrorUpdating = "Error al actualizar";
+        public const string HistoriaClinicaNotFound = "Historia clínica no encontrada.";
+        public const string MascotaNotFound = "Mascota no encontrada.";
     }
     public static class ResponseMessagesHealthController
     {
@@ -520,33 +551,5 @@ namespace vet_api_Net.Constants
         public const long MaxFileSizeBytes = 5 * 1024 * 1024;
         public const string SaveAvatarError = "No se pudo guardar el avatar: no existe el usuario con id {0}";
         // public const string 
-    }
-    public static class ResponseMessagesIaConocimiento
-    {
-        public const string CategoryRequired = "La categoría es requerida.";
-        public const string CategoryNotEmpty = "La categoria no puede estar vacia.";
-        public const string ConfigSaved = "Configuración de IA guardada exitosamente.";
-        public const string ConfigNotFound = "Configuración no encontrada para la categoría especificada.";
-    }
-
-    public static class ResponseMessagesGroqServices
-    {
-        public const string GroqComunicationError = "Error al comunicarse con api externa de NowGroq.ia";
-        public const string GroqApiError = "Hay un error de configuración en la solicitud enviada a NowGroq.ia.";
-        public const string GroqResponseInvalid = "El modelo de ia devolvio una respuesta no valida, ";
-
-        public const string GroqApiKeyError = "El Api Key de NowGroq.ia no se encuentra configurada en el sistema.";
-
-        public static class GroqPromts
-        {
-            public const string YouAre = "Eres un asistente veterinario experto e inteligente. Responde las preguntas de manera clara, concisa y profesional en español. Se más profesional con preguntas relacionadas a animales o cosas relacionadas con veterinarios.";
-            public const string GroqRule = "\nReglas de comportamiento que DEBES seguir estrictamente:";
-            public const string GroqBaseKnowledge = "\nBase de conocimiento de la veterinaria que debes usar para responder consultas generales:";
-            public const string GroqResponseHistorial = "Eres un asistente veterinario experto. Debes analizar la información de la mascota y devolver obligatoriamente un objeto JSON con los campos 'resumen_ia' (un resumen clínico fluido y profesional que evalúe también la evolución respecto al historial anterior si se provee, soy grop), 'alertas_riesgo_ia' (alertas de riesgos de salud importantes separadas por ' | ') y 'sugerencias_ia' (sugerencias y recomendaciones veterinarias preventivas separadas por ' | '). No agregues texto adicional fuera del JSON.";
-
-
-
-        }
-
     }
 }

@@ -4,11 +4,12 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using DTOs;
-using vet_api_Net.Models;
+using Microsoft.Extensions.Options;
+using vet_api_Net.Constants;
+using vet_api_Net.Infrastructure.Configuration;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
-using Microsoft.Extensions.Options;
-using vet_api_Net.Infrastructure.Configuration;
+using vet_api_Net.Models;
 
 namespace vet_api_Net.Services;
 
@@ -82,5 +83,38 @@ public class ClientService : IClientService
                 }).ToList()
             }).ToList()
         }).ToList();
+    }
+
+    public async Task<Cliente?> DeleteClientAsync(int id)
+    {
+        try
+        {
+            var client = await _repository.GetByIdSimpleAsync(id);
+            if (client == null) return null;
+
+            return await _repository.DeleteClientAsync(id);
+        }
+        catch (Exception)
+        {
+
+            throw new Exception(ResponseMessagesClient.DeleteClientError);
+        }
+    }
+
+    public async Task<Cliente?> UpdateClientAsync(int id, UpdateClientDTO dto)
+    {
+        var client = await _repository.GetByIdSimpleAsync(id);
+        if (client == null) return null;
+
+        client.Nombre = dto.Nombre;
+        client.Apellido = dto.Apellido;
+        client.Email = dto.Email;
+        client.Telefono = dto.Telefono;
+        client.Direccion = dto.Direccion;
+        client.Identificacion = dto.Identificacion;
+        client.Nota = dto.Nota;
+        client.Actualizado = DateTime.Now;
+
+        return await _repository.UpdateClientAsync(client);
     }
 }

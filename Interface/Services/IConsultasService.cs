@@ -9,4 +9,5 @@ public interface IConsultasService
     Task<ConsultaRequestDTO?> CreateConsultaAsync(CreateConsultaDTO dto);
     Task<ConsultaRequestDTO?> GetConsultaByIdAsync(int id);
     Task<IEnumerable<ConsultaRequestDTO>> GetConsultasAsync();
+    Task<ConsultaRequestDTO?> UpdateRecetaAsync(int id, UpdateConsultaRecetaDTO dto);
 }

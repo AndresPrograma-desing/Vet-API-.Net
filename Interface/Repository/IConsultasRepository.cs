@@ -20,4 +20,6 @@ public interface IConsultasRepository
     Task<bool> SaveChangesAsync();
     Task<ConsultaRequestDTO?> GetConsultaDtoByIdAsync(int id);
     Task<IEnumerable<ConsultaRequestDTO>> GetConsultasAsync();
+    Task<Consulta?> GetConsultaByIdEntityAsync(int id);
+    
 }

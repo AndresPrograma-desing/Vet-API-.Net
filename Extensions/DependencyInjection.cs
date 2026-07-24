@@ -21,8 +21,9 @@ using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Interfaze.Utilities;
 using vet_api_Net.Repositories;
 using vet_api_Net.Services;
-using vet_api_Net.Utilities;
+
 using vet_api_Net.Services.WSMessage;
+using vet_api_Net.Utilities;
 using vet_api_Net.Worker;
 using vet_api_Net.Workers;
 using vet_api_Net.Services.Supabase;

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Diagrama ER - Tablas de Negocio</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 40px; background-color: #f9fafb; text-align: center; }
+        .container { background-color: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: inline-block; max-width: 100%; }
+        h1 { color: #1f2937; }
+        p { color: #4b5563; margin-bottom: 30px; }
+        .mermaid { text-align: center; }
+        .btn-print { background-color: #2563eb; color: white; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 30px; transition: background-color 0.3s; }
+        .btn-print:hover { background-color: #1d4ed8; }
+        @media print {
+            .btn-print { display: none; }
+            body { background-color: white; margin: 0; }
+            .container { box-shadow: none; padding: 0; }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Diagrama de Entidad-Relación: Tablas de Negocio</h1>
+        <p>Módulo Principal (Mascotas, Usuarios, Clientes, Citas, Facturación e Inventario)</p>
+        <div class="mermaid">
+erDiagram
+    usuarios ||--o{ citas : "agenda como doctor/secretaria"
+    usuarios ||--o{ mensajes : "envía/recibe"
+    clientes ||--o{ mascotas : "es dueño de"
+    mascotas ||--o{ citas : "tiene programada"
+    mascotas ||--o{ historias_clinicas : "posee historial"
+    mascotas ||--o{ vacunas : "recibe"
+    citas ||--|| consultas : "se convierte en"
+    citas ||--o| metodos_pago : "se paga con"
+    consultas ||--o{ consultas_productos : "utiliza"
+    consultas ||--o| facturas : "genera"
+    productos ||--o{ consultas_productos : "consumido en"
+    productos ||--o{ historial_precios : "historial precio"
+    productos ||--o{ movimientos_inventario : "registra stock"
+    categorias_productos ||--o{ productos : "clasifica"
+    facturas ||--o{ detalles_factura : "contiene"
+    productos ||--o{ detalles_factura : "facturado como"
+
+    usuarios {
+        int id PK
+        string nombre
+        string apellido
+        string email
+        string rol
+    }
+    clientes {
+        int id PK
+        string identificacion
+        string nombre
+        string email
+    }
+    mascotas {
+        int id PK
+        int cliente_id FK
+        string nombre
+        string especie
+        string raza
+    }
+    citas {
+        int id PK
+        int mascota_id FK
+        datetime fecha_cita
+        string estado
+    }
+    consultas {
+        int id PK
+        int cita_id FK
+        string diagnostico
+        decimal ConsultaPrice
+    }
+    facturas {
+        int id PK
+        int consulta_id FK
+        decimal total
+        string estado_pago
+    }
+    productos {
+        int id PK
+        string nombre
+        decimal precio
+        int stock
+    }
+        </div>
+        <button class="btn-print" onclick="window.print()">Guardar como PDF</button>
+    </div>
+</body>
+</html>

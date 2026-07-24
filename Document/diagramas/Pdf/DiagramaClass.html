@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Diagrama de Clases Happy Pets - Horizontal</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            theme: 'default',
+            class: { useMaxWidth: false }
+        });
+    </script>
+    <style>
+        @page {
+            size: letter landscape;
+            margin: 0.5cm;
+        }
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            overflow-x: auto;
+        }
+        .container {
+            width: 100%;
+            text-align: center;
+        }
+        .mermaid {
+            width: 100%;
+            display: block;
+        }
+        .mermaid svg {
+            width: 100% !important;
+            height: auto !important;
+            max-height: 88vh !important;
+        }
+        @media print {
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="mermaid">
+    classDiagram
+        direction LR
+
+        %% ========================================================
+        %% BLOQUE 1: GESTIÓN DE PERSONAL Y SEGURIDAD
+        %% ========================================================
+        class usuarios {
+            +int id
+            +string username
+            +string password
+            +string email
+        }
+        class logs_sistema {
+            +int id
+            +string accion
+            +datetime fecha
+        }
+        class password_reset_tickets {
+            +int id
+            +string token
+            +datetime expiracion
+        }
+        class Admin {
+            +gestiona_CRUD()
+            +audita_acciones()
+        }
+        class Secretaria {
+            +registra_cita()
+            +genera_factura()
+        }
+        class Doctor {
+            +atiende_cita()
+            +efectua_consulta()
+            +administra_vacuna()
+        }
+
+        usuarios <|-- Admin : Es un
+        usuarios <|-- Secretaria : Es un
+        usuarios <|-- Doctor : Es un
+        Admin "1" --> "*" usuarios : Gestiona
+        Admin "1" --> "*" logs_sistema : Audita
+        usuarios "1" --> "*" password_reset_tickets : Solicita
+
+        %% ========================================================
+        %% BLOQUE 2: MENSAJERÍA Y ALERTAS OPERATIVAS
+        %% ========================================================
+        class mensajes {
+            +int id
+            +string contenido
+            +datetime fecha_envio
+        }
+        class alertas_internas {
+            +int id
+            +string mensaje
+            +string nivel_critico
+        }
+
+        usuarios "1" --> "*" mensajes : Intercambian
+        usuarios "1" --> "*" alertas_internas : Monitorea/Lee
+
+        %% ========================================================
+        %% BLOQUE 3: EXPEDIENTES (Clientes y Pacientes)
+        %% ========================================================
+        class clientes {
+            +int id
+            +string nombre
+            +string telefono
+            +string direccion
+        }
+        class mascotas {
+            +int id
+            +string nombre
+            +string especie
+            +string raza
+            +int edad
+        }
+        class historias_clinicas {
+            +int id
+            +datetime fecha_creacion
+            +string antecedentes
+        }
+
+        clientes "1" -- "*" mascotas : Es dueño de
+        mascotas "1" -- "1" historias_clinicas : Posee
+
+        %% ========================================================
+        %% BLOQUE 4: OPERACIÓN CLÍNICA (Citas y Consultas)
+        %% ========================================================
+        class citas {
+            +int id
+            +datetime fecha_hora
+            +string motivo
+            +string estado
+        }
+        class consultas {
+            +int id
+            +string diagnostico
+            +string tratamiento
+            +decimal costo
+        }
+        class metodos_pago {
+            +int id
+            +string nombre_metodo
+            +bool activo
+        }
+
+        mascotas "1" --> "*" citas : Asigna a
+        Secretaria "1" --> "*" citas : Registra
+        Doctor "1" --> "*" citas : Atiende
+        metodos_pago "1" --> "*" citas : Pre-selecciona
+        citas "1" --> "1" consultas : Deriva en
+        Doctor "1" --> "*" consultas : Efectúa
+        mascotas "1" --> "*" consultas : Asiste a
+
+        %% ========================================================
+        %% BLOQUE 5: INVENTARIO GLOBAL
+        %% ========================================================
+        class productos {
+            +int id
+            +string nombre
+            +int stock_actual
+            +decimal precio_base
+        }
+        class categorias_productos {
+            +int id
+            +string nombre_categoria
+        }
+        class movimientos_inventario {
+            +int id
+            +int cantidad
+            +string tipo_movimiento
+            +datetime fecha
+        }
+        class historial_precios {
+            +int id
+            +decimal precio_anterior
+            +decimal precio_nuevo
+            +datetime fecha_cambio
+        }
+        class vacunas {
+            +int id
+            +string lote
+            +datetime fecha_aplicacion
+        }
+        class consultas_productos {
+            +int id
+            +int cantidad_prescrita
+        }
+
+        Admin "1" --> "*" productos : Administra Stock
+        categorias_productos "1" --> "*" productos : Clasifica
+        productos "1" --> "*" movimientos_inventario : Registra
+        usuarios "1" --> "*" movimientos_inventario : Autoriza
+        productos "1" --> "*" historial_precios : Sufre
+        usuarios "1" --> "*" historial_precios : Modifica
+        mascotas "1" --> "*" vacunas : Recibe dosis
+        Doctor "1" --> "*" vacunas : Administra
+        productos "1" --> "*" vacunas : Usa sustancia
+        consultas "1" --> "*" consultas_productos : Prescribe
+        productos "1" --> "*" consultas_productos : Suministra
+
+        %% ========================================================
+        %% BLOQUE 6: TRANSACCIONES FINANCIERAS (Facturación)
+        %% ========================================================
+        class facturas {
+            +int id
+            +string numero_factura
+            +datetime fecha_emision
+            +decimal total
+        }
+        class detalles_factura {
+            +int id
+            +int cantidad
+            +decimal precio_unitario
+        }
+
+        clientes "1" --> "*" facturas : Se emite a
+        Secretaria "1" --> "*" facturas : Genera
+        consultas "1" --> "0..1" facturas : Asocia cobro
+        mascotas "1" --> "*" facturas : Carga a
+        facturas "1" *-- "*" detalles_factura : Desglosa
+        productos "1" --> "*" detalles_factura : Factura ítem
+
+        %% ========================================================
+        %% BLOQUE 7: PARAMETRIZACIÓN E INTELIGENCIA ARTIFICIAL
+        %% ========================================================
+        class system_configs {
+            +int id
+            +string clave
+            +string valor
+        }
+        class ia_conocimientos {
+            +int id
+            +string topico
+            +string incrustacion_vectorial
+        }
+        class ReporConfigs {
+            +int id
+            +int dias_vencimiento
+        }
+        class FacturaConfigs {
+            +int id
+            +string serie
+        }
+        class MoneyTypes {
+            +int id
+            +string moneda
+            +decimal tasa_bcv
+        }
+
+        Admin "1" --> "*" system_configs : Configura API/BCV
+        Admin "1" --> "*" MoneyTypes : Actualiza Tasa
+        Admin "1" --> "*" ia_conocimientos : Entrena / Alimenta
+        Admin "1" --> "*" ReporConfigs : Parametriza Días
+        Admin "1" --> "*" FacturaConfigs : Parametriza Días
+
+        %% Forzado de alineación horizontal sutil entre flujos maestros
+        usuarios .. clientes
+        clientes .. citas
+        consultas .. productos
+        productos .. facturas
+    </div>
+</div>
+
+</body>
+</html>

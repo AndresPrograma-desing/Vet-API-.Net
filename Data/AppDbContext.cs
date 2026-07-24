@@ -47,7 +47,8 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<Usuario> Usuarios { get; set; }
 
     public virtual DbSet<Mensaje> Mensajes { get; set; }
-        // public virtual DbSet<Models.Reporte> Reportes { get; set; }
+    public virtual DbSet<HistoriaClinica> HistoriasClinicas { get; set; }
+    public virtual DbSet<IaConocimiento> IaConocimientos { get; set; }
 
     public virtual DbSet<Vacuna> Vacunas { get; set; }
 
@@ -63,8 +64,7 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<Models.WSMessageAPIData> WSMessageAPIData { get; set; }
     public virtual DbSet<Models.EmailTemplate> EmailTemplates { get; set; }
     public virtual DbSet<Models.PasswordResetTicket> PasswordResetTickets { get; set; }
-    public virtual DbSet<HistoriaClinica> HistoriasClinicas { get; set; }
-    public virtual DbSet<IaConocimiento> IaConocimientos { get; set; }
+
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

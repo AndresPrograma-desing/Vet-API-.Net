@@ -45,4 +45,34 @@ public class PetsController : ControllerBase
             return StatusCode(500, new { error = ex.Message });
         }
     }
+
+    [HttpPut(Endpoints.PetsController.Update)]
+    public async Task<IActionResult> UpdateMascota([FromRoute] int id, [FromBody] UpdatePetDTO dto)
+    {
+        try
+        {
+            var result = await _petsService.UpdateMascotaAsync(id, dto);
+            if (result == null) return NotFound(new { message = ResponseMessagesPetsController.MascotaNotFound });
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    [HttpDelete(Endpoints.PetsController.Delete)]
+    public async Task<IActionResult> DeleteMascota([FromRoute] int id)
+    {
+        try
+        {
+            var success = await _petsService.DeleteMascotaAsync(id);
+            if (!success) return NotFound(new { message = ResponseMessagesPetsController.MascotaNotFound });
+            return Ok(new { message = "Mascota eliminada correctamente con todo su historial clínico, citas y consultas asociadas." });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
 }

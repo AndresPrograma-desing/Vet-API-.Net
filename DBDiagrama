@@ -1,0 +1,443 @@
+## Table `__EFMigrationsHistory`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `MigrationId` | `varchar` | Primary |
+| `ProductVersion` | `varchar` |  |
+
+## Table `categorias_productos`
+
+### Columns
+
+| Name          | Type        | Constraints      |
+| ---------------| -------------| ------------------|
+| `id`          | `int4`      | Primary Identity |
+| `nombre`      | `varchar`   |                  |
+| `descripcion` | `text`      | Nullable         |
+| `activo`      | `bool`      | Nullable         |
+| `creado`      | `timestamp` |                  |
+| `actualizado` | `timestamp` |                  |
+
+## Table `clientes`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `nombre` | `varchar` |  |
+| `apellido` | `varchar` |  |
+| `email` | `varchar` |  |
+| `telefono` | `varchar` |  Nullable |
+| `direccion` | `text` |  Nullable |
+| `identificacion` | `varchar` |  Nullable |
+| `nota` | `text` |  Nullable |
+| `creado` | `timestamp` |  |
+| `actualizado` | `timestamp` |  |
+
+## Table `EmailTemplates`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `Id` | `int4` | Primary Identity |
+| `HtmlCode` | `text` |  |
+| `TypeEmail` | `text` |  Nullable |
+| `Update` | `timestamp` |  |
+| `CreatedAt` | `timestamp` |  |
+
+## Table `FacturaConfigs`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `Id` | `int4` | Primary Identity |
+| `Days` | `int4` |  |
+| `IsEnabled` | `bool` |  |
+| `GenerateEnabled` | `bool` |  |
+| `LastUpdated` | `timestamp` |  |
+
+## Table `metodos_pago`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `nombre` | `varchar` |  |
+| `creado` | `timestamp` |  |
+| `actualizado` | `timestamp` |  |
+
+## Table `MoneyTypes`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `Id` | `int4` | Primary Identity |
+| `MoneyName` | `text` |  |
+| `BcvDollar` | `numeric` |  |
+| `DollarPersistence` | `text` |  |
+| `Fecha` | `timestamp` |  |
+
+## Table `ReporConfigs`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `Id` | `int4` | Primary Identity |
+| `Days` | `int4` |  |
+| `IsEnabled` | `bool` |  |
+| `GenerateEnabled` | `bool` |  |
+| `LastUpdated` | `timestamp` |  |
+
+## Table `Reportes`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `Id` | `int4` | Primary Identity |
+| `Titulo` | `text` |  Nullable |
+| `FechaCreacion` | `timestamp` |  |
+| `Categoria` | `text` |  Nullable |
+| `Filtro` | `text` |  Nullable |
+| `Datos` | `text` |  Nullable |
+| `GeneradoPor` | `text` |  Nullable |
+
+## Table `system_configs`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `frontend_url` | `varchar` |  Nullable |
+| `backend_external_url` | `varchar` |  Nullable |
+| `last_updated` | `timestamp` |  |
+| `bcv_api_url` | `varchar` |  Nullable |
+| `resend_api_key` | `varchar` |  Nullable |
+| `resend_api_url` | `varchar` |  Nullable |
+| `resend_from_email` | `varchar` |  Nullable |
+
+## Table `usuarios`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `nombre` | `varchar` |  |
+| `apellido` | `varchar` |  |
+| `email` | `varchar` |  |
+| `contraseña` | `varchar` |  |
+| `PasswordRecoveryCode` | `text` |  Nullable |
+| `CodeRecoveryExpireDate` | `timestamp` |  Nullable |
+| `rol` | `text` |  |
+| `activo` | `bool` |  Nullable |
+| `ultimo_acceso` | `timestamp` |  Nullable |
+| `creado` | `timestamp` |  |
+| `actualizado` | `timestamp` |  |
+| `AvatarUrl` | `text` |  Nullable |
+
+## Table `WSMessageAPIData`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `ClientId` | `text` | Primary |
+| `ApiKey` | `text` |  Nullable |
+| `Message` | `text` |  Nullable |
+| `Update` | `timestamp` |  |
+
+## Table `productos`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `codigo` | `varchar` |  |
+| `nombre` | `varchar` |  |
+| `descripcion` | `text` |  Nullable |
+| `categoria_id` | `int4` |  Nullable |
+| `tipo` | `text` |  |
+| `precio` | `numeric` |  |
+| `precio_venta` | `numeric` |  |
+| `stock` | `int4` |  Nullable |
+| `stock_minimo` | `int4` |  Nullable |
+| `unidad_medida` | `varchar` |  Nullable |
+| `proveedor` | `varchar` |  Nullable |
+| `requiere_receta` | `bool` |  Nullable |
+| `creado` | `timestamp` |  |
+| `actualizado` | `timestamp` |  |
+
+## Table `mascotas`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `cliente_id` | `int4` |  |
+| `nombre` | `varchar` |  |
+| `especie` | `text` |  |
+| `raza` | `varchar` |  Nullable |
+| `color` | `varchar` |  Nullable |
+| `sexo` | `text` |  |
+| `fecha_nacimiento` | `date` |  Nullable |
+| `peso` | `numeric` |  Nullable |
+| `identeficacion_mascota` | `varchar` |  Nullable |
+| `alergias` | `text` |  Nullable |
+| `condiciones_medicas` | `text` |  Nullable |
+| `esterilizado` | `bool` |  Nullable |
+| `creado` | `timestamp` |  |
+| `actualizado` | `timestamp` |  |
+
+## Table `alertas_internas`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `titulo` | `varchar` |  |
+| `mensaje` | `text` |  Nullable |
+| `tipo` | `text` |  |
+| `prioridad` | `text` |  Nullable |
+| `destinatario_rol` | `text` |  Nullable |
+| `destinatario_id` | `int4` |  Nullable |
+| `referencia_tabla` | `varchar` |  Nullable |
+| `referencia_id` | `int4` |  Nullable |
+| `accion_requerida` | `bool` |  Nullable |
+| `fecha_limite` | `date` |  Nullable |
+| `completada` | `bool` |  Nullable |
+| `fecha_completado` | `timestamp` |  Nullable |
+| `leida` | `bool` |  Nullable |
+| `fecha_lectura` | `timestamp` |  Nullable |
+| `leida_por` | `int4` |  Nullable |
+| `created_at` | `timestamp` |  |
+
+## Table `logs_sistema`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `usuario_id` | `int4` |  Nullable |
+| `accion` | `varchar` |  |
+| `tabla_afectada` | `varchar` |  Nullable |
+| `registro_id` | `int4` |  Nullable |
+| `datos_previos` | `text` |  Nullable |
+| `datos_nuevos` | `text` |  Nullable |
+| `ip_address` | `varchar` |  Nullable |
+| `user_agent` | `text` |  Nullable |
+| `created_at` | `timestamp` |  |
+
+## Table `mensajes`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `emisor_id` | `int4` |  |
+| `receptor_id` | `int4` |  |
+| `contenido` | `text` |  |
+| `leido` | `bool` |  Nullable |
+| `fecha_envio` | `timestamp` |  |
+
+## Table `historial_precios`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `producto_id` | `int4` |  |
+| `precio_anterior` | `numeric` |  |
+| `precio_nuevo` | `numeric` |  |
+| `usuario_id` | `int4` |  |
+| `motivo` | `text` |  Nullable |
+| `fecha_cambio` | `timestamp` |  |
+
+## Table `movimientos_inventario`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `producto_id` | `int4` |  |
+| `tipo_movimiento` | `text` |  |
+| `cantidad` | `int4` |  |
+| `stock_anterior` | `int4` |  |
+| `stock_nuevo` | `int4` |  |
+| `motivo` | `varchar` |  |
+| `referencia_id` | `int4` |  Nullable |
+| `usuario_id` | `int4` |  |
+| `fecha_movimiento` | `timestamp` |  |
+
+## Table `citas`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `mascota_id` | `int4` |  |
+| `doctor_id` | `int4` |  |
+| `secretaria_id` | `int4` |  Nullable |
+| `fecha_cita` | `timestamp` |  |
+| `hora_cita` | `time` |  |
+| `motivo` | `text` |  |
+| `tipo_cita` | `text` |  Nullable |
+| `estado` | `text` |  Nullable |
+| `notas` | `text` |  Nullable |
+| `metodo_pago_id` | `int4` |  Nullable |
+
+## Table `consultas`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `cita_id` | `int4` |  |
+| `mascota_id` | `int4` |  |
+| `doctor_id` | `int4` |  |
+| `fecha_consulta` | `timestamp` |  |
+| `peso_actual` | `numeric` |  Nullable |
+| `temperatura` | `numeric` |  Nullable |
+| `sintomas` | `text` |  |
+| `diagnostico` | `text` |  Nullable |
+| `tratamiento` | `text` |  Nullable |
+| `receta` | `text` |  Nullable |
+| `observaciones` | `text` |  Nullable |
+| `ConsultaPrice` | `numeric` |  Nullable |
+| `creado` | `timestamp` |  |
+
+## Table `consultas_productos`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `consulta_id` | `int4` |  |
+| `producto_id` | `int4` |  |
+| `cantidad` | `int4` |  |
+| `precio_unitario` | `numeric` |  |
+| `dosis` | `varchar` |  Nullable |
+| `via_administracion` | `varchar` |  Nullable |
+| `frecuencia` | `varchar` |  Nullable |
+| `duracion` | `varchar` |  Nullable |
+| `instrucciones` | `text` |  Nullable |
+| `aplicado_por` | `int4` |  Nullable |
+| `creado` | `timestamp` |  |
+
+## Table `facturas`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `numero_factura` | `varchar` |  |
+| `cliente_id` | `int4` |  |
+| `mascota_id` | `int4` |  Nullable |
+| `consulta_id` | `int4` |  Nullable |
+| `secretaria_id` | `int4` |  |
+| `fecha_emision` | `timestamp` |  |
+| `subtotal` | `numeric` |  |
+| `descuento` | `numeric` |  Nullable |
+| `total` | `numeric` |  |
+| `metodo_pago` | `text` |  |
+| `estado_pago` | `text` |  Nullable |
+| `notas` | `text` |  Nullable |
+| `url_docx` | `varchar` |  Nullable |
+| `creado` | `timestamp` |  |
+| `actualizado` | `timestamp` |  |
+
+## Table `vacunas`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `mascota_id` | `int4` |  |
+| `producto_id` | `int4` |  |
+| `consulta_id` | `int4` |  Nullable |
+| `fecha_vacunacion` | `date` |  |
+| `proxima_dosis` | `date` |  Nullable |
+| `lote` | `varchar` |  Nullable |
+| `doctor_id` | `int4` |  Nullable |
+| `nota` | `text` |  Nullable |
+| `creado` | `timestamp` |  |
+
+## Table `detalles_factura`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `factura_id` | `int4` |  |
+| `producto_id` | `int4` |  |
+| `productos_consultas_id` | `int4` |  Nullable |
+| `descripcion` | `text` |  Nullable |
+| `cantidad` | `int4` |  |
+| `precio_unitario` | `numeric` |  |
+| `total` | `numeric` |  |
+| `created` | `timestamp` |  |
+
+## Table `password_reset_tickets`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `usuario_id` | `int4` |  |
+| `token` | `varchar` |  |
+| `estado` | `varchar` |  |
+| `expiracion` | `timestamp` |  |
+| `creado` | `timestamp` |  |
+
+## Table `historias_clinicas`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `mascota_id` | `int4` |  |
+| `resumen_ia` | `text` |  Nullable |
+| `alertas_riesgo_ia` | `text` |  Nullable |
+| `sugerencias_ia` | `text` |  Nullable |
+| `notas_veterinario` | `text` |  Nullable |
+| `ultimo_analisis_ia` | `timestamp` |  Nullable |
+| `creado` | `timestamp` |  |
+| `actualizado` | `timestamp` |  |
+
+## Table `ia_conocimientos`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int4` | Primary Identity |
+| `reglas_respuesta` | `text` |  |
+| `base_conocimiento` | `text` |  |
+| `categoria` | `varchar` |  |
+| `creado` | `timestamp` |  |
+| `actualizado` | `timestamp` |  |
+

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DTOs;
 using Microsoft.EntityFrameworkCore;
 using vet_api_Net.Constants;
+using vet_api_Net.Constants;
 using vet_api_Net.Data;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Models;
@@ -68,17 +69,17 @@ public class CitasRepository : ICitasRepository
         return await _context.Citas
             .Where(c => c.FechaCita.Date == fecha.Date && c.HoraCita > horaDesde
             && c.Estado != Status.Completed
-            && c.Estado != Status.Cancelled )
+            && c.Estado != Status.Cancelled)
             .OrderBy(c => c.HoraCita)
             .Select(c => new NotificationCitaDTO
             {
                 FechaCita = c.FechaCita.ToString(dateFormat),
                 HoraCita = c.HoraCita.ToString(timeFormat),
                 MascotaNombre = c.Mascota != null ? c.Mascota.Nombre : string.Empty,
-                ClienteNombre = c.Mascota != null && c.Mascota.Cliente != null 
+                ClienteNombre = c.Mascota != null && c.Mascota.Cliente != null
                     ? (c.Mascota.Cliente.Nombre + " " + c.Mascota.Cliente.Apellido).Trim()
                     : string.Empty
-                
+
             })
             .ToListAsync();
     }
@@ -90,4 +91,25 @@ public class CitasRepository : ICitasRepository
     public void Delete(Cita cita) => _context.Citas.Remove(cita);
 
     public async Task<bool> SaveChangesAsync() => await _context.SaveChangesAsync() > 0;
+
+    public Task<List<string>> GetCitaStatusesAsync()
+    {
+        var statuses = new List<string>
+    {
+        Status.Cancelled,
+        Status.Completed,
+        Status.InCurso,
+        Status.NotAssisted,
+        Status.Pending,
+        Status.NotAssisted
+
+    };
+        return Task.FromResult(statuses);
+    }
+
+    // public async Task<Cita?> UpdateCitaAsync(int id)
+    // {
+        
+    //     return await _context.Citas.FindAsync(id);
+    // }
 }

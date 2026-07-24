@@ -181,6 +181,12 @@ public class UserService : IUserService
     {
         var user = await _userRepository.GetByIdAsync(id);
         if (user == null) return null;
+
+        if (string.Equals(user.Rol, "admin", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(ResponseMessagesUsers.CannotDeleteAdmin);
+        }
+
         try
         {
             await _userRepository.DeleteUserAsync(user);
