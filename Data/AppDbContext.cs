@@ -4,6 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 using vet_api_Net.Models;
 
+/*
+ describe: 
+ - Este archivo es para configurar el contexto de la base de datos,
+   Organiza los DbSets de los modelos de la base de datos para su facil orden y escalabilidad
+*/
+
 namespace vet_api_Net.Data;
 
 public partial class AppDbContext : DbContext
@@ -65,7 +71,7 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<Models.EmailTemplate> EmailTemplates { get; set; }
     public virtual DbSet<Models.PasswordResetTicket> PasswordResetTickets { get; set; }
 
-    
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         // Connection string removed to avoid embedding credentials in source code.
@@ -78,7 +84,7 @@ public partial class AppDbContext : DbContext
         // Intentionally left blank: do not configure a provider here.
     }
 
-     protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<PasswordResetTicket>(entity =>
         {

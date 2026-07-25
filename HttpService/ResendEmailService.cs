@@ -87,39 +87,39 @@ public class ResendEmailService : IEmailSenderService
 
             if (_failureTracker.IsBlocked("ResendEmail"))
             {
-                throw new InvalidOperationException(ResponseMessagesEmailsController.ProviderError);
+                return false;
             }
 
             if (string.IsNullOrWhiteSpace(apiUrl) || 
                 string.IsNullOrWhiteSpace(apiKey) || 
                 string.IsNullOrWhiteSpace(fromEmail))
             {
-                RecordFailureAndThrow(ResponseMessagesEmailsController.SendEmailError);
+                _failureTracker.RecordFailure("ResendEmail");
+                return false;
             }
 
-        var requestBody = new Dictionary<string, object>
-        {
-            { "from", fromEmail! },
-            { "to", new[] { to } },
-            { "subject", subject },
-            { "html", htmlBody }
-        };
-
-        if (attachmentBytes != null && !string.IsNullOrEmpty(attachmentName))
-        {
-            var base64Content = Convert.ToBase64String(attachmentBytes);
-            requestBody["attachments"] = new[]
+            var requestBody = new Dictionary<string, object>
             {
-                new { filename = attachmentName, content = base64Content }
+                { "from", fromEmail! },
+                { "to", new[] { to } },
+                { "subject", subject },
+                { "html", htmlBody }
             };
-        }
 
-        var jsonPayload = JsonSerializer.Serialize(requestBody);
-        using var request = new HttpRequestMessage(HttpMethod.Post, apiUrl);
-        
-        request.Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-        
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+            if (attachmentBytes != null && !string.IsNullOrEmpty(attachmentName))
+            {
+                var base64Content = Convert.ToBase64String(attachmentBytes);
+                requestBody["attachments"] = new[]
+                {
+                    new { filename = attachmentName, content = base64Content }
+                };
+            }
+
+            var jsonPayload = JsonSerializer.Serialize(requestBody);
+            using var request = new HttpRequestMessage(HttpMethod.Post, apiUrl);
+            
+            request.Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
             var response = await _httpClient.SendAsync(request);
             
@@ -128,19 +128,16 @@ public class ResendEmailService : IEmailSenderService
                 var errorDetails = await response.Content.ReadAsStringAsync();
                 string friendlyMessage = ParseResendError(errorDetails);
                 RecordFailureAndThrow(friendlyMessage);
+                _failureTracker.RecordFailure("ResendEmail");
+                return false;
             }
 
             _failureTracker.Reset("ResendEmail");
             return true;
         }
-        catch (HttpRequestException ex)
+        catch (Exception)
         {
-            RecordFailureAndThrow(ResponseMessagesEmailsController.ConnectionFailed, ex);
-            return false; 
-        }
-        catch (Exception ex) when (ex is not InvalidOperationException)
-        {
-            RecordFailureAndThrow(string.Format(ResponseMessagesEmailsController.UnexpectedError, ex.Message), ex);
+            _failureTracker.RecordFailure("ResendEmail");
             return false;
         }
     }
@@ -168,25 +165,25 @@ public class ResendEmailService : IEmailSenderService
                 
                 if (message.Contains("API key is invalid", StringComparison.OrdinalIgnoreCase))
                 {
-                    return "ERROR: La clave de la API de Resend no es válida o ha expirado. Por favor, revise la configuración en appsettings.json o en el panel del administrador.";
+                    return ResponseMessagesEmailsController.ProviderErrorInvalidKey;
                 }
                 if (message.Contains("Invalid `to` field", StringComparison.OrdinalIgnoreCase) || 
                     message.Contains("needs to follow the", StringComparison.OrdinalIgnoreCase))
                 {
-                    return "ERROR: El correo de destino no es válido o tiene un dominio incorrecto (ej. un correo como 'admin@.dev' no existe). Por favor, verifique el correo del usuario.";
+                    return ResponseMessagesEmailsController.ProviderErrorInvalidTo;
                 }
                 if (message.Contains("restricted", StringComparison.OrdinalIgnoreCase) || 
                     message.Contains("send emails to your own email address", StringComparison.OrdinalIgnoreCase) ||
                     message.Contains("not verified", StringComparison.OrdinalIgnoreCase))
                 {
-                    return "ERROR: El servicio de correos (Resend) está en modo Sandbox de desarrollo. Solo se permite enviar correos a la dirección registrada en la cuenta de Resend.";
+                    return ResponseMessagesEmailsController.ProviderErrorSandboxRestricted;
                 }
                 if (message.Contains("validation", StringComparison.OrdinalIgnoreCase))
                 {
-                    return $"ERROR de validación de correo: {message}";
+                    return ResponseMessagesEmailsController.ProviderErrorValidation(message);
                 }
                 
-                return $"ERROR: {message}";
+                return ResponseMessagesEmailsController.ProviderErrorGeneric(message);
             }
         }
         catch

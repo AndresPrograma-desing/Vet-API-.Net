@@ -1,5 +1,13 @@
 namespace vet_api_Net.Infrastructure.Configuration;
 
+
+/* Describe
+- Este archivo es para configurar las variables de entorno, 
+   Su funcion es traer las variables de entorno del archivo appsettings.json y 
+   agruparlas en clases para su facil acceso
+*/
+
+
 public class ApiSettingsOptions
 {
     public const string SectionName = "ApiSettings";

@@ -1,6 +1,11 @@
 using System;
-// This class centralizes all the endpoint routes for the API, making it easier to manage and maintain them in one place.
-// Esta clase centraliza todas las rutas de los puntos finales de la API, lo que facilita su gestión y mantenimiento en un solo lugar.
+
+/*
+ describe: 
+ - Este archivo es para configurar las rutas de los endpoints, 
+   Organiza los strings de las rutas de los endpoints en clases para su facil orden y escalabilidad
+*/
+
 namespace vet_api_Net.Routes
 {
     public static class Endpoints

@@ -1,6 +1,11 @@
 using System;
-// This file contains all the constant response messages used across the application for consistency and maintainability.
-// Este archivo contiene todos los mensajes de respuesta constantes utilizados en toda la aplicación para garantizar la coherencia y la facilidad de mantenimiento.
+
+/*
+ describe: 
+ - Este archivo es para configurar los mensajes de respuesta del sistema, 
+   Organiza los strings de las respuestas en clases para su facil orden y escalabilidad
+*/
+
 namespace vet_api_Net.Constants
 {
     public static class ResponseErrors
@@ -308,7 +313,7 @@ namespace vet_api_Net.Constants
         public const string GroqApiError = "Hay un error de configuración en la solicitud enviada a NowGroq.ia.";
         public const string GroqResponseInvalid = "El modelo de ia devolvio una respuesta no valida, ";
         public const string GroqApiKeyError = "El Api Key de NowGroq.ia no se encuentra configurada en el sistema.";
-        
+
         public static class GroqPromts
         {
             public const string YouAre = "Eres un asistente veterinario experto e inteligente. Responde las preguntas de manera clara, concisa y profesional en español. Se más profesional con preguntas relacionadas a animales o cosas relacionadas con veterinarios.";
@@ -487,6 +492,12 @@ namespace vet_api_Net.Constants
         public const string ProviderError = "ERROR. Hubo un error al intentar enviar el correo, por favor intente de nuevo.";
         public const string ConnectionFailed = "No se pudo establecer conexión con el proveedor de correos (Resend). Verifique su conexión de red.";
         public const string UnexpectedError = "Ocurrió un error inesperado al enviar el correo.";
+
+        public const string ProviderErrorInvalidKey = "ERROR: La clave de la API de Resend no es válida o ha expirado. Por favor, revise la configuración en appsettings.json o en el panel del administrador.";
+        public const string ProviderErrorInvalidTo = "ERROR: El correo de destino no es válido o tiene un dominio incorrecto (ej. un correo como 'admin@.dev' no existe). Por favor, verifique el correo del usuario.";
+        public const string ProviderErrorSandboxRestricted = "ERROR: El servicio de correos (Resend) está en modo Sandbox de desarrollo. Solo se permite enviar correos a la dirección registrada en la cuenta de Resend.";
+        public static string ProviderErrorValidation(string message) => $"ERROR de validación de correo: {message}";
+        public static string ProviderErrorGeneric(string message) => $"ERROR: {message}";
     }
 
     public static class EmailTypes

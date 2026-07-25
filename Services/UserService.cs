@@ -255,7 +255,14 @@ public class UserService : IUserService
         htmlBody = htmlBody.Replace("{{confirm_link}}", confirmLink);
         htmlBody = htmlBody.Replace("{{system_name}}", _apiSettings.SystemName);
 
-        await _emailSenderService.SendEmailAsync(user.Email, ResponseMessagesUsers.PasswordResetSubject, htmlBody, null, null);
+        var sent = await _emailSenderService.SendEmailAsync(user.Email, ResponseMessagesUsers.PasswordResetSubject, htmlBody, null, null);
+        if (!sent)
+        {
+            user.Activo = true;
+            _userRepository.Update(user);
+            await _userRepository.SaveChangesAsync();
+            throw new InvalidOperationException(ResponseMessagesEmailsController.SendEmailError);
+        }
 
         return true;
     }
