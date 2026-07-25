@@ -126,7 +126,8 @@ public class ResendEmailService : IEmailSenderService
             if (!response.IsSuccessStatusCode)
             {
                 var errorDetails = await response.Content.ReadAsStringAsync();
-                RecordFailureAndThrow($"{ResponseMessagesEmailsController.ProviderError} Detalles: {errorDetails}");
+                string friendlyMessage = ParseResendError(errorDetails);
+                RecordFailureAndThrow(friendlyMessage);
             }
 
             _failureTracker.Reset("ResendEmail");
@@ -152,5 +153,47 @@ public class ResendEmailService : IEmailSenderService
             throw new InvalidOperationException(message, innerException);
         }
         throw new InvalidOperationException(message);
+    }
+
+    private string ParseResendError(string errorDetails)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(errorDetails);
+            var root = doc.RootElement;
+            
+            if (root.TryGetProperty("message", out var messageProp))
+            {
+                string message = messageProp.GetString() ?? "";
+                
+                if (message.Contains("API key is invalid", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "ERROR: La clave de la API de Resend no es válida o ha expirado. Por favor, revise la configuración en appsettings.json o en el panel del administrador.";
+                }
+                if (message.Contains("Invalid `to` field", StringComparison.OrdinalIgnoreCase) || 
+                    message.Contains("needs to follow the", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "ERROR: El correo de destino no es válido o tiene un dominio incorrecto (ej. un correo como 'admin@.dev' no existe). Por favor, verifique el correo del usuario.";
+                }
+                if (message.Contains("restricted", StringComparison.OrdinalIgnoreCase) || 
+                    message.Contains("send emails to your own email address", StringComparison.OrdinalIgnoreCase) ||
+                    message.Contains("not verified", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "ERROR: El servicio de correos (Resend) está en modo Sandbox de desarrollo. Solo se permite enviar correos a la dirección registrada en la cuenta de Resend.";
+                }
+                if (message.Contains("validation", StringComparison.OrdinalIgnoreCase))
+                {
+                    return $"ERROR de validación de correo: {message}";
+                }
+                
+                return $"ERROR: {message}";
+            }
+        }
+        catch
+        {
+            // Si hay un error al parsear el JSON, caer en la excepción genérica
+        }
+
+        return $"{ResponseMessagesEmailsController.ProviderError} Detalles: {errorDetails}";
     }
 }

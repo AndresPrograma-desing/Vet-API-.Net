@@ -172,6 +172,7 @@ namespace vet_api_Net.Routes
             public const string GetTemplateById = "templates/{id}";
             public const string UpdateTemplate = "templates/{id}";
             public const string DataResend = "data-resend";
+            public const string UpdateResend = "update-resend";
         }
         public static class PasswordRecovery
         {
