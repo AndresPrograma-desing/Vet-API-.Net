@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using vet_api_Net.Models;
 using DTOs;
+using vet_api_Net.Models;
 
 namespace vet_api_Net.Interfaze.Repositories;
 
@@ -18,4 +18,6 @@ public interface ICitasRepository
     void Delete(Cita cita);
     Task<bool> SaveChangesAsync();
     Task<List<NotificationCitaDTO>> GetUpcomingNotificationsAsync(DateTime fecha, TimeOnly horaDesde, string dateFormat, string timeFormat);
+    // Task<Cita?> UpdateCitaAsync(int id);
+    // Task<Cita?> GetCitaStatusAsync();
 }

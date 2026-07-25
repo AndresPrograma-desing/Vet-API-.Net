@@ -1,16 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using DTOs;
-using vet_api_Net.Interfaze.Services;
-using vet_api_Net.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using vet_api_Net.Constants;
-using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Extensions;
 using vet_api_Net.Infrastructure.Configuration;
-using Microsoft.Extensions.Options;
+using vet_api_Net.Interfaze.Repositories;
+using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Models;
+using vet_api_Net.Routes;
 
 namespace vet_api_Net.Services;
 
@@ -20,27 +22,35 @@ public class CitasRequestService : ICitasRequestService
     private readonly IConfiguration _configuration;
     private readonly ApiSettingsOptions _apiSettings;
 
-    public CitasRequestService(ICitasRepository citasRepository, IConfiguration configuration,IOptions<ApiSettingsOptions> apiSettingsOptions)
+    public CitasRequestService(ICitasRepository citasRepository, IConfiguration configuration, IOptions<ApiSettingsOptions> apiSettingsOptions)
     {
         _citasRepository = citasRepository;
         _configuration = configuration;
         _apiSettings = apiSettingsOptions.Value;
     }
 
-    public async Task<List<CitasRequestDTO>> GetAllCitasRequestsAsync()
+    public async Task<List<CitasRequestDTO>> GetAllCitasRequestsAsync(string? status = null, DateTime? date = null, bool allDates = false)
     {
-
-
         try
         {
-            var citas = await _citasRepository.GetAllWithRelationsAsync();
+            var appointments = await _citasRepository.GetAllWithRelationsAsync();
 
-            return citas.Select(c =>
+            if (!allDates)
             {
-                var dto = c.ToRequestDTO();
+                DateTime targetDate = date?.Date ?? DateTime.Today;
 
-                dto.FechaCita = c.FechaCita.ToString(_apiSettings.DateFormat);
+                appointments = appointments.Where(a => a.FechaCita.Date == targetDate).ToList();
+            }
 
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                appointments = appointments.Where(a => a.Estado.Equals(status, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            return appointments.Select(a =>
+            {
+                var dto = a.ToRequestDTO();
+                dto.FechaCita = a.FechaCita.ToString(_apiSettings.DateFormat);
                 return dto;
             }).ToList();
         }
@@ -49,7 +59,6 @@ public class CitasRequestService : ICitasRequestService
             throw new Exception($"{ResponseMessagesCitas.ErrorRequestingCitas} : {ex.Message}");
         }
     }
-
     public async Task<CitaDetalleDTO?> GetCitaRequestDetailsAsync(int id)
     {
         try
@@ -170,6 +179,64 @@ public class CitasRequestService : ICitasRequestService
         return dto;
     }
 
+    public async Task<CitasRequestDTO?> UpdateCitaAsync(int id, UpdateCitaDTO dto)
+    {
+        ArgumentNullException.ThrowIfNull(dto);
+
+        var cita = await _citasRepository.GetByIdWithRelationsAsync(id);
+        if (cita == null) return null;
+
+        if (!string.IsNullOrWhiteSpace(dto.HoraCita))
+        {
+            if (!TimeOnly.TryParse(dto.HoraCita, out TimeOnly hora))
+            {
+                if (!TimeOnly.TryParseExact(dto.HoraCita, new[] { _apiSettings.TimeFormat, "HH:mm", "HH:mm:ss", "h:mm tt", "hh:mm tt", "h:mm TT", "hh:mm TT" }, CultureInfo.InvariantCulture, DateTimeStyles.None, out hora))
+                {
+                    throw new ArgumentException(ResponseMessagesCitas.InvalidHoraCita);
+                }
+            }
+            cita.HoraCita = hora;
+        }
+
+        if (!string.IsNullOrWhiteSpace(dto.TipoCita))
+        {
+            var val = dto.TipoCita.Trim().ToLowerInvariant();
+            if (val.Contains("consulta")) val = TypeConsultas.Consulta;
+            else if (val.Contains("vacuna")) val = TypeConsultas.Vacunacion;
+            else if (val.Contains("cirug")) val = TypeConsultas.Cirugia;
+            else if (val.Contains("emerg")) val = TypeConsultas.Emergencia;
+            else if (val.Contains("segui")) val = TypeConsultas.Seguimiento;
+
+            var allowedTypes = new[] { TypeConsultas.Consulta, TypeConsultas.Vacunacion, TypeConsultas.Cirugia, TypeConsultas.Emergencia, TypeConsultas.Seguimiento };
+            if (!allowedTypes.Contains(val, StringComparer.OrdinalIgnoreCase))
+                throw new ArgumentException($"Tipo de cita no válido. Valores permitidos: {string.Join(", ", allowedTypes)}");
+            cita.TipoCita = val;
+        }
+
+        if (!string.IsNullOrWhiteSpace(dto.Estado))
+        {
+            var allowedStates = new[] { Status.Programed, Status.Completed, Status.Cancelled, Status.NotAssisted, Status.InCurso, Status.Pending };
+            if (!allowedStates.Contains(dto.Estado, StringComparer.OrdinalIgnoreCase))
+                throw new ArgumentException($"{ResponseMessagesCitas.StatuNoValid} {string.Join(", ", allowedStates)}");
+            cita.Estado = dto.Estado;
+        }
+
+        if (dto.MascotaId > 0) cita.MascotaId = dto.MascotaId;
+        if (dto.DoctorId > 0) cita.DoctorId = dto.DoctorId;
+        if (dto.SecretariaId.HasValue) cita.SecretariaId = dto.SecretariaId.Value;
+        if (dto.FechaCita.HasValue) cita.FechaCita = dto.FechaCita.Value.Date;
+        if (dto.Motivo != null) cita.Motivo = dto.Motivo;
+        if (dto.Notas != null) cita.Notas = dto.Notas;
+
+        _citasRepository.Update(cita);
+        await _citasRepository.SaveChangesAsync();
+
+        var updatedCita = await _citasRepository.GetByIdWithRelationsAsync(id);
+        var resultDto = (updatedCita ?? cita).ToRequestDTO();
+        resultDto.FechaCita = (updatedCita ?? cita).FechaCita.ToString(_apiSettings.DateFormat);
+        return resultDto;
+    }
+
     public async Task<StatusCitaRequestDTO> StatusCitaRequestAsync(int id)
     {
         var statusCita = await _citasRepository.GetByIdAsync(id)
@@ -215,7 +282,7 @@ public class CitasRequestService : ICitasRequestService
             throw new Exception($"{ResponseMessagesCitas.ErrorProcessingCita} : {ex.Message}");
         }
     }
- public async Task<List<NotificationCitaDTO>> NotificationCitaAsync()
+    public async Task<List<NotificationCitaDTO>> NotificationCitaAsync()
     {
         try
         {
@@ -223,9 +290,9 @@ public class CitasRequestService : ICitasRequestService
             var horaActual = TimeOnly.FromDateTime(ahora);
 
             return await _citasRepository.GetUpcomingNotificationsAsync(
-                ahora.Date, 
-                horaActual, 
-                _apiSettings.DateFormat!, 
+                ahora.Date,
+                horaActual,
+                _apiSettings.DateFormat!,
                 _apiSettings.TimeFormat!
             );
         }
@@ -233,5 +300,34 @@ public class CitasRequestService : ICitasRequestService
         {
             throw new Exception($"{ResponseMessagesCitas.ErrorProcessingCita}: {ex.Message}");
         }
+    }
+
+       public Task<List<string>> GetCitaStatusesAsync()
+    {
+        var statuses = new List<string>
+    {
+        Status.Cancelled,
+        Status.Completed,
+        Status.InCurso,
+        Status.NotAssisted,
+        Status.Pending,
+        Status.Programed
+
+    };
+        return Task.FromResult(statuses);
+    }
+
+    public Task<List<string>> GetCitaTypesAsync()
+    {
+        var types = new List<string>
+        {
+            TypeConsultas.Consulta,
+            TypeConsultas.Vacunacion,
+            TypeConsultas.Cirugia,
+            TypeConsultas.Emergencia,
+            TypeConsultas.Seguimiento,
+            TypeConsultas.Desparasitacion
+        };
+        return Task.FromResult(types);
     }
 }

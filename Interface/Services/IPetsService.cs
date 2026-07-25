@@ -8,4 +8,6 @@ public interface IPetsService
 {
     Task<List<MascotaResumenDTO>> GetAllMascotasAsync();
     Task<MascotaResumenDTO?> GetMascotaByIdAsync(int id);
+    Task<MascotaResumenDTO?> UpdateMascotaAsync(int id, UpdatePetDTO dto);
+    Task<bool> DeleteMascotaAsync(int id);
 }

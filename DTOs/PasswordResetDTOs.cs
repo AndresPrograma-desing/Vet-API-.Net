@@ -31,4 +31,10 @@ public record ResetStatusResponseDTO
 
     [JsonPropertyName("status")]
     public string Status { get; set; } = string.Empty;
+
+    [JsonPropertyName("expiracion")]
+    public DateTime? Expiracion { get; set; }
+
+    [JsonPropertyName("expires_in_seconds")]
+    public double? ExpiresInSeconds { get; set; }
 }

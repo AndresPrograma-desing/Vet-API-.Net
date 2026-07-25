@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Diagrama de Clases UML Completo (Para Diapositivas)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f3f4f6; text-align: center; }
+        .container { background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); display: inline-block; width: 95%; max-width: 1600px; }
+        h1 { color: #1f2937; margin-bottom: 5px; }
+        p { color: #4b5563; margin-bottom: 25px; }
+        .mermaid { text-align: center; background: white; padding: 20px; border-radius: 5px; overflow-x: auto; }
+        .btn-print { background-color: #4f46e5; color: white; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 20px; transition: background-color 0.3s; }
+        .btn-print:hover { background-color: #4338ca; }
+        @media print {
+            .btn-print { display: none; }
+            body { background-color: white; margin: 0; }
+            .container { box-shadow: none; padding: 0; width: 100%; max-width: none; }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Diagrama de Clases UML Completo (Ordenado)</h1>
+        <p>Estructura total de Clases en C# (.NET 8): Relacionales e Independientes separadas</p>
+        <div class="mermaid">
+classDiagram
+    %% ==========================================
+    %% 1. CLASES RELACIONALES (CONECTADAS)
+    %% ==========================================
+    class Usuario {
+        +int Id
+        +string Nombre
+        +string Rol
+    }
+
+    class Cliente {
+        +int Id
+        +string Nombre
+        +string Apellido
+    }
+
+    class Mascota {
+        +int Id
+        +string Nombre
+        +string Especie
+    }
+
+    class Cita {
+        +int Id
+        +DateTime FechaCita
+        +string Estado
+    }
+
+    class Consulta {
+        +int Id
+        +DateTime FechaConsulta
+        +decimal ConsultaPrice
+    }
+
+    class ConsultaProducto {
+        +int Id
+        +int Cantidad
+        +string Dosis
+    }
+
+    class Factura {
+        +int Id
+        +string NumeroFactura
+        +decimal Total
+    }
+
+    class DetalleFactura {
+        +int Id
+        +int Cantidad
+        +decimal Total
+    }
+
+    class Producto {
+        +int Id
+        +string Nombre
+        +decimal PrecioVenta
+    }
+
+    class CategoriaProducto {
+        +int Id
+        +string Nombre
+    }
+
+    class Vacuna {
+        +int Id
+        +DateTime FechaVacunacion
+    }
+
+    class HistoriaClinica {
+        +int Id
+        +DateTime UltimoAnalisisIa
+    }
+
+    class MetodoPago {
+        +int Id
+        +string Nombre
+    }
+
+    class HistorialPrecio {
+        +int Id
+        +decimal PrecioNuevo
+        +DateTime FechaCambio
+    }
+
+    class MovimientoInventario {
+        +int Id
+        +string TipoMovimiento
+        +int Cantidad
+    }
+
+    class Mensaje {
+        +int Id
+        +string Contenido
+        +DateTime FechaEnvio
+    }
+
+    class PasswordResetTicket {
+        +int Id
+        +string Token
+        +DateTime Expiracion
+    }
+
+    class LogSistema {
+        +int Id
+        +string Accion
+        +DateTime CreatedAt
+    }
+
+    class AlertaInterna {
+        +int Id
+        +string Titulo
+        +string Prioridad
+    }
+
+    %% ==========================================
+    %% 2. CLASES INDEPENDIENTES / CONFIGURACIÓN
+    %% ==========================================
+    class IaConocimiento {
+        +int Id
+        +string Categoria
+    }
+
+    class SystemConfig {
+        +int Id
+        +string FrontendUrl
+    }
+
+    class MoneyType {
+        +int Id
+        +string MoneyName
+        +decimal BcvDollar
+    }
+
+    class EmailTemplate {
+        +int Id
+        +string TypeEmail
+    }
+
+    class WSMessageAPIData {
+        +string ClientId
+        +string ApiKey
+    }
+
+    class FacturaConfig {
+        +int Id
+        +int Days
+        +bool IsEnabled
+    }
+
+    class ReporConfig {
+        +int Id
+        +int Days
+        +bool IsEnabled
+    }
+
+    class Reporte {
+        +int Id
+        +string Titulo
+    }
+
+    class EFMigrationsHistory {
+        +string MigrationId
+        +string ProductVersion
+    }
+
+    %% --- RELACIONES CLASES ---
+    Cliente "1" *-- "many" Mascota
+    Mascota "1" *-- "many" Cita
+    Mascota "1" *-- "many" Consulta
+    Mascota "1" *-- "many" Vacuna
+    Mascota "1" *-- "1" HistoriaClinica
+    
+    Usuario "1" *-- "many" Cita : Doctor
+    Usuario "1" *-- "many" Cita : Secretaria
+    Usuario "1" *-- "many" Consulta : Doctor
+    Usuario "1" *-- "many" Factura : Secretaria
+    Usuario "1" *-- "many" Vacuna : Doctor
+    Usuario "1" *-- "many" HistorialPrecio
+    Usuario "1" *-- "many" MovimientoInventario
+    Usuario "1" *-- "many" PasswordResetTicket
+    Usuario "1" *-- "many" Mensaje : Envia/Recibe
+    Usuario "1" *-- "many" LogSistema
+    
+    Cita "1" -- "1" Consulta
+    Cita "N" -- "1" MetodoPago
+    
+    Consulta "1" *-- "many" ConsultaProducto
+    Producto "1" *-- "many" ConsultaProducto
+    
+    CategoriaProducto "1" *-- "many" Producto
+    Producto "1" *-- "many" DetalleFactura
+    Producto "1" *-- "many" HistorialPrecio
+    Producto "1" *-- "many" MovimientoInventario
+    Producto "1" *-- "many" Vacuna
+    
+    Factura "1" *-- "many" DetalleFactura
+    ConsultaProducto "1" *-- "many" DetalleFactura
+    
+    Cliente "1" *-- "many" Factura
+    Consulta "1" -- "1" Factura
+        </div>
+        <button class="btn-print" onclick="window.print()">Imprimir / Guardar PDF</button>
+    </div>
+</body>
+</html>

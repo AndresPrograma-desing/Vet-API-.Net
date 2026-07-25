@@ -181,6 +181,12 @@ public class UserService : IUserService
     {
         var user = await _userRepository.GetByIdAsync(id);
         if (user == null) return null;
+
+        if (string.Equals(user.Rol, "admin", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(ResponseMessagesUsers.CannotDeleteAdmin);
+        }
+
         try
         {
             await _userRepository.DeleteUserAsync(user);
@@ -222,12 +228,16 @@ public class UserService : IUserService
         user.Activo = false;
         _userRepository.Update(user);
 
+        var expirationMinutes = _apiSettings.PasswordRecoveryExpirationMinutes > 0
+            ? _apiSettings.PasswordRecoveryExpirationMinutes
+            : 15;
+
         var ticket = new PasswordResetTicket
         {
             UsuarioId = user.Id,
             Token = Guid.NewGuid().ToString("N"),
             Estado = "Pending",
-            Expiracion = DateTime.Now.AddMinutes(15),
+            Expiracion = DateTime.Now.AddMinutes(expirationMinutes),
             Creado = DateTime.Now
         };
 
@@ -245,7 +255,14 @@ public class UserService : IUserService
         htmlBody = htmlBody.Replace("{{confirm_link}}", confirmLink);
         htmlBody = htmlBody.Replace("{{system_name}}", _apiSettings.SystemName);
 
-        await _emailSenderService.SendEmailAsync(user.Email, ResponseMessagesUsers.PasswordResetSubject, htmlBody, null, null);
+        var sent = await _emailSenderService.SendEmailAsync(user.Email, ResponseMessagesUsers.PasswordResetSubject, htmlBody, null, null);
+        if (!sent)
+        {
+            user.Activo = true;
+            _userRepository.Update(user);
+            await _userRepository.SaveChangesAsync();
+            throw new InvalidOperationException(ResponseMessagesEmailsController.SendEmailError);
+        }
 
         return true;
     }
@@ -282,10 +299,16 @@ public class UserService : IUserService
 
         var ticket = await _ticketRepository.GetLatestTicketByUserIdAsync(user.Id);
 
+        double? secondsRemaining = ticket != null && ticket.Estado == "Pending" && ticket.Expiracion > DateTime.Now
+            ? (ticket.Expiracion - DateTime.Now).TotalSeconds
+            : 0;
+
         return new ResetStatusResponseDTO
         {
             Email = user.Email,
-            Status = ticket?.Estado ?? "None"
+            Status = ticket?.Estado ?? "None",
+            Expiracion = ticket?.Expiracion,
+            ExpiresInSeconds = secondsRemaining
         };
     }
 
@@ -293,10 +316,18 @@ public class UserService : IUserService
     {
         var tickets = await _ticketRepository.GetPendingAndAcceptedTicketsAsync();
 
-        return tickets.Select(t => new ResetStatusResponseDTO
-        {
-            Email = t.Usuario.Email,
-            Status = t.Estado
+        return tickets.Select(t => {
+            double? secondsRemaining = t.Estado == "Pending" && t.Expiracion > DateTime.Now
+                ? (t.Expiracion - DateTime.Now).TotalSeconds
+                : 0;
+
+            return new ResetStatusResponseDTO
+            {
+                Email = t.Usuario.Email,
+                Status = t.Estado,
+                Expiracion = t.Expiracion,
+                ExpiresInSeconds = secondsRemaining
+            };
         }).ToList();
     }
 

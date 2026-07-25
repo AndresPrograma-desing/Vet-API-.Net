@@ -22,4 +22,27 @@ public class SystemConfigRespository: ISystemConfigRepository
     {
         return  await _context.SystemConfigs.FirstOrDefaultAsync();
     }
+
+    public async Task UpdateResendConfigAsync(string apiKey, string fromEmail, string apiUrl)
+    {
+        var config = await _context.SystemConfigs.FirstOrDefaultAsync();
+        if (config == null)
+        {
+            config = new SystemConfig
+            {
+                FrontendUrl = "https://happy-pets-web.vercel.app",
+                BackendExternalUrl = "https://g27frlv5-5168.use2.devtunnels.ms/",
+                BcvApiUrl = "https://www.bcv.org.ve",
+                LastUpdated = DateTime.UtcNow
+            };
+            _context.SystemConfigs.Add(config);
+        }
+
+        config.ResendApiKey = apiKey;
+        config.ResendFromEmail = fromEmail;
+        config.ResendApiUrl = apiUrl;
+        config.LastUpdated = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+    }
 }

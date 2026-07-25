@@ -6,7 +6,9 @@ using vet_api_Net.Models;
 using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Interfaze.Repositories;
+using DTOs;
 
+//Describe: Servicio para la gestión de alertas internas y despacho de notificaciones en base de datos y tiempo real
 namespace vet_api_Net.Services;
 
 public class NotificationService : INotificationService
@@ -62,6 +64,22 @@ public class NotificationService : INotificationService
         _alertsRepository.Add(nuevaAlerta);
         await _alertsRepository.SaveChangesAsync();
 
+        try
+        {
+            var pushData = new PushNotificationDTO
+            {
+                AlertId = nuevaAlerta.Id,
+                Title = nuevaAlerta.Titulo,
+                Message = nuevaAlerta.Mensaje,
+                Type = nuevaAlerta.Tipo ?? "Info",
+                UserId = nuevaAlerta.DestinatarioRol ?? string.Empty
+            };
+            await _pushService.SendNotificationAsync(pushData);
+        }
+        catch (Exception)
+        {
+        }
+
         return dto;
     }
    public async Task<bool> MarkAsReadAsync(int alertId, int userId)
@@ -77,10 +95,27 @@ public class NotificationService : INotificationService
         { 
             int targetUserId = alert.DestinatarioId ?? 0; 
             
-            if (targetUserId > 0)
+            if (targetUserId > 0 && targetUserId != userId)
             { 
                 string message = ResponseMessagesNotificationPush.PushTicket.Replace("${user_name}", user.Nombre);
-                
+
+                var readNoticeAlert = new AlertasInterna
+                {
+                    Titulo = "Ticket Visto",
+                    Mensaje = message,
+                    Tipo = "TicketVisto",
+                    Prioridad = alert.Prioridad ?? "0",
+                    DestinatarioRol = targetUserId.ToString(),
+                    DestinatarioId = targetUserId,
+                    Completada = false,
+                    ReferenciaTabla = alertId.ToString(),
+                    Leida = false,
+                    CreatedAt = DateTime.Now
+                };
+
+                _alertsRepository.Add(readNoticeAlert);
+                await _alertsRepository.SaveChangesAsync();
+
                 await _pushService.SendPushToUserAsync(targetUserId, message, alertId);
             }
         }

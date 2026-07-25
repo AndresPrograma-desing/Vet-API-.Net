@@ -183,6 +183,7 @@ public class AuthController : ControllerBase
     }
 }
 
+// Clase encargada de tener el modelo de datos de la peticion de autenticacion de usuario 
 public class TempTokenRequest
 {
     public string Email { get; set; } = null!;

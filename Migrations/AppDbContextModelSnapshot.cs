@@ -644,6 +644,54 @@ namespace vet_api_Net.Migrations
                     b.ToTable("FacturaConfigs");
                 });
 
+            modelBuilder.Entity("vet_api_Net.Models.HistoriaClinica", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Actualizado")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("actualizado");
+
+                    b.Property<string>("AlertasRiesgoIa")
+                        .HasColumnType("text")
+                        .HasColumnName("alertas_riesgo_ia");
+
+                    b.Property<DateTime>("Creado")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado");
+
+                    b.Property<int>("MascotaId")
+                        .HasColumnType("integer")
+                        .HasColumnName("mascota_id");
+
+                    b.Property<string>("NotasVeterinario")
+                        .HasColumnType("text")
+                        .HasColumnName("notas_veterinario");
+
+                    b.Property<string>("ResumenIa")
+                        .HasColumnType("text")
+                        .HasColumnName("resumen_ia");
+
+                    b.Property<string>("SugerenciasIa")
+                        .HasColumnType("text")
+                        .HasColumnName("sugerencias_ia");
+
+                    b.Property<DateTime?>("UltimoAnalisisIa")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("ultimo_analisis_ia");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "MascotaId" }, "idx_hc_mascota");
+
+                    b.ToTable("historias_clinicas", (string)null);
+                });
+
             modelBuilder.Entity("vet_api_Net.Models.HistorialPrecio", b =>
                 {
                     b.Property<int>("Id")
@@ -686,6 +734,44 @@ namespace vet_api_Net.Migrations
                     b.HasIndex(new[] { "UsuarioId" }, "usuario_id");
 
                     b.ToTable("historial_precios", (string)null);
+                });
+
+            modelBuilder.Entity("vet_api_Net.Models.IaConocimiento", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Actualizado")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("actualizado");
+
+                    b.Property<string>("BaseConocimiento")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("base_conocimiento");
+
+                    b.Property<string>("Categoria")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("categoria");
+
+                    b.Property<DateTime>("Creado")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado");
+
+                    b.Property<string>("ReglasRespuesta")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("reglas_respuesta");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ia_conocimientos");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.LogsSistema", b =>
@@ -1251,6 +1337,9 @@ namespace vet_api_Net.Migrations
                         .HasColumnType("character varying(50)")
                         .HasColumnName("apellido");
 
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("CodeRecoveryExpireDate")
                         .HasColumnType("timestamp without time zone");
 
@@ -1283,6 +1372,10 @@ namespace vet_api_Net.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("rol");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("UltimoAcceso")
                         .HasColumnType("timestamp without time zone")
@@ -1564,6 +1657,18 @@ namespace vet_api_Net.Migrations
                     b.Navigation("Secretaria");
                 });
 
+            modelBuilder.Entity("vet_api_Net.Models.HistoriaClinica", b =>
+                {
+                    b.HasOne("vet_api_Net.Models.Mascota", "Mascota")
+                        .WithMany("HistoriasClinicas")
+                        .HasForeignKey("MascotaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_historia_clinica_mascota");
+
+                    b.Navigation("Mascota");
+                });
+
             modelBuilder.Entity("vet_api_Net.Models.HistorialPrecio", b =>
                 {
                     b.HasOne("vet_api_Net.Models.Producto", "Producto")
@@ -1753,6 +1858,8 @@ namespace vet_api_Net.Migrations
                     b.Navigation("Consulta");
 
                     b.Navigation("Facturas");
+
+                    b.Navigation("HistoriasClinicas");
 
                     b.Navigation("Vacunas");
                 });

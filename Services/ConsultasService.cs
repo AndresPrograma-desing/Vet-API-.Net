@@ -27,80 +27,77 @@ public class ConsultasService : IConsultasService
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        try
+        // 1. Validaciones de negocio primero
+        if (dto.Temperatura > 100)
         {
-            var appointment = await _repository.GetCitaByIdAsync(dto.CitaId) 
-                ?? throw new KeyNotFoundException(ResponseMessagesCitas.CitaNotFound);
-            var pet = await _repository.GetMascotaByIdAsync(dto.MascotaId) 
-                ?? throw new KeyNotFoundException(ResponseMessagesUsers.UserNotFound);
-            var doctor = await _repository.GetDoctorByIdAsync(dto.DoctorId) 
-                ?? throw new KeyNotFoundException(ResponseMessagesUsers.DoctorNotFound);
+            throw new ArgumentException(ResponseMessagesConsultas.TemperaturaInvalid);
+        }
 
-            var medicalRecord = new Consulta
+        var appointment = await _repository.GetCitaByIdAsync(dto.CitaId)
+            ?? throw new KeyNotFoundException(ResponseMessagesCitas.CitaNotFound);
+
+        var pet = await _repository.GetMascotaByIdAsync(dto.MascotaId)
+            ?? throw new KeyNotFoundException(ResponseMessagesUsers.UserNotFound);
+
+        var doctor = await _repository.GetDoctorByIdAsync(dto.DoctorId)
+            ?? throw new KeyNotFoundException(ResponseMessagesUsers.DoctorNotFound);
+
+        var medicalRecord = new Consulta
+        {
+            CitaId = dto.CitaId,
+            MascotaId = dto.MascotaId,
+            DoctorId = dto.DoctorId,
+            FechaConsulta = dto.FechaConsulta ?? DateTime.Now,
+            PesoActual = dto.PesoActual,
+            Temperatura = dto.Temperatura,
+            Sintomas = dto.Sintomas,
+            Diagnostico = dto.Diagnostico,
+            Tratamiento = dto.Tratamiento,
+            Receta = dto.Receta,
+            Observaciones = dto.Observaciones,
+            Creado = DateTime.Now,
+            ConsultaPrice = dto.ConsultaPrice > 0m ? dto.ConsultaPrice : 0m
+        };
+
+        _repository.AddConsulta(medicalRecord);
+        await _repository.SaveChangesAsync();
+
+        if (dto.Productos != null && dto.Productos.Any())
+        {
+            foreach (var p in dto.Productos)
             {
-                CitaId = dto.CitaId,
-                MascotaId = dto.MascotaId,
-                DoctorId = dto.DoctorId,
-                FechaConsulta = dto.FechaConsulta ?? DateTime.Now,
-                PesoActual = dto.PesoActual,
-                Temperatura = dto.Temperatura,
-                Sintomas = dto.Sintomas,
-                Diagnostico = dto.Diagnostico,
-                Tratamiento = dto.Tratamiento,
-                Receta = dto.Receta,
-                Observaciones = dto.Observaciones,
-                Creado = DateTime.Now,
-                ConsultaPrice = dto.ConsultaPrice > 0m ? dto.ConsultaPrice : 0m
-            };
+                var product = await _repository.GetProductoByIdAsync(p.ProductoId)
+                    ?? throw new KeyNotFoundException($"Producto {p.ProductoId} no encontrado");
 
-            _repository.AddConsulta(medicalRecord);
-            await _repository.SaveChangesAsync();
+                var unitPrice = p.PrecioUnitario.HasValue && p.PrecioUnitario.Value > 0m
+                    ? p.PrecioUnitario.Value
+                    : (product.PrecioVenta > 0m ? product.PrecioVenta : product.Precio);
 
-            if (dto.Productos != null && dto.Productos.Any())
-            {
-                foreach (var p in dto.Productos)
+                var itemDetail = new ConsultasProducto
                 {
-                    var product = await _repository.GetProductoByIdAsync(p.ProductoId) 
-                        ?? throw new KeyNotFoundException($"Producto {p.ProductoId} no encontrado");
-
-                    var unitPrice = p.PrecioUnitario.HasValue && p.PrecioUnitario.Value > 0m
-                        ? p.PrecioUnitario.Value
-                        : (product.PrecioVenta > 0m ? product.PrecioVenta : product.Precio);
-
-                    var itemDetail = new ConsultasProducto
-                    {
-                        ConsultaId = medicalRecord.Id,
-                        ProductoId = p.ProductoId,
-                        Cantidad = p.Cantidad > 0 ? p.Cantidad : 1,
-                        PrecioUnitario = unitPrice,
-                        Dosis = p.Dosis,
-                        ViaAdministracion = p.ViaAdministracion,
-                        Frecuencia = p.Frecuencia,
-                        Duracion = p.Duracion,
-                        Instrucciones = p.Instrucciones,
-                        AplicadoPor = p.AplicadoPor,
-                        Creado = DateTime.Now
-                    };
-                    _repository.AddConsultaProducto(itemDetail);
-                }
-                await _repository.SaveChangesAsync();
+                    ConsultaId = medicalRecord.Id,
+                    ProductoId = p.ProductoId,
+                    Cantidad = p.Cantidad > 0 ? p.Cantidad : 1,
+                    PrecioUnitario = unitPrice,
+                    Dosis = p.Dosis,
+                    ViaAdministracion = p.ViaAdministracion,
+                    Frecuencia = p.Frecuencia,
+                    Duracion = p.Duracion,
+                    Instrucciones = p.Instrucciones,
+                    AplicadoPor = p.AplicadoPor,
+                    Creado = DateTime.Now
+                };
+                _repository.AddConsultaProducto(itemDetail);
             }
-
-            await ProcessInternalBillingAsync(medicalRecord.Id, appointment, pet);
-
-            return await _repository.GetConsultaDtoByIdAsync(medicalRecord.Id);
+            await _repository.SaveChangesAsync();
         }
-        catch (KeyNotFoundException ex)
-        {
-            throw new InvalidOperationException(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"{ResponseMessagesConsultas.ErrorCreated} {ex.Message}");
-        }
-    }
 
-    public async Task<ConsultaRequestDTO?> GetConsultaByIdAsync(int id)
+        await ProcessInternalBillingAsync(medicalRecord.Id, appointment, pet);
+
+        return await _repository.GetConsultaDtoByIdAsync(medicalRecord.Id);
+    } 
+
+   public async Task<ConsultaRequestDTO?> GetConsultaByIdAsync(int id)
     {
         return await _repository.GetConsultaDtoByIdAsync(id);
     }
@@ -108,6 +105,20 @@ public class ConsultasService : IConsultasService
     public async Task<IEnumerable<ConsultaRequestDTO>> GetConsultasAsync()
     {
         return await _repository.GetConsultasAsync();
+    }
+
+    public async Task<ConsultaRequestDTO?> UpdateRecetaAsync(int id, UpdateConsultaRecetaDTO dto)
+    {
+        ArgumentNullException.ThrowIfNull(dto);
+
+        var consulta = await _repository.GetConsultaByIdEntityAsync(id)
+            ?? throw new KeyNotFoundException(ResponseErrors.NotFound);
+
+        consulta.Receta = dto.Receta;
+        
+        await _repository.SaveChangesAsync();
+
+        return await _repository.GetConsultaDtoByIdAsync(id);
     }
 
     private async Task ProcessInternalBillingAsync(int recordId, Cita appointment, Mascota pet)

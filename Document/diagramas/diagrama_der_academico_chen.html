@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Diagrama Entidad-Relación (DER) Académico Completo (Notación Chen)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f3f4f6; text-align: center; }
+        .container { background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); display: inline-block; width: 95%; max-width: 1600px; }
+        h1 { color: #1f2937; margin-bottom: 5px; }
+        p { color: #4b5563; margin-bottom: 25px; }
+        .mermaid { text-align: center; background: white; padding: 20px; border-radius: 5px; overflow-x: auto; }
+        .btn-print { background-color: #0284c7; color: white; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 20px; transition: background-color 0.3s; }
+        .btn-print:hover { background-color: #0369a1; }
+        @media print {
+            .btn-print { display: none; }
+            body { background-color: white; margin: 0; }
+            .container { box-shadow: none; padding: 0; width: 100%; max-width: none; }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Diagrama Entidad-Relación (DER) Académico Completo</h1>
+        <p>Notación de Chen (Entidades, Atributos y Relaciones con Cardinalidad para las 28 Tablas de la Base de Datos)</p>
+        <div class="mermaid">
+flowchart TD
+    %% Estilos
+    classDef entidad fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,font-weight:bold,color:#0369a1;
+    classDef relacion fill:#fef3c7,stroke:#d97706,stroke-width:2px,font-style:italic,color:#b45309;
+    classDef config fill:#f3f4f6,stroke:#9ca3af,stroke-width:2px,font-weight:bold,color:#4b5563;
+
+    %% 1. Entidades Principales
+    usuarios[usuarios]:::entidad
+    clientes[clientes]:::entidad
+    mascotas[mascotas]:::entidad
+    citas[citas]:::entidad
+    consultas[consultas]:::entidad
+    facturas[facturas]:::entidad
+    detalles_factura[detalles_factura]:::entidad
+    productos[productos]:::entidad
+    categorias_productos[categorias_productos]:::entidad
+    vacunas[vacunas]:::entidad
+    historias_clinicas[historias_clinicas]:::entidad
+    consultas_productos[consultas_productos]:::entidad
+
+    %% 2. Entidades de Soporte y Logs
+    mensajes[mensajes]:::entidad
+    logs_sistema[logs_sistema]:::entidad
+    historial_precios[historial_precios]:::entidad
+    movimientos_inventario[movimientos_inventario]:::entidad
+    password_reset_tickets[password_reset_tickets]:::entidad
+    metodos_pago[metodos_pago]:::entidad
+    alertas_internas[alertas_internas]:::entidad
+
+    %% 3. Entidades de Configuración y Metadatos
+    ia_conocimientos[ia_conocimientos]:::config
+    system_configs[system_configs]:::config
+    MoneyTypes[MoneyTypes]:::config
+    EmailTemplates[EmailTemplates]:::config
+    WSMessageAPIData[WSMessageAPIData]:::config
+    FacturaConfigs[FacturaConfigs]:::config
+    ReporConfigs[ReporConfigs]:::config
+    Reportes[Reportes]:::config
+    EFMigrationsHistory[__EFMigrationsHistory]:::config
+
+    %% Relaciones (Rombos)
+    %% Usuarios
+    R_usr_cit{agenda}:::relacion
+    R_usr_con{atiende}:::relacion
+    R_usr_cpr{aplica}:::relacion
+    R_usr_fac{factura}:::relacion
+    R_usr_vac{administra}:::relacion
+    R_usr_prc{autoriza}:::relacion
+    R_usr_mov{registra}:::relacion
+    R_usr_tkt{solicita}:::relacion
+    R_usr_msg_e{envía}:::relacion
+    R_usr_msg_r{recibe}:::relacion
+    R_usr_log{genera}:::relacion
+
+    %% Clientes
+    R_cli_mas{posee}:::relacion
+    R_cli_fac{paga}:::relacion
+
+    %% Mascotas
+    R_mas_cit{tiene_cita}:::relacion
+    R_mas_con{tiene_consulta}:::relacion
+    R_mas_vac{recibe_vacuna}:::relacion
+    R_mas_fac{pertenece}:::relacion
+    R_mas_his{tiene_historial}:::relacion
+
+    %% Citas / Consultas / Pagos
+    R_cit_con{se_convierte}:::relacion
+    R_cit_mpg{utiliza}:::relacion
+
+    %% Consultas / Productos
+    R_con_fac{genera_factura}:::relacion
+    R_con_vac{prescribe}:::relacion
+    R_con_cpr{contiene}:::relacion
+    R_prd_cpr{recetado}:::relacion
+
+    %% Inventario y Facturación
+    R_cat_prd{agrupa}:::relacion
+    R_prd_dtl{se_vende}:::relacion
+    R_prd_vac{se_aplica}:::relacion
+    R_prd_prc{registra_cambio}:::relacion
+    R_prd_mov{registra_mov}:::relacion
+    R_fac_dtl{desglosa}:::relacion
+    R_cpr_dtl{factura_item}:::relacion
+
+    %% --- CONEXIONES ---
+    %% Usuarios
+    usuarios ---|1| R_usr_cit
+    R_usr_cit ---|N| citas
+    
+    usuarios ---|1| R_usr_con
+    R_usr_con ---|N| consultas
+    
+    usuarios ---|1| R_usr_cpr
+    R_usr_cpr ---|N| consultas_productos
+    
+    usuarios ---|1| R_usr_fac
+    R_usr_fac ---|N| facturas
+    
+    usuarios ---|1| R_usr_vac
+    R_usr_vac ---|N| vacunas
+    
+    usuarios ---|1| R_usr_prc
+    R_usr_prc ---|N| historial_precios
+    
+    usuarios ---|1| R_usr_mov
+    R_usr_mov ---|N| movimientos_inventario
+    
+    usuarios ---|1| R_usr_tkt
+    R_usr_tkt ---|N| password_reset_tickets
+    
+    usuarios ---|1| R_usr_msg_e
+    R_usr_msg_e ---|N| mensajes
+    
+    usuarios ---|1| R_usr_msg_r
+    R_usr_msg_r ---|N| mensajes
+    
+    usuarios ---|1| R_usr_log
+    R_usr_log ---|N| logs_sistema
+
+    %% Clientes
+    clientes ---|1| R_cli_mas
+    R_cli_mas ---|N| mascotas
+    
+    clientes ---|1| R_cli_fac
+    R_cli_fac ---|N| facturas
+
+    %% Mascotas
+    mascotas ---|1| R_mas_cit
+    R_mas_cit ---|N| citas
+    
+    mascotas ---|1| R_mas_con
+    R_mas_con ---|N| consultas
+    
+    mascotas ---|1| R_mas_vac
+    R_mas_vac ---|N| vacunas
+    
+    mascotas ---|1| R_mas_fac
+    R_mas_fac ---|N| facturas
+    
+    mascotas ---|1| R_mas_his
+    R_mas_his ---|1| historias_clinicas
+
+    %% Citas
+    citas ---|1| R_cit_con
+    R_cit_con ---|1| consultas
+    
+    citas ---|N| R_cit_mpg
+    R_cit_mpg ---|1| metodos_pago
+
+    %% Consultas
+    consultas ---|1| R_con_fac
+    R_con_fac ---|1| facturas
+    
+    consultas ---|1| R_con_vac
+    R_con_vac ---|N| vacunas
+    
+    consultas ---|1| R_con_cpr
+    R_con_cpr ---|N| consultas_productos
+
+    %% Productos / Categorias
+    categorias_productos ---|1| R_cat_prd
+    R_cat_prd ---|N| productos
+    
+    productos ---|1| R_prd_cpr
+    R_prd_cpr ---|N| consultas_productos
+    
+    productos ---|1| R_prd_dtl
+    R_prd_dtl ---|N| detalles_factura
+    
+    productos ---|1| R_prd_vac
+    R_prd_vac ---|N| vacunas
+    
+    productos ---|1| R_prd_prc
+    R_prd_prc ---|N| historial_precios
+    
+    productos ---|1| R_prd_mov
+    R_prd_mov ---|N| movimientos_inventario
+
+    %% Facturas / Detalles
+    facturas ---|1| R_fac_dtl
+    R_fac_dtl ---|N| detalles_factura
+    
+    consultas_productos ---|1| R_cpr_dtl
+    R_cpr_dtl ---|N| detalles_factura
+        </div>
+        <button class="btn-print" onclick="window.print()">Imprimir / Guardar PDF</button>
+    </div>
+</body>
+</html>

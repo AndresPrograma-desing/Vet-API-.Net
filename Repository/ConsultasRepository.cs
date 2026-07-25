@@ -23,6 +23,7 @@ public class ConsultasRepository : IConsultasRepository
     public async Task<Usuario?> GetDoctorByIdAsync(int id) => await _context.Usuarios.FindAsync(id);
     public async Task<Producto?> GetProductoByIdAsync(int id) => await _context.Productos.FindAsync(id);
     public async Task<MetodoPago?> GetMetodoPagoByIdAsync(int id) => await _context.MetodoPagos.FindAsync(id);
+    public async Task<Consulta?> GetConsultaByIdEntityAsync(int id) => await _context.Consultas.FindAsync(id);
 
     public async Task<Consulta?> GetConsultaWithProductsAsync(int id)
     {

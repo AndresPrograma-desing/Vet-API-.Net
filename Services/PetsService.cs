@@ -1,10 +1,10 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using DTOs;
-using vet_api_Net.Interfaze.Services;
+using Microsoft.EntityFrameworkCore;
 using vet_api_Net.Data;
+using vet_api_Net.Interfaze.Services;
 
 namespace vet_api_Net.Services;
 
@@ -85,5 +85,122 @@ public class PetsService : IPetsService
                 Identificacion = mascota.Cliente.Identificacion
             } : null
         };
+    }
+
+    public async Task<MascotaResumenDTO?> UpdateMascotaAsync(int id, UpdatePetDTO dto)
+    {
+        var pet = await _context.Mascotas
+            .Include(m => m.Cliente)
+            .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (pet == null) return null;
+
+        pet.Nombre = dto.Nombre;
+        pet.Especie = dto.Especie;
+        pet.Raza = dto.Raza;
+        pet.Color = dto.Color;
+        pet.Sexo = dto.Sexo;
+
+        if (!string.IsNullOrWhiteSpace(dto.FechaNacimiento) && DateOnly.TryParse(dto.FechaNacimiento, out DateOnly fn))
+        {
+            pet.FechaNacimiento = fn;
+        }
+
+        pet.Peso = dto.Peso;
+        pet.IdenteficacionMascota = dto.IdenteficacionMascota;
+        pet.Alergias = dto.Alergias;
+        pet.CondicionesMedicas = dto.CondicionesMedicas;
+        pet.Esterilizado = dto.Esterilizado;
+        pet.Actualizado = DateTime.Now;
+
+        _context.Mascotas.Update(pet);
+        await _context.SaveChangesAsync();
+
+        return new MascotaResumenDTO
+        {
+            Id = pet.Id,
+            ClienteId = pet.ClienteId,
+            Nombre = pet.Nombre,
+            Especie = pet.Especie,
+            Raza = pet.Raza,
+            Sexo = pet.Sexo,
+            FechaNacimiento = pet.FechaNacimiento.HasValue ? pet.FechaNacimiento.Value.ToString("yyyy-MM-dd") : null,
+            Peso = pet.Peso.HasValue ? pet.Peso.Value.ToString("0.00", CultureInfo.InvariantCulture) : null,
+            IdenteficacionMascota = pet.IdenteficacionMascota,
+            Color = pet.Color,
+            Alergias = pet.Alergias,
+            CondicionesMedicas = pet.CondicionesMedicas,
+            Esterilizado = pet.Esterilizado,
+            Cliente = pet.Cliente != null ? new DetailsCitaDTO
+            {
+                Id = pet.Cliente.Id,
+                Nombre = pet.Cliente.Nombre,
+                Apellido = pet.Cliente.Apellido,
+                Email = pet.Cliente.Email,
+                Telefono = pet.Cliente.Telefono,
+                Identificacion = pet.Cliente.Identificacion
+            } : null
+        };
+    }
+
+    public async Task<bool> DeleteMascotaAsync(int id)
+    {
+        // 1. Delete associated ConsultasProductos
+        var consultaIds = await _context.Consultas
+            .Where(c => c.MascotaId == id)
+            .Select(c => c.Id)
+            .ToListAsync();
+
+        if (consultaIds.Any())
+        {
+            await _context.ConsultasProductos
+                .Where(cp => consultaIds.Contains(cp.ConsultaId))
+                .ExecuteDeleteAsync();
+        }
+
+        // 2. Delete associated DetallesFacturas
+        var facturaIds = await _context.Facturas
+            .Where(f => f.MascotaId == id)
+            .Select(f => f.Id)
+            .ToListAsync();
+
+        if (facturaIds.Any())
+        {
+            await _context.DetallesFacturas
+                .Where(df => facturaIds.Contains(df.FacturaId))
+                .ExecuteDeleteAsync();
+        }
+
+        // 3. Delete Facturas
+        await _context.Facturas
+            .Where(f => f.MascotaId == id)
+            .ExecuteDeleteAsync();
+
+        // 4. Delete Vacunas
+        await _context.Vacunas
+            .Where(v => v.MascotaId == id)
+            .ExecuteDeleteAsync();
+
+        // 5. Delete HistoriasClinicas
+        await _context.HistoriasClinicas
+            .Where(h => h.MascotaId == id)
+            .ExecuteDeleteAsync();
+
+        // 6. Delete Citas
+        await _context.Citas
+            .Where(c => c.MascotaId == id)
+            .ExecuteDeleteAsync();
+
+        // 7. Delete Consultas
+        await _context.Consultas
+            .Where(c => c.MascotaId == id)
+            .ExecuteDeleteAsync();
+
+        // 8. Delete Mascota
+        var affected = await _context.Mascotas
+            .Where(m => m.Id == id)
+            .ExecuteDeleteAsync();
+
+        return affected > 0;
     }
 }

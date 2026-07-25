@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace vet_api_Net.Models;
@@ -44,4 +44,6 @@ public partial class Mascota
     public virtual ICollection<Factura> Facturas { get; set; } = new List<Factura>();
 
     public virtual ICollection<Vacuna> Vacunas { get; set; } = new List<Vacuna>();
+
+    public virtual ICollection<HistoriaClinica> HistoriasClinicas { get; set; } = new List<HistoriaClinica>();
 }

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Diagrama DER Happy Pets - Ultra Ancho</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: false, /* Evita que se encoja verticalmente en pantallas grandes */
+                htmlLabels: true
+            }
+        });
+    </script>
+    <style>
+        @page {
+            size: letter landscape;
+            margin: 0.5cm;
+        }
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            overflow-x: auto; /* Permite scroll horizontal si es necesario en pantalla */
+        }
+        .container {
+            width: 100%;
+        }
+        /* Ajustes críticos para forzar el estiramiento horizontal en la impresión */
+        .mermaid {
+            width: 100%;
+            display: block;
+        }
+        .mermaid svg {
+            width: 100% !important;
+            height: auto !important;
+            max-height: 90vh !important;
+        }
+        @media print {
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="mermaid">
+graph LR
+    %% ========================================================
+    %% PARAMETRIZACIÓN ESTÉTICA (Estilo Chen Académico)
+    %% ========================================================
+    classDef entidad fill:#e6f7ff,stroke:#1890ff,stroke-width:2px;
+    classDef relacion fill:#fffbe6,stroke:#faad14,stroke-width:1.5px,shape:rhombus;
+    classDef rol fill:#f6ffed,stroke:#52c41a,stroke-width:1.5px,shape:ellipse;
+    classDef config fill:#fafafa,stroke:#8c8c8c,stroke-width:1.5px;
+
+    %% ========================================================
+    %% BLOQUE 1: GESTIÓN DE PERSONAL Y SEGURIDAD
+    %% ========================================================
+    subgraph B1 [1. Personal y Seguridad]
+        USUARIOS[usuarios]:::entidad
+        LOGS[logs_sistema]:::entidad
+        TICKETS[password_reset_tickets]:::entidad
+        R_ADM((Admin)):::rol
+        R_SEC((Secretaria)):::rol
+        R_DOC((Doctor)):::rol
+        
+        USUARIOS --> R_ADM
+        USUARIOS --> R_SEC
+        USUARIOS --> R_DOC
+        
+        r_gusr{Gestiona}:::relacion
+        R_ADM -->|1| r_gusr -->|N| USUARIOS
+        r_aud{Audita}:::relacion
+        R_ADM -->|1| r_aud -->|N| LOGS
+        r_tk{Solicita}:::relacion
+        USUARIOS -->|1| r_tk -->|N| TICKETS
+    end
+
+    %% ========================================================
+    %% BLOQUE 2: MENSAJERÍA Y ALERTAS
+    %% ========================================================
+    subgraph B2 [2. Mensajería y Alertas]
+        MENSAJES[mensajes]:::entidad
+        ALERTAS[alertas_internas]:::entidad
+        
+        r_msg{Intercambian}:::relacion
+        USUARIOS -.->|1| r_msg -.->|N| MENSAJES
+        r_alt{Recibe}:::relacion
+        USUARIOS -.->|1| r_alt -.->|N| ALERTAS
+    end
+
+    %% ========================================================
+    %% BLOQUE 3: CLIENTES Y PACIENTES
+    %% ========================================================
+    subgraph B3 [3. Clientes y Pacientes]
+        CLIENTES[clientes]:::entidad
+        MASCOTAS[mascotas]:::entidad
+        HISTORIAS[historias_clinicas]:::entidad
+        
+        r_own{Es dueño}:::relacion
+        CLIENTES -->|1| r_own -->|N| MASCOTAS
+        r_hc{Posee}:::relacion
+        MASCOTAS -->|1| r_hc -->|1| HISTORIAS
+    end
+
+    %% ========================================================
+    %% BLOQUE 4: AGENDA Y CONSULTAS
+    %% ========================================================
+    subgraph B4 [4. Agenda y Consultas]
+        CITAS[citas]:::entidad
+        CONSULTAS[consultas]:::entidad
+        MET_PAG[metodos_pago]:::entidad
+        
+        r_cit{Asigna a}:::relacion
+        MASCOTAS -->|1| r_cit -->|N| CITAS
+        r_gsc{Registra}:::relacion
+        R_SEC -.->|1| r_gsc -.->|N| CITAS
+        r_atd{Atiende}:::relacion
+        R_DOC -.->|1| r_atd -.->|N| CITAS
+        r_mpc{Pre-selecciona}:::relacion
+        MET_PAG -->|1| r_mpc -->|N| CITAS
+        r_drv{Deriva}:::relacion
+        CITAS -->|1| r_drv -->|1| CONSULTAS
+    end
+
+    %% ========================================================
+    %% BLOQUE 5: INVENTARIO Y TRATAMIENTOS
+    %% ========================================================
+    subgraph B5 [5. Inventario y Tratamientos]
+        PRODUCTOS[productos]:::entidad
+        CAT_PROD[categorias_productos]:::entidad
+        MOV_INV[movimientos_inventario]:::entidad
+        HIST_PRC[historial_precios]:::entidad
+        VACUNAS[vacunas]:::entidad
+        CONS_PROD[consultas_productos]:::entidad
+        
+        r_gprd{Stock}:::relacion
+        R_ADM -.->|1| r_gprd -.->|N| PRODUCTOS
+        r_cat{Clasifica}:::relacion
+        CAT_PROD -->|1| r_cat -->|N| PRODUCTOS
+        r_mvi{Mueve}:::relacion
+        PRODUCTOS -->|1| r_mvi -->|N| MOV_INV
+        r_hpr{Precio}:::relacion
+        PRODUCTOS -->|1| r_hpr -->|N| HIST_PRC
+        r_ind{Prescribe}:::relacion
+        CONSULTAS -->|1| r_ind -->|N| CONS_PROD
+        r_pro{Suma}:::relacion
+        PRODUCTOS -->|1| r_pro -->|N| CONS_PROD
+        r_vmas{Dosis}:::relacion
+        MASCOTAS -.->|1| r_vmas -.->|N| VACUNAS
+    end
+
+    %% ========================================================
+    %% BLOQUE 6: FINANZAS Y FACTURACIÓN
+    %% ========================================================
+    subgraph B6 [6. Finanzas y Facturación]
+        FACTURAS[facturas]:::entidad
+        DET_FAC[detalles_factura]:::entidad
+        
+        r_fcli{Emite a}:::relacion
+        CLIENTES ===>|1| r_fcli ===>|N| FACTURAS
+        r_fsec{Genera}:::relacion
+        R_SEC -.->|1| r_fsec -.->|N| FACTURAS
+        r_fcon{Cobra}:::relacion
+        CONSULTAS -->|1| r_fcon -->|0..1| FACTURAS
+        r_dfac{Desglosa}:::relacion
+        FACTURAS -->|1| r_dfac -->|N| DET_FAC
+        r_dprd{Carga}:::relacion
+        PRODUCTOS -.->|1| r_dprd -.->|N| DET_FAC
+    end
+
+    %% ========================================================
+    %% BLOQUE 7: CONFIGURACIONES DE SISTEMA E IA
+    %% ========================================================
+    subgraph B7 [7. Configuraciones de Sistema e IA]
+        SYS_CONFIG[system_configs]:::config
+        IA_KNOW[ia_conocimientos]:::config
+        MONEY_TYP[MoneyTypes]:::config
+        REPOR_CON[ReporConfigs]:::config
+        FACT_CON[FacturaConfigs]:::config
+        
+        r_ccfg{Configura}:::relacion
+        R_ADM -.->|1| r_ccfg -.->|N| SYS_CONFIG
+        r_cmon{Tasas}:::relacion
+        R_ADM -.->|1| r_cmon -.->|N| MONEY_TYP
+        r_cia{Entrena}:::relacion
+        R_ADM -.->|1| r_cia -.->|N| IA_KNOW
+        r_cpar{Dias}:::relacion
+        R_ADM -.->|1| r_cpar -.->|N| REPOR_CON
+        R_ADM -->|1| r_cpar -->|N| FACT_CON
+    end
+
+    %% Conexiones de negocio sutiles y punteadas que forzan la horizontalidad de manera limpia
+    USUARIOS -.-> CLIENTES
+    CLIENTES -.-> CITAS
+    CONSULTAS -.-> PRODUCTOS
+    PRODUCTOS -.-> FACTURAS
+
+    %% Estilos limpios para contenedores de carril
+    style B1 fill:none,stroke:#ddd,stroke-dasharray: 5 5
+    style B2 fill:none,stroke:#ddd,stroke-dasharray: 5 5
+    style B3 fill:none,stroke:#ddd,stroke-dasharray: 5 5
+    style B4 fill:none,stroke:#ddd,stroke-dasharray: 5 5
+    style B5 fill:none,stroke:#ddd,stroke-dasharray: 5 5
+    style B6 fill:none,stroke:#ddd,stroke-dasharray: 5 5
+    style B7 fill:none,stroke:#ddd,stroke-dasharray: 5 5
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Diagrama Completo de Base de Datos - Happy Pets</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f3f4f6; text-align: center; }
+        .container { background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); display: inline-block; width: 95%; max-width: 1600px; }
+        h1 { color: #1f2937; margin-bottom: 5px; }
+        p { color: #4b5563; margin-bottom: 25px; }
+        .mermaid { text-align: center; overflow-x: auto; background: white; padding: 20px; border-radius: 5px; }
+        .btn-print { background-color: #059669; color: white; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 20px; transition: background-color 0.3s; }
+        .btn-print:hover { background-color: #047857; }
+        @media print {
+            .btn-print { display: none; }
+            body { background-color: white; margin: 0; }
+            .container { box-shadow: none; padding: 0; width: 100%; max-width: none; }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Diagrama de Base de Datos Completo (ERD)</h1>
+        <p>Happy Pets API - 28 Tablas Relacionadas (Negocio, Historial, Inventario, Vacunas, Configuración y Logs)</p>
+        <div class="mermaid">
+erDiagram
+    usuarios ||--o{ citas : "doctor/secretaria"
+    usuarios ||--o{ consultas : "doctor"
+    usuarios ||--o{ consultas_productos : "aplicado por"
+    usuarios ||--o{ facturas : "facturado por"
+    usuarios ||--o{ vacunas : "administrado por"
+    usuarios ||--o{ historial_precios : "cambiado por"
+    usuarios ||--o{ movimientos_inventario : "movido por"
+    usuarios ||--o{ password_reset_tickets : "solicitado por"
+    usuarios ||--o{ mensajes : "emisor/receptor"
+    usuarios ||--o{ logs_sistema : "registrado por"
+
+    clientes ||--o{ mascotas : "dueño de"
+    clientes ||--o{ facturas : "facturado a"
+
+    mascotas ||--o{ citas : "cintado"
+    mascotas ||--o{ consultas : "atendido"
+    mascotas ||--o{ facturas : "facturado para"
+    mascotas ||--o{ vacunas : "vacunado"
+    mascotas ||--o{ historias_clinicas : "historial"
+
+    citas ||--|| consultas : "se atiende"
+    citas ||--o| metodos_pago : "pago"
+
+    consultas ||--o{ consultas_productos : "usa"
+    consultas ||--o| facturas : "se factura"
+    consultas ||--o{ vacunas : "registra"
+
+    productos ||--o{ consultas_productos : "recetado"
+    productos ||--o{ detalles_factura : "vendido"
+    productos ||--o{ vacunas : "aplicado"
+    productos ||--o{ historial_precios : "historico"
+    productos ||--o{ movimientos_inventario : "kardex"
+    categorias_productos ||--o{ productos : "clasifica"
+
+    facturas ||--o{ detalles_factura : "contiene"
+    consultas_productos ||--o{ detalles_factura : "vincula"
+
+    usuarios {
+        int id PK
+        string nombre
+        string apellido
+        string email
+        string contraseña
+        string rol
+        boolean activo
+        string AvatarUrl
+    }
+    clientes {
+        int id PK
+        string nombre
+        string apellido
+        string identificacion
+        string email
+        string telefono
+        string direccion
+    }
+    mascotas {
+        int id PK
+        int cliente_id FK
+        string nombre
+        string especie
+        string raza
+        string sexo
+        date fecha_nacimiento
+        decimal peso
+    }
+    citas {
+        int id PK
+        int mascota_id FK
+        int doctor_id FK
+        int secretaria_id FK
+        datetime fecha_cita
+        time hora_cita
+        string motivo
+        string estado
+        int metodo_pago_id FK
+    }
+    consultas {
+        int id PK
+        int cita_id FK
+        int mascota_id FK
+        int doctor_id FK
+        datetime fecha_consulta
+        decimal peso_actual
+        decimal temperatura
+        string sintomas
+        string diagnostico
+        string tratamiento
+        decimal ConsultaPrice
+    }
+    facturas {
+        int id PK
+        string numero_factura
+        int cliente_id FK
+        int mascota_id FK
+        int consulta_id FK
+        int secretaria_id FK
+        datetime fecha_emision
+        decimal subtotal
+        decimal total
+        string estado_pago
+    }
+    detalles_factura {
+        int id PK
+        int factura_id FK
+        int producto_id FK
+        int productos_consultas_id FK
+        int cantidad
+        decimal precio_unitario
+        decimal total
+    }
+    productos {
+        int id PK
+        string codigo
+        string nombre
+        int categoria_id FK
+        decimal precio
+        decimal precio_venta
+        int stock
+        string unidad_medida
+    }
+    categorias_productos {
+        int id PK
+        string nombre
+        string descripcion
+    }
+    vacunas {
+        int id PK
+        int mascota_id FK
+        int producto_id FK
+        int consulta_id FK
+        date fecha_vacunacion
+        date proxima_dosis
+        int doctor_id FK
+    }
+    historias_clinicas {
+        int id PK
+        int mascota_id FK
+        string resumen_ia
+        string sugerencias_ia
+        string notas_veterinario
+        datetime ultimo_analisis_ia
+    }
+    ia_conocimientos {
+        int id PK
+        string reglas_respuesta
+        string base_conocimiento
+        string categoria
+    }
+    system_configs {
+        int id PK
+        string frontend_url
+        string backend_external_url
+        string bcv_api_url
+        string resend_api_key
+    }
+    MoneyTypes {
+        int Id PK
+        string MoneyName
+        decimal BcvDollar
+        datetime Fecha
+    }
+    EmailTemplates {
+        int Id PK
+        string TypeEmail
+        string HtmlCode
+    }
+    password_reset_tickets {
+        int id PK
+        int usuario_id FK
+        string token
+        string estado
+        datetime expiracion
+    }
+    WSMessageAPIData {
+        string ClientId PK
+        string ApiKey
+        string Message
+        datetime Update
+    }
+    alertas_internas {
+        int id PK
+        string titulo
+        string mensaje
+        string tipo
+        string prioridad
+        string destinatario_rol
+    }
+    logs_sistema {
+        int id PK
+        int usuario_id FK
+        string accion
+        string tabla_afectada
+        int registro_id
+        datetime created_at
+    }
+    mensajes {
+        int id PK
+        int emisor_id FK
+        int receptor_id FK
+        string contenido
+        datetime fecha_envio
+    }
+    historial_precios {
+        int id PK
+        int producto_id FK
+        decimal precio_anterior
+        decimal precio_nuevo
+        int usuario_id FK
+        datetime fecha_cambio
+    }
+    movimientos_inventario {
+        int id PK
+        int producto_id FK
+        string tipo_movimiento
+        int cantidad
+        int stock_anterior
+        int stock_nuevo
+        int usuario_id FK
+        datetime fecha_movimiento
+    }
+    metodos_pago {
+        int id PK
+        string nombre
+    }
+    FacturaConfigs {
+        int Id PK
+        int Days
+        boolean IsEnabled
+    }
+    ReporConfigs {
+        int Id PK
+        int Days
+        boolean IsEnabled
+    }
+    Reportes {
+        int Id PK
+        string Titulo
+        string Categoria
+        string Datos
+    }
+        </div>
+        <button class="btn-print" onclick="window.print()">Imprimir / Guardar PDF</button>
+    </div>
+</body>
+</html>

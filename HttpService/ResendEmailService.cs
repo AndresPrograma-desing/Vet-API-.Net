@@ -54,64 +54,90 @@ public class ResendEmailService : IEmailSenderService
                 apiKey = systemConfig?.ResendApiKey;
                 fromEmail = systemConfig?.ResendFromEmail;
                 apiUrl = systemConfig?.ResendApiUrl;
-                
+            }
+
+            // Fallback para appsettings.json en desarrollo local
+            var appSettingsApiKey = _configuration["ResendSettings:ApiKey"];
+            var appSettingsFromEmail = _configuration["ResendSettings:From"];
+            var appSettingsApiUrl = _configuration["ResendSettings:ApiUrl"];
+
+            if (string.IsNullOrWhiteSpace(apiKey) || apiKey == "re_8ihXsxrL_NRxgtRcoyqjou3J75MjbJdFo")
+            {
+                if (!string.IsNullOrWhiteSpace(appSettingsApiKey))
+                {
+                    apiKey = appSettingsApiKey;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(fromEmail) || fromEmail == "HappyPets <onboarding@resend.dev>")
+            {
+                if (!string.IsNullOrWhiteSpace(appSettingsFromEmail))
+                {
+                    fromEmail = appSettingsFromEmail;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(apiUrl) || apiUrl == "https://api.resend.com/emails")
+            {
+                if (!string.IsNullOrWhiteSpace(appSettingsApiUrl))
+                {
+                    apiUrl = appSettingsApiUrl;
+                }
             }
 
             if (_failureTracker.IsBlocked("ResendEmail"))
             {
-                throw new InvalidOperationException(ResponseMessagesEmailsController.ProviderError);
+                return false;
             }
 
             if (string.IsNullOrWhiteSpace(apiUrl) || 
                 string.IsNullOrWhiteSpace(apiKey) || 
                 string.IsNullOrWhiteSpace(fromEmail))
             {
-                RecordFailureAndThrow(ResponseMessagesEmailsController.SendEmailError);
+                _failureTracker.RecordFailure("ResendEmail");
+                return false;
             }
 
-        var requestBody = new Dictionary<string, object>
-        {
-            { "from", fromEmail! },
-            { "to", new[] { to } },
-            { "subject", subject },
-            { "html", htmlBody }
-        };
-
-        if (attachmentBytes != null && !string.IsNullOrEmpty(attachmentName))
-        {
-            var base64Content = Convert.ToBase64String(attachmentBytes);
-            requestBody["attachments"] = new[]
+            var requestBody = new Dictionary<string, object>
             {
-                new { filename = attachmentName, content = base64Content }
+                { "from", fromEmail! },
+                { "to", new[] { to } },
+                { "subject", subject },
+                { "html", htmlBody }
             };
-        }
 
-        var jsonPayload = JsonSerializer.Serialize(requestBody);
-        using var request = new HttpRequestMessage(HttpMethod.Post, apiUrl);
-        
-        request.Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-        
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+            if (attachmentBytes != null && !string.IsNullOrEmpty(attachmentName))
+            {
+                var base64Content = Convert.ToBase64String(attachmentBytes);
+                requestBody["attachments"] = new[]
+                {
+                    new { filename = attachmentName, content = base64Content }
+                };
+            }
+
+            var jsonPayload = JsonSerializer.Serialize(requestBody);
+            using var request = new HttpRequestMessage(HttpMethod.Post, apiUrl);
+            
+            request.Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
             var response = await _httpClient.SendAsync(request);
             
             if (!response.IsSuccessStatusCode)
             {
                 var errorDetails = await response.Content.ReadAsStringAsync();
-                RecordFailureAndThrow(string.Format(ResponseMessagesEmailsController.ProviderError, errorDetails));
+                string friendlyMessage = ParseResendError(errorDetails);
+                RecordFailureAndThrow(friendlyMessage);
+                _failureTracker.RecordFailure("ResendEmail");
+                return false;
             }
 
             _failureTracker.Reset("ResendEmail");
             return true;
         }
-        catch (HttpRequestException ex)
+        catch (Exception)
         {
-            RecordFailureAndThrow(ResponseMessagesEmailsController.ConnectionFailed, ex);
-            return false; 
-        }
-        catch (Exception ex) when (ex is not InvalidOperationException)
-        {
-            RecordFailureAndThrow(string.Format(ResponseMessagesEmailsController.UnexpectedError, ex.Message), ex);
+            _failureTracker.RecordFailure("ResendEmail");
             return false;
         }
     }
@@ -124,5 +150,47 @@ public class ResendEmailService : IEmailSenderService
             throw new InvalidOperationException(message, innerException);
         }
         throw new InvalidOperationException(message);
+    }
+
+    private string ParseResendError(string errorDetails)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(errorDetails);
+            var root = doc.RootElement;
+            
+            if (root.TryGetProperty("message", out var messageProp))
+            {
+                string message = messageProp.GetString() ?? "";
+                
+                if (message.Contains("API key is invalid", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ResponseMessagesEmailsController.ProviderErrorInvalidKey;
+                }
+                if (message.Contains("Invalid `to` field", StringComparison.OrdinalIgnoreCase) || 
+                    message.Contains("needs to follow the", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ResponseMessagesEmailsController.ProviderErrorInvalidTo;
+                }
+                if (message.Contains("restricted", StringComparison.OrdinalIgnoreCase) || 
+                    message.Contains("send emails to your own email address", StringComparison.OrdinalIgnoreCase) ||
+                    message.Contains("not verified", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ResponseMessagesEmailsController.ProviderErrorSandboxRestricted;
+                }
+                if (message.Contains("validation", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ResponseMessagesEmailsController.ProviderErrorValidation(message);
+                }
+                
+                return ResponseMessagesEmailsController.ProviderErrorGeneric(message);
+            }
+        }
+        catch
+        {
+            // Si hay un error al parsear el JSON, caer en la excepción genérica
+        }
+
+        return $"{ResponseMessagesEmailsController.ProviderError} Detalles: {errorDetails}";
     }
 }

@@ -1,6 +1,11 @@
 using System;
-// This class centralizes all the endpoint routes for the API, making it easier to manage and maintain them in one place.
-// Esta clase centraliza todas las rutas de los puntos finales de la API, lo que facilita su gestión y mantenimiento en un solo lugar.
+
+/*
+ describe: 
+ - Este archivo es para configurar las rutas de los endpoints, 
+   Organiza los strings de las rutas de los endpoints en clases para su facil orden y escalabilidad
+*/
+
 namespace vet_api_Net.Routes
 {
     public static class Endpoints
@@ -27,11 +32,7 @@ namespace vet_api_Net.Routes
             public const string PendingResets = "pending-resets";
             public const string UpdateUserName = "update-user-name";
         }
-        public static class Clients
-        {
-            public const string Delete = "delete/{id}";
-            public const string Update = "update/{id}";
-        }
+
         public static class Citas
         {
             public const string GetAllRequests = "requests";
@@ -48,6 +49,11 @@ namespace vet_api_Net.Routes
         public static class Client
         {
             public const string GetById = "{id}";
+        }
+        public static class Clients
+        {
+            public const string Update = "update/{id}";
+            public const string Delete = "delete/{id}";
         }
         public static class ClientPets
         {
@@ -87,12 +93,6 @@ namespace vet_api_Net.Routes
             public const string Update = "update/{id}";
             public const string Delete = "delete/{id}";
         }
-        public static class HistoriaClinica
-        {
-            public const string GetByMascotaId = "mascota/{mascotaId}";
-            public const string UpdateNotes = "{id}";
-            public const string RefreshIa = "mascota/{mascotaId}/refrescar";
-        }
         public static class ProductsController
         {
             public const string Create = "Create";
@@ -113,6 +113,40 @@ namespace vet_api_Net.Routes
             public const string ToggleAutoDelete = "settings/autodelete";
             public const string ToggleAutoGenerate = "settings/autogenerate";
             public const string Settings = "settings";
+        }
+        public static class ExcellController
+        {
+            public const string GenerateFull = "generate-full";
+            public const string CreateExcel = "excel/{id}";
+            public const string GetExcel = "excel/{id}";
+            public const string DownloadDashboard = "download-dashboard";
+            public const string DownloadCitas = "download-citas";
+            public const string DownloadClientes = "download-clientes";
+        }
+        public static class NowGrod
+        {
+            public const string Analyze = "analyze";
+            public const string Chat = "chat";
+            public const string Consultar = "consultar";
+        }
+        public static class HistoriaClinica
+        {
+            public const string GetById = "{id}";
+            public const string GetByMascota = "mascota/{mascotaId}";
+            public const string Create = "create";
+            public const string Update = "{id}";
+            public const string GetByMascotaId = "mascota/{mascotaId}";
+            public const string UpdateNotes = "{id}/notes";
+            public const string RefreshIa = "mascota/{mascotaId}/refrescar";
+        }
+        public static class IaConocimiento
+        {
+            public const string GetAll = "";
+            public const string GetById = "{id}";
+            public const string Create = "create";
+            public const string Update = "{id}";
+            public const string Categoria = "categoria/{categoria}";
+            public const string Guardar = "guardar";
         }
 
         public static class MoneyController
@@ -143,6 +177,7 @@ namespace vet_api_Net.Routes
             public const string GetTemplateById = "templates/{id}";
             public const string UpdateTemplate = "templates/{id}";
             public const string DataResend = "data-resend";
+            public const string UpdateResend = "update-resend";
         }
         public static class PasswordRecovery
         {
@@ -158,20 +193,6 @@ namespace vet_api_Net.Routes
         {
             public const string UpdateProfile = "update-profile";
         }
-        public static class ExcellController
-        {
-            public const string DownloadDashboard = "download-dashboard";
-            public const string DownloadCitas = "download-citas";
-            public const string DownloadClientes = "download-clientes";
-        }
-        public static class Groq
-        {
-            public const string Consultar = "consultar";
-        }
-        public static class IaConocimiento
-        {
-            public const string Categoria = "categoria/{categoria}";
-            public const string Guardar = "guardar";
-        }
+
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Routes;
 using DTOs;
 
@@ -15,10 +16,12 @@ namespace vet_api_Net.Controllers;
 public class EmailsController : ControllerBase
 {
     private readonly IEmailService _emailService;
+    private readonly ISystemConfigRepository _systemConfigRepository;
 
-    public EmailsController(IEmailService emailService)
+    public EmailsController(IEmailService emailService, ISystemConfigRepository systemConfigRepository)
     {
         _emailService = emailService;
+        _systemConfigRepository = systemConfigRepository;
     }
 
     [HttpPost(Endpoints.EmailsController.DispatchEmail)]
@@ -162,15 +165,36 @@ public class EmailsController : ControllerBase
     {
         try
         {
+            var systemConfig = await _systemConfigRepository.GetSystemConfigAsync();
+
             var data = new DataResendDto
             {
-                ClientEmail = "ignacio@gmail.com",
-                ApiKey = "sk_test_51Te9qJ212h212",
-                UrlResend = "https://api.resend.com",
-                ApiUrl = "https://api.resend.com/emails",
-                Active = true
+                ClientEmail = systemConfig?.ResendFromEmail ?? string.Empty,
+                ApiKey = systemConfig?.ResendApiKey ?? string.Empty,
+                UrlResend = !string.IsNullOrWhiteSpace(systemConfig?.ResendApiUrl) && Uri.TryCreate(systemConfig.ResendApiUrl, UriKind.Absolute, out var uri) ? uri.GetLeftPart(UriPartial.Authority) : "https://api.resend.com",
+                ApiUrl = systemConfig?.ResendApiUrl ?? "https://api.resend.com/emails",
+                Active = !string.IsNullOrWhiteSpace(systemConfig?.ResendApiKey) && systemConfig?.ResendApiKey != "re_8ihXsxrL_NRxgtRcoyqjou3J75MjbJdFo"
             };
             return Ok(new { success = true, data = data });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { success = false, message = ResponseErrors.InternalServerError, details = ex.Message });
+        }
+    }
+
+    [HttpPost(Endpoints.EmailsController.UpdateResend)]
+    public async Task<IActionResult> UpdateResend([FromBody] DataResendDto dto)
+    {
+        try
+        {
+            if (dto == null)
+            {
+                return BadRequest(new { success = false, message = "Datos no válidos." });
+            }
+
+            await _systemConfigRepository.UpdateResendConfigAsync(dto.ApiKey, dto.ClientEmail, dto.ApiUrl);
+            return Ok(new { success = true, message = "Configuración de Resend actualizada con éxito." });
         }
         catch (Exception ex)
         {

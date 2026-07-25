@@ -7,14 +7,17 @@ namespace vet_api_Net.Interfaze.Services;
 
 public interface ICitasRequestService
 {
-    Task<List<CitasRequestDTO>> GetAllCitasRequestsAsync();
+    Task<List<CitasRequestDTO>> GetAllCitasRequestsAsync(string? status = null, DateTime? date = null, bool allDates = false);
     Task<CitaDetalleDTO?> GetCitaRequestDetailsAsync(int id);
     Task<DeleteCitaDTO?> DeleteCitaAsync(int id);
     Task<StatusCitaRequestDTO> StatusCitaRequestAsync(int id);
     Task<StatusCitaRequestDTO?> UpdateCitaStatusAsync(int id, StatusCitaRequestDTO request);
     Task<CreateCitaDTO> CreateCitaAsync(CreateCitaDTO dto);
+    Task<CitasRequestDTO?> UpdateCitaAsync(int id, UpdateCitaDTO dto);
     Task<List<CitasRequestDTO>> CurrentCitaAsync();
     Task<List<NotificationCitaDTO>> NotificationCitaAsync();
+    public Task<List<string>> GetCitaStatusesAsync();
+    public Task<List<string>> GetCitaTypesAsync();
 }
 
 // Describe => NotificationCitaAsync()

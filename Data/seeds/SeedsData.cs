@@ -8,8 +8,7 @@ using vet_api_Net.Models;
 
 
 /*
-Seed con datos DUMMY minimos para pruebas de API.
-NO USAR EN PRODUCCION
+Seed con datos DUMMY minimos para pruebas de API.NO USAR EN PRODUCCION
 Algunos datos se cargan desde appsettings.json
 EL seed elimina los datos de todas las tablas y limpia sus id (los reinicia)
 
@@ -26,7 +25,7 @@ Para deshabilitar el Seed ir a:
 
 namespace vet_api_Net.Data.seeds
 {
-    
+
     public static class SeedsData
     {
         const string emails = "ignacioangel671@gmail.com";
@@ -134,22 +133,23 @@ namespace vet_api_Net.Data.seeds
                 return;
             }
 
-            var metodosDefecto = new[] { 
-                "efectivo", 
-                "transferencia", 
-                "pago movil", 
-                "no definido", 
+            var metodosDefecto = new[] {
+                "efectivo",
+                "transferencia",
+                "pago movil",
+                "no definido",
                 "pendiente",
-                "otro" 
+                "otro"
             };
             foreach (var m in metodosDefecto)
             {
                 if (!context.MetodoPagos.Any(x => x.Nombre == m))
                 {
-                    context.MetodoPagos.Add(new MetodoPago { 
-                        Nombre = m, 
-                        Creado = DateTime.Now, 
-                        Actualizado = DateTime.Now 
+                    context.MetodoPagos.Add(new MetodoPago
+                    {
+                        Nombre = m,
+                        Creado = DateTime.Now,
+                        Actualizado = DateTime.Now
                     });
                 }
             }
@@ -197,7 +197,8 @@ namespace vet_api_Net.Data.seeds
 
             if (!context.FacturaConfigs.Any())
             {
-                context.FacturaConfigs.Add(new FacturaConfig {
+                context.FacturaConfigs.Add(new FacturaConfig
+                {
                     Days = 1,
                     IsEnabled = true,
                     GenerateEnabled = true,
@@ -220,71 +221,71 @@ namespace vet_api_Net.Data.seeds
 
             var clientes = new List<Cliente>
             {
-                new Cliente { 
-                    Nombre = "Ignacio", 
-                    Apellido = "Angel", 
-                    Identificacion = "V-12345678", 
-                    Email = emails, 
-                    Telefono = "584129361132", 
-                    Direccion = "Av 1, Calle 2", 
-                    Nota = "Cliente frecuente", 
-                    Creado = DateTime.Now, 
-                    Actualizado = DateTime.Now 
+                new Cliente {
+                    Nombre = "Ignacio",
+                    Apellido = "Angel",
+                    Identificacion = "V-12345678",
+                    Email = emails,
+                    Telefono = "584129361132",
+                    Direccion = "Av 1, Calle 2",
+                    Nota = "Cliente frecuente",
+                    Creado = DateTime.Now,
+                    Actualizado = DateTime.Now
                 },
                 new Cliente {
-                    Nombre = "Anastacia", 
-                    Apellido = "Martinez", 
-                    Identificacion = "V-87654321", 
+                    Nombre = "Anastacia",
+                    Apellido = "Martinez",
+                    Identificacion = "V-87654321",
                     Email = "anastacia.martinez@gmail.com",
-                    Telefono = "04121234567", 
-                    Direccion = "Urb Las Palmas", 
-                    Nota = "Requiere llamar antes", 
-                    Creado = DateTime.Now, 
-                    Actualizado = DateTime.Now 
+                    Telefono = "04121234567",
+                    Direccion = "Urb Las Palmas",
+                    Nota = "Requiere llamar antes",
+                    Creado = DateTime.Now,
+                    Actualizado = DateTime.Now
                 },
                 new Cliente {
-                    Nombre = "Luis", 
-                    Apellido = "Rodriguez", 
-                    Identificacion = "V-11223344", 
-                    Email = "luis.rodriguez@gmail.com", 
-                    Telefono = "04241234567", 
-                    Direccion = "Centro", 
-                    Nota = "Cliente VIP", 
-                    Creado = DateTime.Now, 
-                    Actualizado = DateTime.Now 
+                    Nombre = "Luis",
+                    Apellido = "Rodriguez",
+                    Identificacion = "V-11223344",
+                    Email = "luis.rodriguez@gmail.com",
+                    Telefono = "04241234567",
+                    Direccion = "Centro",
+                    Nota = "Cliente VIP",
+                    Creado = DateTime.Now,
+                    Actualizado = DateTime.Now
                 },
                 new Cliente {
-                    Nombre = "Maria", 
-                    Apellido = "Perez", 
-                    Identificacion = "V-15678901", 
-                    Email = "maria.perez@gmail.com", 
-                    Telefono = "04161234567", 
-                    Direccion = "El Paraiso", 
-                    Nota = "Nueva clienta", 
-                    Creado = DateTime.Now, 
-                    Actualizado = DateTime.Now 
+                    Nombre = "Maria",
+                    Apellido = "Perez",
+                    Identificacion = "V-15678901",
+                    Email = "maria.perez@gmail.com",
+                    Telefono = "04161234567",
+                    Direccion = "El Paraiso",
+                    Nota = "Nueva clienta",
+                    Creado = DateTime.Now,
+                    Actualizado = DateTime.Now
                 },
                 new Cliente {
-                    Nombre = "Jorge", 
-                    Apellido = "Diaz", 
-                    Identificacion = "V-21345678", 
-                    Email = "jorge.diaz@gmail.com",  
-                    Telefono = "04149876543", 
-                    Direccion = "Chacao", 
-                    Nota = "Deuda pendiente", 
-                    Creado = DateTime.Now, 
-                    Actualizado = DateTime.Now 
+                    Nombre = "Jorge",
+                    Apellido = "Diaz",
+                    Identificacion = "V-21345678",
+                    Email = "jorge.diaz@gmail.com",
+                    Telefono = "04149876543",
+                    Direccion = "Chacao",
+                    Nota = "Deuda pendiente",
+                    Creado = DateTime.Now,
+                    Actualizado = DateTime.Now
                 },
                 new Cliente {
-                    Nombre = "Sofia", 
-                    Apellido = "Gomez", 
-                    Identificacion = "V-25678912", 
-                    Email = "sofia.gomez@gmail.com", 
+                    Nombre = "Sofia",
+                    Apellido = "Gomez",
+                    Identificacion = "V-25678912",
+                    Email = "sofia.gomez@gmail.com",
                     Telefono = "04241112233",
-                    Direccion = "La Castellana", 
-                    Nota = "Familiar de Carlos", 
-                    Creado = DateTime.Now, 
-                    Actualizado = DateTime.Now 
+                    Direccion = "La Castellana",
+                    Nota = "Familiar de Carlos",
+                    Creado = DateTime.Now,
+                    Actualizado = DateTime.Now
                 }
             };
             context.Clientes.AddRange(clientes);
@@ -293,100 +294,100 @@ namespace vet_api_Net.Data.seeds
             var mascotas = new List<Mascota>
             {
                 new Mascota {
-                    ClienteId = clientes[0].Id, 
-                    Nombre = "Firulais", 
-                    Especie = "perro", 
-                    Sexo = "macho", 
-                    Color = "Marrón", 
-                    Peso = 15.5m, 
-                    IdenteficacionMascota = "M-001", 
-                    Esterilizado = true, 
-                    Raza = "Mestizo", 
-                    FechaNacimiento = new DateOnly(2020, 5, 10), 
-                    Alergias = "Ninguna", 
-                    CondicionesMedicas = "Sano", 
-                    Creado = DateTime.Now, 
-                    Actualizado = DateTime.Now 
+                    ClienteId = clientes[0].Id,
+                    Nombre = "Firulais",
+                    Especie = "perro",
+                    Sexo = "macho",
+                    Color = "Marrón",
+                    Peso = 15.5m,
+                    IdenteficacionMascota = "M-001",
+                    Esterilizado = true,
+                    Raza = "Mestizo",
+                    FechaNacimiento = new DateOnly(2020, 5, 10),
+                    Alergias = "Ninguna",
+                    CondicionesMedicas = "Sano",
+                    Creado = DateTime.Now,
+                    Actualizado = DateTime.Now
                 },
                 new Mascota {
-                    ClienteId = clientes[1].Id, 
-                    Nombre = "Michi", 
-                    Especie = "gato", 
-                    Sexo = "macho", 
-                    Color = "Blanco", 
-                    Peso = 4.2m, 
-                    IdenteficacionMascota = "M-002", 
-                    Esterilizado = false, 
-                    Raza = "Siamés", 
-                    FechaNacimiento = new DateOnly(2021, 8, 20), 
-                    Alergias = "Polvo", 
-                    CondicionesMedicas = "Asma leve", 
-                    Creado = DateTime.Now, 
-                    Actualizado = DateTime.Now 
+                    ClienteId = clientes[1].Id,
+                    Nombre = "Michi",
+                    Especie = "gato",
+                    Sexo = "macho",
+                    Color = "Blanco",
+                    Peso = 4.2m,
+                    IdenteficacionMascota = "M-002",
+                    Esterilizado = false,
+                    Raza = "Siamés",
+                    FechaNacimiento = new DateOnly(2021, 8, 20),
+                    Alergias = "Polvo",
+                    CondicionesMedicas = "Asma leve",
+                    Creado = DateTime.Now,
+                    Actualizado = DateTime.Now
                 },
                 new Mascota {
-                    ClienteId = clientes[2].Id, 
-                    Nombre = "Rex", 
-                    Especie = "perro", 
-                    Sexo = "macho", 
-                    Color = "Negro", 
-                    Peso = 30.0m, 
-                    IdenteficacionMascota = "M-003", 
-                    Esterilizado = true, 
-                    Raza = "Pastor Alemán", 
-                    FechaNacimiento = new DateOnly(2019, 2, 15), 
-                    Alergias = "Ninguna", 
-                    CondicionesMedicas = "Displasia de cadera", 
-                    Creado = DateTime.Now, 
-                    Actualizado = DateTime.Now 
+                    ClienteId = clientes[2].Id,
+                    Nombre = "Rex",
+                    Especie = "perro",
+                    Sexo = "macho",
+                    Color = "Negro",
+                    Peso = 30.0m,
+                    IdenteficacionMascota = "M-003",
+                    Esterilizado = true,
+                    Raza = "Pastor Alemán",
+                    FechaNacimiento = new DateOnly(2019, 2, 15),
+                    Alergias = "Ninguna",
+                    CondicionesMedicas = "Displasia de cadera",
+                    Creado = DateTime.Now,
+                    Actualizado = DateTime.Now
                 },
                 new Mascota {
-                    ClienteId = clientes[3].Id, 
-                    Nombre = "Luna", 
-                    Especie = "gato", 
-                    Sexo = "hembra", 
-                    Color = "Gris", 
-                    Peso = 3.5m, 
-                    IdenteficacionMascota = "M-004", 
-                    Esterilizado = true, 
-                    Raza = "Persa", 
-                    FechaNacimiento = new DateOnly(2022, 11, 1), 
-                    Alergias = "Pescado", 
-                    CondicionesMedicas = "Sano", 
-                    Creado = DateTime.Now, 
-                    Actualizado = DateTime.Now 
+                    ClienteId = clientes[3].Id,
+                    Nombre = "Luna",
+                    Especie = "gato",
+                    Sexo = "hembra",
+                    Color = "Gris",
+                    Peso = 3.5m,
+                    IdenteficacionMascota = "M-004",
+                    Esterilizado = true,
+                    Raza = "Persa",
+                    FechaNacimiento = new DateOnly(2022, 11, 1),
+                    Alergias = "Pescado",
+                    CondicionesMedicas = "Sano",
+                    Creado = DateTime.Now,
+                    Actualizado = DateTime.Now
                 },
                 new Mascota {
-                    ClienteId = clientes[4].Id, 
-                    Nombre = "Rocky", 
-                    Especie = "perro", 
-                    Sexo = "macho", 
-                    Color = "Dorado", 
-                    Peso = 25.0m, 
-                    IdenteficacionMascota = "M-005", 
-                    Esterilizado = false, 
-                    Raza = "Golden Retriever", 
-                    FechaNacimiento = new DateOnly(2023, 1, 5), 
-                    Alergias = "Picaduras de pulgas", 
-                    CondicionesMedicas = "Sano", 
-                    Creado = DateTime.Now, 
-                    Actualizado = DateTime.Now 
+                    ClienteId = clientes[4].Id,
+                    Nombre = "Rocky",
+                    Especie = "perro",
+                    Sexo = "macho",
+                    Color = "Dorado",
+                    Peso = 25.0m,
+                    IdenteficacionMascota = "M-005",
+                    Esterilizado = false,
+                    Raza = "Golden Retriever",
+                    FechaNacimiento = new DateOnly(2023, 1, 5),
+                    Alergias = "Picaduras de pulgas",
+                    CondicionesMedicas = "Sano",
+                    Creado = DateTime.Now,
+                    Actualizado = DateTime.Now
                 },
                 new Mascota {
-                    ClienteId = clientes[5].Id, 
-                    Nombre = "Pelusa", 
-                    Especie = "gato", 
-                    Sexo = "hembra", 
-                    Color = "Blanco y Negro", 
-                    Peso = 5.1m, 
-                    IdenteficacionMascota = "M-006", 
-                    Esterilizado = true, 
-                    Raza = "Mestizo", 
-                    FechaNacimiento = new DateOnly(2018, 7, 22), 
-                    Alergias = "Lácteos", 
-                    CondicionesMedicas = "Sano", 
-                    Creado = DateTime.Now, 
-                    Actualizado = DateTime.Now 
+                    ClienteId = clientes[5].Id,
+                    Nombre = "Pelusa",
+                    Especie = "gato",
+                    Sexo = "hembra",
+                    Color = "Blanco y Negro",
+                    Peso = 5.1m,
+                    IdenteficacionMascota = "M-006",
+                    Esterilizado = true,
+                    Raza = "Mestizo",
+                    FechaNacimiento = new DateOnly(2018, 7, 22),
+                    Alergias = "Lácteos",
+                    CondicionesMedicas = "Sano",
+                    Creado = DateTime.Now,
+                    Actualizado = DateTime.Now
                 },
                 new Mascota {
                     ClienteId = clientes[3].Id,
@@ -429,10 +430,10 @@ namespace vet_api_Net.Data.seeds
                     Actualizado = DateTime.Now
                 },
                 new CategoriasProducto {
-                    Nombre = "Higiene", 
-                    Descripcion = "Shampoos y limpieza", 
-                    Activo = true, 
-                    Creado = DateTime.Now, 
+                    Nombre = "Higiene",
+                    Descripcion = "Shampoos y limpieza",
+                    Activo = true,
+                    Creado = DateTime.Now,
                     Actualizado = DateTime.Now
                 }
             };
