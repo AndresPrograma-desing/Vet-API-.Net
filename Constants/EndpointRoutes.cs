@@ -193,6 +193,11 @@ namespace vet_api_Net.Routes
         {
             public const string UpdateProfile = "update-profile";
         }
+        public static class Calendar
+        {
+            public const string GetCalendar = "get-calendar";
+            public const string CheckAvailability = "check-availability";
+        }
 
     }
 }
