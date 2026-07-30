@@ -262,6 +262,7 @@ public static class DependencyInjection
         services.AddScoped<IHistoriaClinicaRepository, HistoriaClinicaRepository>();
         services.AddScoped<IIaConocimientoRepository, IaConocimientoRepository>();
         services.AddScoped<IPasswordResetTicketRepository, PasswordResetTicketRepository>();
+        services.AddScoped<ICalendarRepository, CalendarRepository>();
 
         // Servicios de la Aplicación
         services.AddScoped<IUserService, UserService>();
@@ -293,6 +294,7 @@ public static class DependencyInjection
         services.AddScoped<IHistoriaClinicaService, HistoriaClinicaService>();
         services.AddScoped<INowGrodService, NowGrodService>();
         services.AddScoped<IIaConocimientoService, IaConocimientoService>();
+        services.AddScoped<ICalendarService, CalendarService>();
         services.AddHttpClient<IEmailSenderService, vet_api_Net.HttpServices.ResendEmailService>()
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {

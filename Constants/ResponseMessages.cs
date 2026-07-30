@@ -16,6 +16,12 @@ namespace vet_api_Net.Constants
         public const string Unauthorized = "No autorizado.";
         public const string Forbidden = "Prohibido.";
     }
+    public static class Roles
+    {
+        public const string Admin = "admin";
+        public const string Secretaria = "secretaria";
+        public const string Doctor = "doctor";
+    }
     public static class ResponseMessagesLogin
     {
         public const string IsDisabled = "Tu cuenta ha sido deshabilitada, por favor contacta al administrador.";
@@ -98,6 +104,7 @@ namespace vet_api_Net.Constants
         public const string DeleteClientError = "Hubo un error al eliminar el cliente.";
         public const string ClientDeletedSuccess = "Cliente eliminado exitosamente.";
         public const string NotClientDeleted = "El Cliente no existe o no encontrado.";
+        public const string InvalidBirthDate = "La fecha de nacimiento no puede ser posterior a la fecha actual ni superior al año actual.";
     }
     public static class ResponseMessagesUsers
     {
@@ -211,6 +218,10 @@ namespace vet_api_Net.Constants
         public const string Active = "activo";
         public const string Inactive = "inactivo";
         public const string InvoicePending = "factura_pendiente";
+        public const string Busy = "ocupado";
+        public const string NotAvailable = "no_disponible";
+        public const string Available = "disponible";
+        public const string Blocked = "bloqueado";
 
     }
     public static class ResponseMessagesFactura
@@ -562,5 +573,19 @@ namespace vet_api_Net.Constants
         public const long MaxFileSizeBytes = 5 * 1024 * 1024;
         public const string SaveAvatarError = "No se pudo guardar el avatar: no existe el usuario con id {0}";
         // public const string 
+    }
+    public static class ResponseMessagesCalendar
+    {
+        public const string ErrorProcessingCalendar = "Error al obtener el calendario:";
+        public const string ErrorCheckingAvailability = "Error al verificar la disponibilidad del doctor:";
+        public const string InvalidTimeFormat = "El formato de hora no es válido. Use HH:mm (ej: 10:00).";
+        public const string DoctorNotFound = "Doctor no encontrado.";
+        public const string RequiredId = "El id del doctor es requerido.";
+        public const string RequiredDate = "La fecha es requerida.";
+        public const string DoctorNotWorking = "El doctor no trabaja en la fecha especificada.";
+        public const string DoctorIsBusy = "El doctor está ocupado en la fecha y hora especificada.";
+        public const string DoctorAvailable = "El doctor está disponible en la fecha y hora especificadas.";
+        public const string DoctorIsAvailable = "El doctor está disponible";
+        public const string DoctorIsNotAvailable = "El doctor no está disponible";
     }
 }
