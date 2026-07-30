@@ -59,8 +59,94 @@ public class CreateCitaService : ICreateCitaService
             fecha = DateTime.Now.Date;
         }
 
-        var conflict = await _context.Citas.AnyAsync(c => c.DoctorId == dto.DoctorId && c.FechaCita.Date == fecha && c.HoraCita == hora);
-        if (conflict) throw new InvalidOperationException(ResponseMessagesCitas.ExistingCitaConflict);
+        // --- EVITAR SOLAPAMIENTOS DE RANGOS DE 30 MINUTOS ---
+        var citasDelDia = await _context.Citas
+            .Where(c => c.DoctorId == dto.DoctorId && c.FechaCita.Date == fecha)
+            .ToListAsync();
+
+        var requestedStart = fecha.Add(hora.ToTimeSpan());
+        var requestedEnd = requestedStart.AddMinutes(30);
+
+        var citasConflictivas = citasDelDia
+            .Where(c => 
+                !string.Equals(c.Estado, Status.Cancelled, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(c.Estado, Status.Completed, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(c.Estado, Status.NotAssisted, StringComparison.OrdinalIgnoreCase))
+            .Where(c => 
+            {
+                var existingEnd = c.FechaCita.Date.Add(c.HoraCita.ToTimeSpan()).AddMinutes(30);
+                return existingEnd > DateTime.Now;
+            })
+            .ToList();
+
+        var hasConflict = false;
+        foreach (var existingCita in citasConflictivas)
+        {
+            var existingStart = existingCita.FechaCita.Date.Add(existingCita.HoraCita.ToTimeSpan());
+            var existingEnd = existingStart.AddMinutes(30);
+
+            if (requestedStart < existingEnd && requestedEnd > existingStart)
+            {
+                hasConflict = true;
+                break;
+            }
+        }
+
+        if (hasConflict)
+        {
+            if (dto.Autoagendar == true)
+            {
+                var standardHours = new List<string>
+                {
+                    "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
+                    "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
+                    "14:00", "14:30", "15:00", "15:30", "16:00", "16:30",
+                    "17:00", "17:30"
+                };
+
+                var foundFreeSlot = false;
+                var parsedHours = standardHours
+                    .Select(h => TimeOnly.ParseExact(h, "HH:mm"))
+                    .Where(t => t >= hora)
+                    .OrderBy(t => t)
+                    .ToList();
+
+                foreach (var candidateTime in parsedHours)
+                {
+                    var candidateStart = fecha.Add(candidateTime.ToTimeSpan());
+                    var candidateEnd = candidateStart.AddMinutes(30);
+
+                    var isCandidateConflict = false;
+                    foreach (var existingCita in citasConflictivas)
+                    {
+                        var existingStart = existingCita.FechaCita.Date.Add(existingCita.HoraCita.ToTimeSpan());
+                        var existingEnd = existingStart.AddMinutes(30);
+
+                        if (candidateStart < existingEnd && candidateEnd > existingStart)
+                        {
+                            isCandidateConflict = true;
+                            break;
+                        }
+                    }
+
+                    if (!isCandidateConflict)
+                    {
+                        hora = candidateTime;
+                        foundFreeSlot = true;
+                        break;
+                    }
+                }
+
+                if (!foundFreeSlot)
+                {
+                    throw new InvalidOperationException("No se encontró ningún horario disponible para autoagendar este día.");
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException(ResponseMessagesCitas.ExistingCitaConflict);
+            }
+        }
 
         var cita = new Cita
         {

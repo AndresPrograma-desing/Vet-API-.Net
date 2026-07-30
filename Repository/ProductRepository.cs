@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using vet_api_Net.Data;
-using vet_api_Net.Models;
 using vet_api_Net.Interfaze.Repositories;
+using vet_api_Net.Models;
 
 namespace vet_api_Net.Repositories;
 
@@ -21,14 +21,31 @@ public class ProductRepository : IProductRepository
     {
         return await _context.MoneyTypes.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id);
     }
+    public async Task<List<Producto>> GetActiveProductsAsync(string noProductName, int? categoriaId, string searchTerm, decimal? maxPrice, int pageNumber, int pageSize)
+{
+    var query = _context.Productos
+        .Where(p => p.Nombre != noProductName);
 
-    public async Task<List<Producto>> GetActiveProductsAsync(string noProductName)
+    if (categoriaId.HasValue)
     {
-        return await _context.Productos
-            .Where(p => p.Nombre != noProductName)
-            .ToListAsync();
+        query = query.Where(p => p.CategoriaId == categoriaId.Value);
     }
 
+    if (!string.IsNullOrWhiteSpace(searchTerm))
+    {
+        query = query.Where(p => p.Nombre.Contains(searchTerm));
+    }
+
+    if (maxPrice.HasValue)
+    {
+        query = query.Where(p => p.PrecioVenta <= maxPrice.Value);
+    }
+
+    return await query
+        .Skip((pageNumber - 1) * pageSize)
+        .Take(pageSize)
+        .ToListAsync();
+}
     public async Task<Producto?> GetProductByIdAsync(int id)
     {
         return await _context.Productos.FirstOrDefaultAsync(p => p.Id == id);

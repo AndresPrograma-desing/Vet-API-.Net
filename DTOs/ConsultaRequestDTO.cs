@@ -45,6 +45,18 @@ public record ConsultaRequestDTO
     [JsonPropertyName("observaciones")]
     public string? Observaciones { get; set; }
 
+    [JsonPropertyName("mascota_nombre")]
+    public string? MascotaNombre { get; set; }
+
+    [JsonPropertyName("cliente_telefono")]
+    public string? ClienteTelefono { get; set; }
+
+    [JsonPropertyName("telefono_cliente")]
+    public string? TelefonoCliente { get; set; }
+
+    [JsonPropertyName("correo_cliente")]
+    public string? CorreoCliente { get; set; }
+
     [JsonPropertyName("creado")]
     public DateTime Creado { get; set; }
 

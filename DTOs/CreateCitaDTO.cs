@@ -35,5 +35,7 @@ public record CreateCitaDTO
     [JsonPropertyName("metodo_pago")]
     public string? MetodoPago { get; set; }
 
+    [JsonPropertyName("autoagendar")]
+    public bool? Autoagendar { get; set; }
 }
 

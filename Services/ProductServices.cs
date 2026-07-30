@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using DTOs;
-using vet_api_Net.Models;
+using Microsoft.Extensions.Configuration;
 using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Interfaze.Utilities;
-using vet_api_Net.Utilities;
+using vet_api_Net.Models;
 
 namespace vet_api_Net.Services;
 
@@ -24,9 +23,9 @@ public class ProductService : IProductService, ICreateProductService
         _currencyService = currencyService;
     }
 
-    public async Task<List<ProductDTO>> GetAllProductsAsync()
+    public async Task<List<ProductDTO>> GetProductsAsync(int? categoriaId, string searchTerm, decimal? maxPrice, int pageNumber, int pageSize)
     {
-        var productsRaw = await _repository.GetActiveProductsAsync(ResponseMessagesProduct.NoProductName);
+        var productsRaw = await _repository.GetActiveProductsAsync(ResponseMessagesProduct.NoProductName, categoriaId, searchTerm, maxPrice, pageNumber, pageSize);
         var productList = new List<ProductDTO>();
 
         foreach (var p in productsRaw)
@@ -109,77 +108,74 @@ public class ProductService : IProductService, ICreateProductService
 
         return product;
     }
-public async Task<(Producto Product, bool HasChanges)> UpdateProductAsync(int id, ProductsUpdateDTO updatedProductDto)
-{
-    ArgumentNullException.ThrowIfNull(updatedProductDto);
-
-    if ((updatedProductDto.Precio.HasValue && updatedProductDto.Precio < 0) || (updatedProductDto.PrecioVenta.HasValue && updatedProductDto.PrecioVenta < 0))
-        throw new ArgumentException(ResponseMessagesProduct.ProductCantNegative);
-
-    if (updatedProductDto.PrecioVenta < updatedProductDto.Precio)
-        throw new ArgumentException(ResponseMessagesProduct.ProductCantEqualOrLessThan);
-
-    var existingProduct = await _repository.GetProductByIdAsync(id);
-    if (existingProduct == null)
-        throw new KeyNotFoundException(ResponseMessagesProduct.ProductNotFound);
-
-    decimal targetPrecio = existingProduct.Precio;
-    if (updatedProductDto.Precio.HasValue)
+    public async Task<(Producto Product, bool HasChanges)> UpdateProductAsync(int id, ProductsUpdateDTO updatedProductDto)
     {
-        targetPrecio = await _currencyService.ConvertToUsdAsync(updatedProductDto.Precio.Value);
+        ArgumentNullException.ThrowIfNull(updatedProductDto);
+
+        if ((updatedProductDto.Precio.HasValue && updatedProductDto.Precio < 0) || (updatedProductDto.PrecioVenta.HasValue && updatedProductDto.PrecioVenta < 0))
+            throw new ArgumentException(ResponseMessagesProduct.ProductCantNegative);
+
+        var existingProduct = await _repository.GetProductByIdAsync(id);
+        if (existingProduct == null)
+            throw new KeyNotFoundException(ResponseMessagesProduct.ProductNotFound);
+
+        decimal targetPrecio = existingProduct.Precio;
+        if (updatedProductDto.Precio.HasValue)
+        {
+            targetPrecio = await _currencyService.ConvertToUsdAsync(updatedProductDto.Precio.Value);
+        }
+
+        decimal targetPrecioVenta = existingProduct.PrecioVenta;
+        if (updatedProductDto.PrecioVenta.HasValue)
+        {
+            targetPrecioVenta = await _currencyService.ConvertToUsdAsync(updatedProductDto.PrecioVenta.Value);
+        }
+
+        string targetCodigo = updatedProductDto.Codigo ?? existingProduct.Codigo;
+        string targetNombre = updatedProductDto.Nombre ?? existingProduct.Nombre;
+        string? targetDescripcion = updatedProductDto.Descripcion ?? existingProduct.Descripcion;
+        int? targetCategoriaId = updatedProductDto.CategoriaId ?? existingProduct.CategoriaId;
+        string targetTipo = updatedProductDto.Tipo ?? existingProduct.Tipo;
+        int? targetStock = updatedProductDto.Stock ?? existingProduct.Stock;
+        int? targetStockMinimo = updatedProductDto.StockMinimo ?? existingProduct.StockMinimo;
+        string? targetProveedor = updatedProductDto.Proveedor ?? existingProduct.Proveedor;
+        string? targetUnidadMedida = updatedProductDto.UnidadMedida ?? existingProduct.UnidadMedida;
+
+        bool hasChanges =
+            existingProduct.Precio != targetPrecio ||
+            existingProduct.PrecioVenta != targetPrecioVenta ||
+            existingProduct.Codigo != targetCodigo ||
+            existingProduct.Nombre != targetNombre ||
+            existingProduct.Descripcion != targetDescripcion ||
+            existingProduct.CategoriaId != targetCategoriaId ||
+            existingProduct.Tipo != targetTipo ||
+            existingProduct.Stock != targetStock ||
+            existingProduct.StockMinimo != targetStockMinimo ||
+            existingProduct.Proveedor != targetProveedor ||
+            existingProduct.UnidadMedida != targetUnidadMedida;
+
+        if (!hasChanges)
+        {
+            return (existingProduct, false);
+        }
+
+        existingProduct.Precio = targetPrecio;
+        existingProduct.PrecioVenta = targetPrecioVenta;
+        existingProduct.Codigo = targetCodigo;
+        existingProduct.Nombre = targetNombre;
+        existingProduct.Descripcion = targetDescripcion;
+        existingProduct.CategoriaId = targetCategoriaId;
+        existingProduct.Tipo = targetTipo;
+        existingProduct.Stock = targetStock;
+        existingProduct.StockMinimo = targetStockMinimo;
+        existingProduct.Proveedor = targetProveedor;
+        existingProduct.UnidadMedida = targetUnidadMedida;
+
+        _repository.UpdateProduct(existingProduct);
+        await _repository.SaveChangesAsync();
+
+        return (existingProduct, true);
     }
-
-    decimal targetPrecioVenta = existingProduct.PrecioVenta;
-    if (updatedProductDto.PrecioVenta.HasValue)
-    {
-        targetPrecioVenta = await _currencyService.ConvertToUsdAsync(updatedProductDto.PrecioVenta.Value);
-    }
-
-    string targetCodigo = updatedProductDto.Codigo ?? existingProduct.Codigo;
-    string targetNombre = updatedProductDto.Nombre ?? existingProduct.Nombre;
-    string? targetDescripcion = updatedProductDto.Descripcion ?? existingProduct.Descripcion;
-    int? targetCategoriaId = updatedProductDto.CategoriaId ?? existingProduct.CategoriaId;
-    string targetTipo = updatedProductDto.Tipo ?? existingProduct.Tipo;
-    int? targetStock = updatedProductDto.Stock ?? existingProduct.Stock;
-    int? targetStockMinimo = updatedProductDto.StockMinimo ?? existingProduct.StockMinimo;
-    string? targetProveedor = updatedProductDto.Proveedor ?? existingProduct.Proveedor;
-    string? targetUnidadMedida = updatedProductDto.UnidadMedida ?? existingProduct.UnidadMedida;
-
-    bool hasChanges = 
-        existingProduct.Precio != targetPrecio ||
-        existingProduct.PrecioVenta != targetPrecioVenta ||
-        existingProduct.Codigo != targetCodigo ||
-        existingProduct.Nombre != targetNombre ||
-        existingProduct.Descripcion != targetDescripcion ||
-        existingProduct.CategoriaId != targetCategoriaId ||
-        existingProduct.Tipo != targetTipo ||
-        existingProduct.Stock != targetStock ||
-        existingProduct.StockMinimo != targetStockMinimo ||
-        existingProduct.Proveedor != targetProveedor ||
-        existingProduct.UnidadMedida != targetUnidadMedida;
-
-    if (!hasChanges)
-    {
-        return (existingProduct, false);
-    }
-
-    existingProduct.Precio = targetPrecio;
-    existingProduct.PrecioVenta = targetPrecioVenta;
-    existingProduct.Codigo = targetCodigo;
-    existingProduct.Nombre = targetNombre;
-    existingProduct.Descripcion = targetDescripcion;
-    existingProduct.CategoriaId = targetCategoriaId;
-    existingProduct.Tipo = targetTipo;
-    existingProduct.Stock = targetStock;
-    existingProduct.StockMinimo = targetStockMinimo;
-    existingProduct.Proveedor = targetProveedor;
-    existingProduct.UnidadMedida = targetUnidadMedida;
-
-    _repository.UpdateProduct(existingProduct);
-    await _repository.SaveChangesAsync();
-
-    return (existingProduct, true);
-}
 
     public async Task<List<CategoryProductsDTO>> GetCategoriesAsync()
     {
@@ -191,4 +187,4 @@ public async Task<(Producto Product, bool HasChanges)> UpdateProductAsync(int id
             Descripcion = category.Descripcion
         }).ToList();
     }
-}
+}   

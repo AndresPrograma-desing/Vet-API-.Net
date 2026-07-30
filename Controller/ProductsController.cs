@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using vet_api_Net.Interfaze.Services;
-using vet_api_Net.Services;
 using DTOs;
+using Microsoft.AspNetCore.Mvc;
 using vet_api_Net.Constants;
+using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Routes;
+using vet_api_Net.Services;
 
 namespace vet_api_Net.Controllers;
 
@@ -24,11 +24,16 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllProducts()
+    public async Task<IActionResult> GetProducts(
+        [FromQuery] int? categoriaId,
+        [FromQuery] string? searchTerm,
+        [FromQuery] decimal? maxPrice,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
     {
         try
         {
-            var products = await _productService.GetAllProductsAsync();
+            var products = await _productService.GetProductsAsync(categoriaId, searchTerm, maxPrice, pageNumber, pageSize);
             return Ok(products);
         }
         catch (Exception ex)
@@ -133,8 +138,8 @@ public class ProductsController : ControllerBase
             var (product, hasChanges) = await _productService.UpdateProductAsync(id, updatedProductDto);
             var result = new
             {
-                message = hasChanges 
-                    ? ResponseMessagesProduct.UpdateProductSuccess 
+                message = hasChanges
+                    ? ResponseMessagesProduct.UpdateProductSuccess
                     : ResponseMessagesProduct.UpdateProductNoChanges,
                 product
             };

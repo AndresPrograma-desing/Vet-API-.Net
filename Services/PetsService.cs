@@ -5,6 +5,7 @@ using DTOs;
 using Microsoft.EntityFrameworkCore;
 using vet_api_Net.Data;
 using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Constants;
 
 namespace vet_api_Net.Services;
 
@@ -103,6 +104,10 @@ public class PetsService : IPetsService
 
         if (!string.IsNullOrWhiteSpace(dto.FechaNacimiento) && DateOnly.TryParse(dto.FechaNacimiento, out DateOnly fn))
         {
+            if (fn.Year > DateTime.Now.Year || fn > DateOnly.FromDateTime(DateTime.Now))
+            {
+                throw new InvalidOperationException(ResponseMessagesClient.InvalidBirthDate);
+            }
             pet.FechaNacimiento = fn;
         }
 

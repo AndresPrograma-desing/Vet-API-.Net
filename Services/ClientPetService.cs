@@ -54,6 +54,10 @@ public class ClientPetService : IClientPetService
         DateOnly? birthDate = null;
         if (!string.IsNullOrWhiteSpace(petDto.FechaNacimiento) && DateOnly.TryParse(petDto.FechaNacimiento, out var parsedDate))
         {
+            if (parsedDate.Year > DateTime.Now.Year || parsedDate > DateOnly.FromDateTime(DateTime.Now))
+            {
+                throw new InvalidOperationException(ResponseMessagesClient.InvalidBirthDate);
+            }
             birthDate = parsedDate;
         }
 
@@ -108,6 +112,10 @@ public async Task<CreatePetForExistingClientResponseDTO> CreatePetForExistingCli
     DateOnly? birthDate = null;
     if (!string.IsNullOrWhiteSpace(dto.FechaNacimiento) && DateOnly.TryParse(dto.FechaNacimiento, out var parsedDate))
     {
+        if (parsedDate.Year > DateTime.Now.Year || parsedDate > DateOnly.FromDateTime(DateTime.Now))
+        {
+            throw new InvalidOperationException(ResponseMessagesClient.InvalidBirthDate);
+        }
         birthDate = parsedDate;
     }
 

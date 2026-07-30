@@ -7,7 +7,7 @@ namespace vet_api_Net.Services;
 
 public interface IProductService
 {
-    Task<List<ProductDTO>> GetAllProductsAsync();
+    Task<List<ProductDTO>> GetProductsAsync(int? categoriaId, string searchTerm, decimal? maxPrice, int pageNumber, int pageSize);
 
     Task<Producto> DeleteProductAsync(int id);
 

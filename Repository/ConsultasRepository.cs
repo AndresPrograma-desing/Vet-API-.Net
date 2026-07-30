@@ -59,6 +59,10 @@ public class ConsultasRepository : IConsultasRepository
                 Receta = c.Receta,
                 Observaciones = c.Observaciones,
                 ConsultaPrice = c.ConsultaPrice,
+                MascotaNombre = c.Mascota != null ? c.Mascota.Nombre : null,
+                ClienteTelefono = (c.Mascota != null && c.Mascota.Cliente != null) ? c.Mascota.Cliente.Telefono : null,
+                TelefonoCliente = (c.Mascota != null && c.Mascota.Cliente != null) ? c.Mascota.Cliente.Telefono : null,
+                CorreoCliente = (c.Mascota != null && c.Mascota.Cliente != null) ? c.Mascota.Cliente.Email : null,
                 Creado = c.Creado,
                 Productos = c.ConsultasProductos.Select(cp => new ConsultaProductoDetalleDTO
                 {
@@ -96,6 +100,10 @@ public class ConsultasRepository : IConsultasRepository
                 Receta = c.Receta,
                 Observaciones = c.Observaciones,
                 ConsultaPrice = c.ConsultaPrice,
+                MascotaNombre = c.Mascota != null ? c.Mascota.Nombre : null,
+                ClienteTelefono = (c.Mascota != null && c.Mascota.Cliente != null) ? c.Mascota.Cliente.Telefono : null,
+                TelefonoCliente = (c.Mascota != null && c.Mascota.Cliente != null) ? c.Mascota.Cliente.Telefono : null,
+                CorreoCliente = (c.Mascota != null && c.Mascota.Cliente != null) ? c.Mascota.Cliente.Email : null,
                 Creado = c.Creado,
                 Productos = c.ConsultasProductos.Select(cp => new ConsultaProductoDetalleDTO
                 {
