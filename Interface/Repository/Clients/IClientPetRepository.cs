@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Storage;
 using vet_api_Net.Models;
 
-namespace vet_api_Net.Interfaze.Repositories;
+namespace vet_api_Net.Interfaze.Repositories.Clients;
 
 public interface IClientPetRepository
 {
