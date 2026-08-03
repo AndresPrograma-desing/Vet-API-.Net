@@ -8,6 +8,7 @@ using vet_api_Net.DTOs;
 using vet_api_Net.Infrastructure.Configuration;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Routes;
+using vet_api_Net.Exceptions;
 
 namespace vet_api_Net.Controllers;
 
@@ -48,6 +49,14 @@ public class AuthController : ControllerBase
                     rol = user.Rol
                 },
                 token
+            });
+        }
+        catch (LoginSecurityException ex)
+        {
+            return BadRequest(new
+            {
+                error = ex.Security.Message,
+                tryAgainTime = ex.Security.TryAgainTime
             });
         }
         catch (InvalidOperationException ex)

@@ -273,4 +273,19 @@ public class UsersController : ControllerBase
             return StatusCode(500, new { error = ex.Message });
         }
     }
+
+    [HttpGet(Endpoints.Users.GetRoles)]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetRoles()
+    {
+        try
+        {
+            var result = await _userService.GetRolesAsync();
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
 }

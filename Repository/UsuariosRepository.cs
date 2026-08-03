@@ -150,4 +150,18 @@ public class UsersRepository : IUsersRepository
         await _context.SaveChangesAsync();
         return user;
     }
+    public async Task<RolesRequestDTO> GetRolesAsync()
+{
+    var rolesList = await _context.Usuarios
+        .AsNoTracking()
+        .Where(u => u.Rol != null && u.Rol != "")
+        .Select(u => u.Rol!)
+        .Distinct()
+        .ToListAsync();
+
+    return new RolesRequestDTO
+    {
+        Roles = rolesList
+    };
+}
 }
