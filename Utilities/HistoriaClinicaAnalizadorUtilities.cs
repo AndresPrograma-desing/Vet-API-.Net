@@ -18,16 +18,16 @@ using vet_api_Net.Constants;
 //Describe: Analizador clínico experto que delega el procesamiento de historiales médicos en la API de NowGrod.ia.
 namespace vet_api_Net.Utilities;
 
-public class HistoriaClinicaAnalizador : IHistoriaClinicaAnalizador
+public class HistoriaClinicaAnalizadorUtilities : IHistoriaClinicaAnalizadorUtilities
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ApiSettingsOptions _options;
-    private readonly ILogger<HistoriaClinicaAnalizador> _logger;
+    private readonly ILogger<HistoriaClinicaAnalizadorUtilities> _logger;
 
-    public HistoriaClinicaAnalizador(
+    public HistoriaClinicaAnalizadorUtilities(
         IHttpClientFactory httpClientFactory, 
         IOptions<ApiSettingsOptions> options,
-        ILogger<HistoriaClinicaAnalizador> logger)
+        ILogger<HistoriaClinicaAnalizadorUtilities> logger)
     {
         _httpClientFactory = httpClientFactory;
         _options = options.Value;

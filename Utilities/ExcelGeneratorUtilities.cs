@@ -5,7 +5,7 @@ using vet_api_Net.Interfaze.Utilities;
 
 namespace vet_api_Net.Utilities
 {
-    public class ExcelGenerator : IExcelGenerator
+    public class ExcelGeneratorUtilities : IExcelGeneratorUtilities
     {
         public byte[] GenerateDashboardExcel(DashboardStatsDTO stats)
         {

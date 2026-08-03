@@ -20,14 +20,14 @@ public class InvoiceService : IInvoiceService
     private readonly IFacturasRepository _facturasRepository;
     private readonly ICitasRequestService _citasRequestService;
     private readonly ILogger<InvoiceService> _logger;
-    private readonly ICurrencyService _currencyService;
+    private readonly ICurrencyUtilities _currencyService;
     private readonly ApiSettingsOptions _apiSettings;
 
     public InvoiceService(
         IFacturasRepository facturasRepository, 
         ICitasRequestService citasRequestService, 
         ILogger<InvoiceService> logger, 
-        ICurrencyService currencyService, 
+        ICurrencyUtilities currencyService, 
         IOptions<ApiSettingsOptions> apiSettingsOptions)
     {
         _facturasRepository = facturasRepository;
