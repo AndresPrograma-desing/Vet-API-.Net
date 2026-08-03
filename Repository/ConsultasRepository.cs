@@ -81,9 +81,17 @@ public class ConsultasRepository : IConsultasRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<IEnumerable<ConsultaRequestDTO>> GetConsultasAsync()
+    public async Task<IEnumerable<ConsultaRequestDTO>> GetConsultasAsync(int? doctorId = null, int? secretariaId = null)
     {
-        return await _context.Consultas
+        var query = _context.Consultas.AsQueryable();
+
+        if (doctorId.HasValue)
+            query = query.Where(c => c.DoctorId == doctorId.Value);
+
+        if (secretariaId.HasValue)
+            query = query.Where(c => c.Cita.SecretariaId == secretariaId.Value);
+
+        return await query
             .OrderByDescending(c => c.FechaConsulta)
             .Select(c => new ConsultaRequestDTO
             {

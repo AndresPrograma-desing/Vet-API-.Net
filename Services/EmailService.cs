@@ -10,12 +10,11 @@ using vet_api_Net.Constants;
 using vet_api_Net.Infrastructure.Configuration;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaze.Services.Clients;
 using vet_api_Net.Repositories;
 
-//Describe:
-
-// Servicio encargado de procesar la lógica de negocio para el envío de correos electrónicos.
-// Valida el tipo de correo solicitado (TypeEmail) y selecciona la plantilla correspondiente (Recibos, Citas, etc.) antes de usar el canal de envío.
+// Describe:
+// Servicio encargado de procesar la lógica de negocio para el envío de correos electrónicos y la gestión de la configuración del proveedor (Resend).
 
 namespace vet_api_Net.Services;
 
@@ -29,6 +28,7 @@ public class EmailService : IEmailService
     private readonly IEmailTemplateRepository _templateRepository;
     private readonly IAuthService _authService;
     private readonly IClientService _clientService;
+    private readonly ISystemConfigRepository _systemConfigRepository;
 
     public EmailService(
         IInvoiceExternalRepository repository,
@@ -38,7 +38,8 @@ public class EmailService : IEmailService
         IWebHostEnvironment env,
         IEmailTemplateRepository templateRepository,
         IAuthService authService,
-        IClientService clientService)
+        IClientService clientService,
+        ISystemConfigRepository systemConfigRepository)
     {
         _repository = repository;
         _emailSenderService = emailSenderService;
@@ -48,6 +49,7 @@ public class EmailService : IEmailService
         _templateRepository = templateRepository;
         _authService = authService;
         _clientService = clientService;
+        _systemConfigRepository = systemConfigRepository;
     }
 
     public async Task<InvoiceDispatchResponseDTO> DispatchEmailAsync(int entityId, string typeEmail)
@@ -55,7 +57,6 @@ public class EmailService : IEmailService
         string clientEmail = "";
         string clientFullName = "";
         string petName = ResponseMessagesWSMessageAPI.PetsDefault;
-        
         string facturaNumero = ResponseMessagesFactura.NA;
         int facturaId = 0;
         byte[]? pdfBytes = null;
@@ -170,7 +171,7 @@ public class EmailService : IEmailService
         }
         catch (Exception)
         {
-            throw; // Rethrow to be caught by the controller
+            throw;
         }
     }
 
@@ -220,6 +221,40 @@ public class EmailService : IEmailService
             TypeEmail = template.TypeEmail,
             Update = template.Update
         };
+    }
+
+    public async Task<DataResendDto> GetResendConfigAsync()
+    {
+        var systemConfig = await _systemConfigRepository.GetSystemConfigAsync();
+
+        bool isApiKeyConfigured = !string.IsNullOrWhiteSpace(systemConfig?.ResendApiKey);
+
+        return new DataResendDto
+        {
+            ClientEmail = systemConfig?.ResendFromEmail ?? string.Empty,
+            ApiKey = string.Empty, // Protegemos la ApiKey para no exponerla al cliente
+            UrlResend = !string.IsNullOrWhiteSpace(systemConfig?.ResendApiUrl) && Uri.TryCreate(systemConfig.ResendApiUrl, UriKind.Absolute, out var uri) 
+                ? uri.GetLeftPart(UriPartial.Authority) 
+                : "https://api.resend.com",
+            ApiUrl = systemConfig?.ResendApiUrl ?? "https://api.resend.com/emails",
+            Active = isApiKeyConfigured
+        };
+    }
+
+    public async Task UpdateResendConfigAsync(DataResendDto dto)
+    {
+        if (dto == null)
+        {
+            throw new ArgumentNullException(nameof(dto), "Los datos no son válidos.");
+        }
+
+        var currentConfig = await _systemConfigRepository.GetSystemConfigAsync();
+        
+        string apiKeyToSave = string.IsNullOrWhiteSpace(dto.ApiKey)
+            ? currentConfig?.ResendApiKey ?? string.Empty
+            : dto.ApiKey;
+
+        await _systemConfigRepository.UpdateResendConfigAsync(apiKeyToSave, dto.ClientEmail, dto.ApiUrl);
     }
 
     private async Task<(byte[]? bytes, string? name)> LoadInvoicePdfAsync(string? urlDocx, string numeroFactura)

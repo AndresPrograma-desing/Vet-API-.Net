@@ -11,6 +11,7 @@ using vet_api_Net.Extensions;
 using vet_api_Net.Infrastructure.Configuration;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaze.Utilities;
 using vet_api_Net.Models;
 using vet_api_Net.Routes;
 
@@ -21,19 +22,62 @@ public class CitasRequestService : ICitasRequestService
     private readonly ICitasRepository _citasRepository;
     private readonly IConfiguration _configuration;
     private readonly ApiSettingsOptions _apiSettings;
+    private readonly IUserScopeResolver _userScopeResolver;
 
-    public CitasRequestService(ICitasRepository citasRepository, IConfiguration configuration, IOptions<ApiSettingsOptions> apiSettingsOptions)
+    public CitasRequestService(ICitasRepository citasRepository, IConfiguration configuration, IOptions<ApiSettingsOptions> apiSettingsOptions, IUserScopeResolver userScopeResolver)
     {
         _citasRepository = citasRepository;
         _configuration = configuration;
         _apiSettings = apiSettingsOptions.Value;
+        _userScopeResolver = userScopeResolver;
     }
 
-    public async Task<List<CitasRequestDTO>> GetAllCitasRequestsAsync(string? status = null, DateTime? date = null, bool allDates = false)
+    public async Task<List<CitasRequestDTO>> GetAllCitasRequestsAsync(string? status = null, DateTime? date = null, bool allDates = false, string? currentUserRole = null, int? currentUserId = null, int? requestedDoctorId = null, int? requestedSecretariaId = null)
     {
+        var (doctorId, secretariaId) = _userScopeResolver.ResolveDoctorSecretariaScope(currentUserRole, currentUserId, requestedDoctorId, requestedSecretariaId);
+
         try
         {
             var appointments = await _citasRepository.GetAllWithRelationsAsync();
+
+            if (doctorId.HasValue)
+                appointments = appointments.Where(a => a.DoctorId == doctorId.Value).ToList();
+
+            if (secretariaId.HasValue)
+                appointments = appointments.Where(a => a.SecretariaId == secretariaId.Value).ToList();
+            var now = DateTime.Now;
+            var anyExpired = false;
+
+            foreach (var a in appointments)
+            {
+                var currentStatus = a.Estado?.Trim().ToLowerInvariant();
+                if (currentStatus != Status.Cancelled &&
+                    currentStatus != Status.Completed &&
+                    currentStatus != Status.NotAssisted)
+                {
+                    var appointmentDateTime = new DateTime(
+                        a.FechaCita.Year,
+                        a.FechaCita.Month,
+                        a.FechaCita.Day,
+                        a.HoraCita.Hour,
+                        a.HoraCita.Minute,
+                        a.HoraCita.Second
+                    );
+
+                    if (appointmentDateTime < now)
+                    {
+                        a.Estado = Status.NotAssisted;
+                        _citasRepository.Update(a);
+                        anyExpired = true;
+                    }
+                }
+            }
+
+            if (anyExpired)
+            {
+                await _citasRepository.SaveChangesAsync();
+            }
+
 
             if (!allDates)
             {
@@ -65,6 +109,29 @@ public class CitasRequestService : ICitasRequestService
         {
             var cita = await _citasRepository.GetByIdWithRelationsAsync(id);
             if (cita == null) return null;
+
+            var currentStatus = cita.Estado?.Trim().ToLowerInvariant();
+            if (currentStatus != Status.Cancelled &&
+                currentStatus != Status.Completed &&
+                currentStatus != Status.NotAssisted)
+            {
+                var appointmentDateTime = new DateTime(
+                    cita.FechaCita.Year,
+                    cita.FechaCita.Month,
+                    cita.FechaCita.Day,
+                    cita.HoraCita.Hour,
+                    cita.HoraCita.Minute,
+                    cita.HoraCita.Second
+                );
+
+                if (appointmentDateTime < DateTime.Now)
+                {
+                    cita.Estado = Status.NotAssisted;
+                    _citasRepository.Update(cita);
+                    await _citasRepository.SaveChangesAsync();
+                }
+            }
+
 
             return new CitaDetalleDTO
             {
@@ -282,8 +349,10 @@ public class CitasRequestService : ICitasRequestService
             throw new Exception($"{ResponseMessagesCitas.ErrorProcessingCita} : {ex.Message}");
         }
     }
-    public async Task<List<NotificationCitaDTO>> NotificationCitaAsync()
+    public async Task<List<NotificationCitaDTO>> NotificationCitaAsync(string? currentUserRole = null, int? currentUserId = null, int? requestedDoctorId = null, int? requestedSecretariaId = null)
     {
+        var (doctorId, secretariaId) = _userScopeResolver.ResolveDoctorSecretariaScope(currentUserRole, currentUserId, requestedDoctorId, requestedSecretariaId);
+
         try
         {
             var ahora = DateTime.Now;
@@ -293,7 +362,9 @@ public class CitasRequestService : ICitasRequestService
                 ahora.Date,
                 horaActual,
                 _apiSettings.DateFormat!,
-                _apiSettings.TimeFormat!
+                _apiSettings.TimeFormat!,
+                doctorId,
+                secretariaId
             );
         }
         catch (Exception ex)

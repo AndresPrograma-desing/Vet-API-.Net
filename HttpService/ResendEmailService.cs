@@ -21,14 +21,14 @@ public class ResendEmailService : IEmailSenderService
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
-    private readonly IFailureTracker _failureTracker;
+    private readonly IFailureTrackerUtilities _failureTracker;
     private readonly ISystemConfigRepository _systemConfigRepository;
     private readonly Microsoft.Extensions.DependencyInjection.IServiceScopeFactory _services;
 
     public ResendEmailService(
         HttpClient httpClient, 
         IConfiguration configuration,
-        IFailureTracker failureTracker,
+        IFailureTrackerUtilities failureTracker,
         ISystemConfigRepository systemConfigRepository,
         Microsoft.Extensions.DependencyInjection.IServiceScopeFactory services)
     {

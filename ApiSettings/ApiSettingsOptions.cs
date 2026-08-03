@@ -34,7 +34,7 @@ public class TokenTemporalOptions
     public string Apellido { get; set; } = string.Empty;
 }
 
-public class SeedDataOptions
+public class SeedDataOptions 
 {
     public const string SectionName = "SeedData";
     public bool Initialize { get; set; } = false;
@@ -59,7 +59,7 @@ public class TemplatesHTML
     public string? ConfirmChangePass { get; set; }
     public string? ConfirmChangePassPage { get; set; }
     public string? BirthdayPets { get; set; }
-
+    
 }
 
 public class SupabaseSettingsOptions
@@ -68,4 +68,11 @@ public class SupabaseSettingsOptions
     public string? Url { get; set; }
     public string? Key { get; set; }
     public string? Bucket { get; set; } = "avatars";
+}
+
+public class SecurityOptions
+{
+    public const string SectionName = "SecurityOptions";
+    public int MaxAttempts {get; set;}
+    public int LockoutDurationSeconds {get; set;}
 }

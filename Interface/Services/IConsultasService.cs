@@ -8,6 +8,6 @@ public interface IConsultasService
 {
     Task<ConsultaRequestDTO?> CreateConsultaAsync(CreateConsultaDTO dto);
     Task<ConsultaRequestDTO?> GetConsultaByIdAsync(int id);
-    Task<IEnumerable<ConsultaRequestDTO>> GetConsultasAsync();
+    Task<IEnumerable<ConsultaRequestDTO>> GetConsultasAsync(string? currentUserRole = null, int? currentUserId = null, int? requestedDoctorId = null, int? requestedSecretariaId = null);
     Task<ConsultaRequestDTO?> UpdateRecetaAsync(int id, UpdateConsultaRecetaDTO dto);
 }

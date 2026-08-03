@@ -31,7 +31,7 @@ public class CalendarController : ControllerBase
     {
         try
         {
-            var calendar = await _calendarService.GetCalendarAsync(year, month, doctorId=1);
+            var calendar = await _calendarService.GetCalendarAsync(year, month, doctorId);
             return Ok(calendar);
         }
         catch (ArgumentException ex)

@@ -17,7 +17,7 @@ public interface ICitasRepository
     void Update(Cita cita);
     void Delete(Cita cita);
     Task<bool> SaveChangesAsync();
-    Task<List<NotificationCitaDTO>> GetUpcomingNotificationsAsync(DateTime fecha, TimeOnly horaDesde, string dateFormat, string timeFormat);
+    Task<List<NotificationCitaDTO>> GetUpcomingNotificationsAsync(DateTime fecha, TimeOnly horaDesde, string dateFormat, string timeFormat, int? doctorId = null, int? secretariaId = null);
     // Task<Cita?> UpdateCitaAsync(int id);
     // Task<Cita?> GetCitaStatusAsync();
 }

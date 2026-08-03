@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DTOs;
 using vet_api_Net.Routes;
@@ -12,6 +14,7 @@ namespace vet_api_Net.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ConsultasController : ControllerBase
 {
     private readonly IConsultasService _consultasService;
@@ -65,12 +68,21 @@ public async Task<ActionResult<ConsultaRequestDTO>> Create([FromBody] CreateCons
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ConsultaRequestDTO>>> GetAll()
+    public async Task<ActionResult<IEnumerable<ConsultaRequestDTO>>> GetAll(
+        [FromQuery] int? doctorId = null,
+        [FromQuery] int? secretariaId = null)
     {
         try
         {
-            var result = await _consultasService.GetConsultasAsync();
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            int? currentUserId = int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var parsedId) ? parsedId : null;
+
+            var result = await _consultasService.GetConsultasAsync(role, currentUserId, doctorId, secretariaId);
             return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, new { error = ex.Message });
         }
         catch (Exception ex)
         {

@@ -38,7 +38,7 @@ namespace vet_api_Net.Constants
         public const string ErrorCredential = "Credenciales incorrectas";
         public const string UserNotExisting = "El usuario con ese correo electrónico no existe.";
         public const string NoRolForUser = "Rol seleccionado no valido para ese usuario";
-
+        public const string TryAgainIntents = "Demasiados intentos fallidos, intenta en: ";
 
 
     }
@@ -105,6 +105,8 @@ namespace vet_api_Net.Constants
         public const string ClientDeletedSuccess = "Cliente eliminado exitosamente.";
         public const string NotClientDeleted = "El Cliente no existe o no encontrado.";
         public const string InvalidBirthDate = "La fecha de nacimiento no puede ser posterior a la fecha actual ni superior al año actual.";
+        public const string ClientUpdatedSuccess = "Cliente actualizado exitosamente.";
+        public const string ClientUpdatedError = "Error al actualizar el cliente, por favor verifique los datos ingresados.";
     }
     public static class ResponseMessagesUsers
     {
@@ -132,7 +134,7 @@ namespace vet_api_Net.Constants
         public static string NotUpdateNameUser = "No se pudo cambiar el nombre del usuario";
         public static string UpdateNameUser = "Nombre del usuario actualizado exitosamente";
         public const string CannotDeleteUserWithDependencies = "No se puede eliminar el usuario porque tiene registros o historial asociados en el sistema. Considere deshabilitar la cuenta en su lugar.";
-
+        public const string RolesError = "Error al optener los roles";
         public static class UsersVariable
         {
             public const string UserStatusActivo = "enabled";
@@ -587,5 +589,10 @@ namespace vet_api_Net.Constants
         public const string DoctorAvailable = "El doctor está disponible en la fecha y hora especificadas.";
         public const string DoctorIsAvailable = "El doctor está disponible";
         public const string DoctorIsNotAvailable = "El doctor no está disponible";
+    }
+    public static class ResponseMessagesLogs
+    {
+        public const string LogRegistered = "Log registrado con éxito.";
+        public const string ErrorLoadingLogs = "Error al obtener los logs del sistema.";
     }
 }

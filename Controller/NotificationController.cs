@@ -21,7 +21,7 @@ public class NotificationController : ControllerBase
         _notificationService = notificationService;
     }
 
-    [HttpGet("user/{userId}")]
+    [HttpGet(Endpoints.NotificationController.NotificactionByUser)]
     public async Task<ActionResult<IEnumerable<AlertNotificationDTO>>> GetByUserId([FromRoute] int userId)
     {
         try
