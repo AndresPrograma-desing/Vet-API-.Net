@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using DTOs;
 using vet_api_Net.Models;
 using vet_api_Net.Constants;
-using vet_api_Net.Interfaze.Repositories;
-using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaze.Repositories.Clients;
+using vet_api_Net.Interfaze.Services.Clients;
 
 namespace vet_api_Net.Services;
 

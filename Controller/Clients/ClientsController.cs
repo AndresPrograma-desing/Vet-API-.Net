@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using DTOs;
 using Microsoft.AspNetCore.Mvc;
 using vet_api_Net.Constants;
-using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaze.Services.Clients;
 using vet_api_Net.Models;
 using vet_api_Net.Routes;
 
@@ -38,12 +38,12 @@ public class ClientsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<ClientListWithMascotasDTO>>> GetAll()
+    public async Task<ActionResult<ClientListResponseDTO>> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? query = null)
     {
         try
         {
-            var result = await _clientService.GetAllClientsWithDetailsAsync();
-            return Ok(result);
+            var (items, totalCount) = await _clientService.GetAllClientsWithDetailsAsync(pageNumber, pageSize, query);
+            return Ok(new ClientListResponseDTO { Items = items, TotalCount = totalCount });
         }
         catch (Exception ex)
         {
@@ -72,12 +72,12 @@ public class ClientsController : ControllerBase
         try
         {
             var result = await _clientService.UpdateClientAsync(id, dto);
-            if (result == null) return NotFound(new { message = "Cliente no encontrado" });
+            if (result == null) return NotFound(new { message = ResponseMessagesClient.ClientNotFound });
             return Ok(result);
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Error al actualizar el cliente", details = ex.Message });
+            return StatusCode(500, new { message = ResponseMessagesClient.ClientUpdatedError, details = ex.Message });
         }
     }
 }

@@ -7,8 +7,8 @@ using DTOs;
 using Microsoft.Extensions.Options;
 using vet_api_Net.Constants;
 using vet_api_Net.Infrastructure.Configuration;
-using vet_api_Net.Interfaze.Repositories;
-using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaze.Repositories.Clients;
+using vet_api_Net.Interfaze.Services.Clients;
 using vet_api_Net.Models;
 
 namespace vet_api_Net.Services;
@@ -39,11 +39,12 @@ public class ClientService : IClientService
         };
     }
 
-    public async Task<List<ClientListWithMascotasDTO>> GetAllClientsWithDetailsAsync()
-    {
-        var clients = await _repository.GetAllWithDetailsAsync();
+    public async Task<(List<ClientListWithMascotasDTO> Items, int TotalCount)> GetAllClientsWithDetailsAsync(int pageNumber = 1, int pageSize = 10, string? searchTerm = null)
+    { 
+        
+        var (clients, totalCount) = await _repository.GetAllWithDetailsAsync(pageNumber, pageSize, searchTerm);
 
-        return clients.Select(c => new ClientListWithMascotasDTO
+        var dtos = clients.Select(c => new ClientListWithMascotasDTO
         {
             Id = c.Id,
             Nombre = c.Nombre,
@@ -83,8 +84,9 @@ public class ClientService : IClientService
                 }).ToList()
             }).ToList()
         }).ToList();
-    }
 
+        return (dtos, totalCount);
+    }
     public async Task<Cliente?> DeleteClientAsync(int id)
     {
         try

@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using DTOs;
 
-namespace vet_api_Net.Interfaze.Services;
+namespace vet_api_Net.Interfaze.Services.Clients;
 
 public interface IClientPetService
 {

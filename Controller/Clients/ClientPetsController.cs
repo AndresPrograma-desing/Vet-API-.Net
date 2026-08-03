@@ -5,7 +5,7 @@ using DTOs;
 using vet_api_Net.Routes;
 using vet_api_Net.Constants;
 
-using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaze.Services.Clients;
 
 namespace vet_api_Net.Controllers;
 
