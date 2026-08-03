@@ -15,11 +15,17 @@ public class PasswordRecoveryRepository : IPasswordRecoveryRepository
         _context = context;
     }
 
-    public async Task<Usuario?> GetUserByEmailAsync(string email)
+    public async Task<Usuario?> GetUserByEmailOrUsernameAsync(string identifier)
     {
-        return await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email);
-    }
+        if (string.IsNullOrWhiteSpace(identifier)) return null;
 
+        var cleanIdentifier = identifier.Trim().ToLower();
+
+        return await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.Email.ToLower() == cleanIdentifier
+                                   || u.Nombre.ToLower() == cleanIdentifier);
+    }
+    
     public async Task<Usuario?> GetUserByRecoveryCodeAsync(string code)
     {
         return await _context.Usuarios.FirstOrDefaultAsync(u => u.PasswordRecoveryCode == code);
