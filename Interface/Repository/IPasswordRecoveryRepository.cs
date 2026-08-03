@@ -5,7 +5,7 @@ namespace vet_api_Net.Interfaze.Repositories;
 
 public interface IPasswordRecoveryRepository
 {
-    Task<Usuario?> GetUserByEmailAsync(string email);
+    Task<Usuario?> GetUserByEmailOrUsernameAsync(string identifier);
     Task<Usuario?> GetUserByRecoveryCodeAsync(string code);
     Task<EmailTemplate?> GetTemplateByTypeAsync(string typeEmail);
     Task AddTemplateAsync(EmailTemplate template);

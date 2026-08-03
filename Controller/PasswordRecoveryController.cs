@@ -20,16 +20,16 @@ public class PasswordRecoveryController : ControllerBase
     }
 
     [HttpGet(Endpoints.PasswordRecovery.RequestCode)]
-    public async Task<IActionResult> RequestRecoveryCode([FromQuery] string email)
+    public async Task<IActionResult> RequestRecoveryCode([FromQuery] string identifier)
     {
-        if (string.IsNullOrWhiteSpace(email))
+        if (string.IsNullOrWhiteSpace(identifier))
         {
             return BadRequest(new { success = false, error = ResponseMessagesPasswordRecovery.RequiredEmail });
         }
 
         try
         {
-            var result = await _passwordRecoveryService.RequestRecoveryCodeAsync(email);
+            var result = await _passwordRecoveryService.RequestRecoveryCodeAsync(identifier);
             if (!result)
             {
                 return NotFound(new { success = false, error = ResponseMessagesPasswordRecovery.ErrorRequestingCode });
