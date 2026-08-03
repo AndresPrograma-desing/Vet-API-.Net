@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
 using vet_api_Net.Constants;
+using vet_api_Net.Interfaze.Services.Clients;
 using vet_api_Net.Routes;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Interfaze.Utilities;
@@ -15,9 +16,9 @@ namespace vet_api_Net.Controllers
         private readonly IDashboardService _dashboardService;
         private readonly ICitasRequestService _citasService;
         private readonly IClientService _clientService;
-        private readonly IExcelGenerator _excelGenerator;
+        private readonly IExcelGeneratorUtilities _excelGenerator;
 
-        public ExcellController(IDashboardService dashboardService, ICitasRequestService citasService, IClientService clientService, IExcelGenerator excelGenerator)
+        public ExcellController(IDashboardService dashboardService, ICitasRequestService citasService, IClientService clientService, IExcelGeneratorUtilities excelGenerator)
         {
             _dashboardService = dashboardService;
             _citasService = citasService;
@@ -75,9 +76,9 @@ namespace vet_api_Net.Controllers
             try
             {
                 var clientes = await _clientService.GetAllClientsWithDetailsAsync();
-                if (clientes == null) return NotFound(new { message = ResponseErrors.NotFound });
+                if (clientes.Items == null) return NotFound(new { message = ResponseErrors.NotFound });
 
-                var fileBytes = _excelGenerator.GenerateClientesExcel(clientes);
+                var fileBytes = _excelGenerator.GenerateClientesExcel(clientes.Items);
                 
                 return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Clientes_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
             }

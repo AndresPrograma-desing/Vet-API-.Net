@@ -2,7 +2,7 @@
 // Permite validar si un canal o servicio particular se encuentra bloqueado debido a errores consecutivos acumulados.
 namespace vet_api_Net.Interfaze.Utilities;
 
-public interface IFailureTracker
+public interface IFailureTrackerUtilities
 {
     bool IsBlocked(string serviceKey);
     void RecordFailure(string serviceKey, int maxFailures = 3);

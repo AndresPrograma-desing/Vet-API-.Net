@@ -6,7 +6,7 @@ using DTOs;
 //Describe: Interfaz para el analizador clínico interno que genera el resumen, alertas y sugerencias de la mascota.
 namespace vet_api_Net.Interfaze.Utilities;
 
-public interface IHistoriaClinicaAnalizador
+public interface IHistoriaClinicaAnalizadorUtilities
 {
     Task<ResumenClinicoIAResponseDTO> GenerarAnalisisClinicoAsync(Mascota mascota, List<Consulta> consultas, List<Vacuna> vacunas, string? resumenAnterior = null);
 }

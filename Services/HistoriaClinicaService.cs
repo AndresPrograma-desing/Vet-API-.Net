@@ -15,9 +15,9 @@ namespace vet_api_Net.Services;
 public class HistoriaClinicaService : IHistoriaClinicaService
 {
     private readonly IHistoriaClinicaRepository _repository;
-    private readonly IHistoriaClinicaAnalizador _analizador;
+    private readonly IHistoriaClinicaAnalizadorUtilities _analizador;
 
-    public HistoriaClinicaService(IHistoriaClinicaRepository repository, IHistoriaClinicaAnalizador analizador)
+    public HistoriaClinicaService(IHistoriaClinicaRepository repository, IHistoriaClinicaAnalizadorUtilities analizador)
     {
         _repository = repository;
         _analizador = analizador;

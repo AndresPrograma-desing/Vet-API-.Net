@@ -8,7 +8,7 @@ using vet_api_Net.Interfaze.Utilities;
 
 namespace vet_api_Net.Utilities;
 
-public class FailureTracker : IFailureTracker
+public class FailureTrackerUtilities : IFailureTrackerUtilities
 {
     private readonly ConcurrentDictionary<string, (int Failures, int MaxLimit)> _failuresMap = new();
 

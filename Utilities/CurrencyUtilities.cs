@@ -13,7 +13,7 @@ namespace vet_api_Net.Utilities;
 
 // CurrencyService se encarga de convertir precios entre USD y la moneda local (VES) según la configuración y el tipo de cambio actual.
 
-public class CurrencyService : ICurrencyService
+public class CurrencyUtilities : ICurrencyUtilities
 {
     private readonly IProductRepository _repository;
     private readonly IConfiguration _configuration;
@@ -21,7 +21,7 @@ public class CurrencyService : ICurrencyService
     private readonly IMoneyTypeService _moneyTypeService;
     private readonly int _targetId;
 
-    public CurrencyService(IProductRepository repository, IConfiguration configuration, IOptions<ApiSettingsOptions> apiSettingsOptions, IMoneyTypeService moneyTypeService)
+    public CurrencyUtilities(IProductRepository repository, IConfiguration configuration, IOptions<ApiSettingsOptions> apiSettingsOptions, IMoneyTypeService moneyTypeService)
     {
         _repository = repository;
         _configuration = configuration;

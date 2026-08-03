@@ -2,7 +2,7 @@ using DTOs;
 
 namespace vet_api_Net.Interfaze.Utilities
 {
-    public interface IExcelGenerator
+    public interface IExcelGeneratorUtilities
     {
         byte[] GenerateDashboardExcel(DashboardStatsDTO stats);
         byte[] GenerateCitasExcel(System.Collections.Generic.List<CitasRequestDTO> citas);
