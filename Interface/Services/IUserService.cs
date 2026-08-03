@@ -1,5 +1,6 @@
 using DTOs;
 using Microsoft.EntityFrameworkCore;
+using vet_api_Net.Constants;
 using vet_api_Net.Data;
 using vet_api_Net.Models;
 
@@ -27,5 +28,5 @@ public interface IUserService
     Task<string?> GetTemplatePasswordResetPage(string message);
     Task<ChangeNameUsersDTO?> ChangeNameUsersAsync(int id, string newName, string newLastName, string newEmail, string newPhone);
     Task<Usuario?> SaveAvatarUrl(int userId, string avatarUrl);
-    // Task<Usuario?> UpdateUserDataAsync(int id, Usuario userDto);
+    Task<RolesRequestDTO> GetRolesAsync();
 }

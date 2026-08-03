@@ -12,36 +12,56 @@ using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.DTOs;
 using DTOs;
-
+using vet_api_Net.Interfaze.Security;
+using vet_api_Net.Exceptions;
 namespace vet_api_Net.Services;
 
 public class AuthService : IAuthService
 {
     private readonly IUsersRepository _usersRepository;
     private readonly IConfiguration _configuration;
+    private readonly ILoginSecurity _loginSecurity;
 
-    public AuthService(IUsersRepository usuariosRepository, IConfiguration configuration)
+    public AuthService(IUsersRepository usuariosRepository, IConfiguration configuration, ILoginSecurity loginSecurity)
     {
         _usersRepository = usuariosRepository;
         _configuration = configuration;
+        _loginSecurity = loginSecurity;
     }
 
     public async Task<Usuario?> LoginAsync(LoginRequest request)
     {
-        ArgumentNullException.ThrowIfNull(request); 
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (await _loginSecurity.IsBlockedAsync(request.Email))
+        {
+            var secondsLeft = await _loginSecurity.GetRemainingBlockTimeSecondsAsync(request.Email);
+
+            throw new LoginSecurityException(new LoginSecurityDTO
+            {
+                Message = ResponseMessagesLogin.TryAgainIntents,
+                TryAgainTime = secondsLeft
+            });
+        }
+
         var (isValid, message) = await VerifyEmailRoleAsync(request.Email, request.Rol);
         if (!isValid)
         {
-            throw new InvalidOperationException(message);
+            throw new Exception(message);
         }
 
         if (string.IsNullOrWhiteSpace(request.Password))
         {
+            await SafeRegisterFailedAttemptAsync(request.Email);
             return null;
         }
 
         var user = await _usersRepository.GetByEmailAndRolAsync(request.Email, request.Rol);
-        if (user == null) throw new InvalidOperationException(message);
+        if (user == null)
+        {
+            await SafeRegisterFailedAttemptAsync(request.Email);
+            throw new InvalidOperationException(message);
+        }
 
         if (await _usersRepository.IsUserDisabledAsync(request.Email))
             throw new InvalidOperationException(ResponseMessagesLogin.IsDisabled);
@@ -59,12 +79,26 @@ public class AuthService : IAuthService
             {
                 valid = true;
                 user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
-                _usersRepository.Update(user);
-                await _usersRepository.SaveChangesAsync();
+                try
+                {
+                    _usersRepository.Update(user);
+                    await _usersRepository.SaveChangesAsync();
+                }
+                catch { }
             }
         }
 
-        if (!valid) return null;
+        if (!valid)
+        {
+            await SafeRegisterFailedAttemptAsync(request.Email);
+            return null;
+        }
+
+        try
+        {
+            await _loginSecurity.ResetAttemptsAsync(request.Email);
+        }
+        catch { }
 
         return user;
     }
@@ -169,5 +203,14 @@ public class AuthService : IAuthService
         }
 
         return (true, "");
+    }
+
+    private async Task SafeRegisterFailedAttemptAsync(string email)
+    {
+        try
+        {
+            await _loginSecurity.RegisterFailedAttemptAsync(email);
+        }
+        catch { }
     }
 }

@@ -316,7 +316,8 @@ public class UserService : IUserService
     {
         var tickets = await _ticketRepository.GetPendingAndAcceptedTicketsAsync();
 
-        return tickets.Select(t => {
+        return tickets.Select(t =>
+        {
             double? secondsRemaining = t.Estado == "Pending" && t.Expiracion > DateTime.Now
                 ? (t.Expiracion - DateTime.Now).TotalSeconds
                 : 0;
@@ -391,6 +392,18 @@ public class UserService : IUserService
         catch (Exception ex)
         {
             throw new InvalidOperationException(ex.Message);
+        }
+    }
+    public async Task<RolesRequestDTO> GetRolesAsync()
+    {
+        try
+        {
+            var roles = await _userRepository.GetRolesAsync();
+            return roles;
+        }
+        catch (Exception)
+        {
+            throw new InvalidOperationException(ResponseMessagesUsers.RolesError);
         }
     }
 }
