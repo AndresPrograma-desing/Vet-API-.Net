@@ -31,6 +31,7 @@ namespace vet_api_Net.Routes
             public const string AssignNewPassword = "assign-new-password";
             public const string PendingResets = "pending-resets";
             public const string UpdateUserName = "update-user-name";
+            public const string GetRoles = "roles";
         }
 
         public static class Citas
@@ -83,8 +84,8 @@ namespace vet_api_Net.Routes
         }
         public static class MassagesController
         {
-            public const string Conversation = "conversation/{userId}/{otherId}";
-            public const string UserMessages = "user/{userId}";
+            public const string Conversation = "{userId}/{otherId}/conversations";
+            public const string UserMessages = "{userId}/message-user";
             public const string MarkRead = "{id}/read";
         }
         public static class PetsController
@@ -161,6 +162,7 @@ namespace vet_api_Net.Routes
         {
             public const string Create = "Created";
             public const string MarkAsRead = "{alertId}/mark-as-read";
+            public const string NotificactionByUser = "user/{userId}/notifications";
         }
         public static class WSMessageController
         {
@@ -197,6 +199,10 @@ namespace vet_api_Net.Routes
         {
             public const string GetCalendar = "get-calendar";
             public const string CheckAvailability = "check-availability";
+        }
+        public static class Logs
+        {
+            public const string GetLogs = "get-logs";
         }
 
     }
