@@ -11,4 +11,6 @@ public interface IEmailService
     Task<IEnumerable<EmailsResponsesDTO>> GetAllEmailTemplatesAsync();
     Task<EmailsResponsesDTO?> GetEmailTemplateByIdAsync(int id);
     Task<EmailsResponsesDTO?> UpdateEmailTemplateAsync(int id, UpdateEmailTemplateDTO dto);
+    Task<DataResendDto> GetResendConfigAsync();
+    Task UpdateResendConfigAsync(DataResendDto dto);
 }

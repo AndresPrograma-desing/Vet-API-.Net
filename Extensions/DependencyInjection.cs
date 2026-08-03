@@ -18,16 +18,18 @@ using vet_api_Net.HttpServices;
 using vet_api_Net.Infrastructure.Configuration;
 using vet_api_Net.Interface.Services;
 using vet_api_Net.Interfaze.Repositories;
+using vet_api_Net.Interfaze.Repositories.Clients;
 using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaze.Services.Clients;
 using vet_api_Net.Interfaze.Utilities;
 using vet_api_Net.Repositories;
 using vet_api_Net.Services;
-
+using vet_api_Net.Services.Supabase;
 using vet_api_Net.Services.WSMessage;
 using vet_api_Net.Utilities;
 using vet_api_Net.Worker;
 using vet_api_Net.Workers;
-using vet_api_Net.Services.Supabase;
+using vet_api_Net.Interfaze.Security;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -263,6 +265,7 @@ public static class DependencyInjection
         services.AddScoped<IIaConocimientoRepository, IaConocimientoRepository>();
         services.AddScoped<IPasswordResetTicketRepository, PasswordResetTicketRepository>();
         services.AddScoped<ICalendarRepository, CalendarRepository>();
+        services.AddScoped<ILogsSistemaRepository, LogsSistemaRepository>();
 
         // Servicios de la Aplicación
         services.AddScoped<IUserService, UserService>();
@@ -295,6 +298,7 @@ public static class DependencyInjection
         services.AddScoped<INowGrodService, NowGrodService>();
         services.AddScoped<IIaConocimientoService, IaConocimientoService>();
         services.AddScoped<ICalendarService, CalendarService>();
+        services.AddScoped<ISystemLogService, SystemLogService>();
         services.AddHttpClient<IEmailSenderService, vet_api_Net.HttpServices.ResendEmailService>()
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {
@@ -302,10 +306,15 @@ public static class DependencyInjection
             });
 
         //Utilities
-        services.AddSingleton<IFailureTracker, FailureTracker>();
-        services.AddScoped<IHistoriaClinicaAnalizador, HistoriaClinicaAnalizador>();
-        services.AddScoped<ICurrencyService, CurrencyService>();
-        services.AddScoped<IExcelGenerator, ExcelGenerator>();
+        services.AddSingleton<IFailureTrackerUtilities, FailureTrackerUtilities>();
+        services.AddScoped<IHistoriaClinicaAnalizadorUtilities, HistoriaClinicaAnalizadorUtilities>();
+        services.AddScoped<ICurrencyUtilities, CurrencyUtilities>();
+        services.AddScoped<IExcelGeneratorUtilities, ExcelGeneratorUtilities>();
+        services.AddScoped<IUserScopeResolver, UserScopeResolver>();
+
+        // Seguridad de datos
+        services.AddScoped<ILoginSecurity, LoginSecurity>();
+        
         // Workers / Background Services
         services.AddHostedService<MessagePollerService>();
         services.AddHostedService<DeleteFacturaWorker>();
@@ -323,10 +332,11 @@ public static class DependencyInjection
         {
             ServerCertificateCustomValidationCallback = (m, c, ch, e) => true
         });
-
+        //Configuraciones de ApiSettingsOptions
         services.Configure<ApiSettingsOptions>(configuration.GetSection(ApiSettingsOptions.SectionName));
         services.Configure<TokenTemporalOptions>(configuration.GetSection(TokenTemporalOptions.SectionName));
         services.Configure<TemplatesHTML>(configuration.GetSection(TemplatesHTML.SectionName));
+        services.Configure<SecurityOptions>(configuration.GetSection(SecurityOptions.SectionName));
 
         return services;
     }

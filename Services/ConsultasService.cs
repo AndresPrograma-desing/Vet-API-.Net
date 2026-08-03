@@ -7,6 +7,7 @@ using vet_api_Net.Models;
 using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaze.Utilities;
 using vet_api_Net.Infrastructure.Configuration;
 using Microsoft.Extensions.Options;
 
@@ -16,10 +17,12 @@ public class ConsultasService : IConsultasService
 {
     private readonly IConsultasRepository _repository;
     private readonly ApiSettingsOptions _apiSettings;
-    public ConsultasService(IConsultasRepository repository, IOptions<ApiSettingsOptions> apiSettingsOptions)
+    private readonly IUserScopeResolver _userScopeResolver;
+    public ConsultasService(IConsultasRepository repository, IOptions<ApiSettingsOptions> apiSettingsOptions, IUserScopeResolver userScopeResolver)
     {
         _repository = repository;
         _apiSettings = apiSettingsOptions.Value;
+        _userScopeResolver = userScopeResolver;
     }
 
 
@@ -102,9 +105,10 @@ public class ConsultasService : IConsultasService
         return await _repository.GetConsultaDtoByIdAsync(id);
     }
 
-    public async Task<IEnumerable<ConsultaRequestDTO>> GetConsultasAsync()
+    public async Task<IEnumerable<ConsultaRequestDTO>> GetConsultasAsync(string? currentUserRole = null, int? currentUserId = null, int? requestedDoctorId = null, int? requestedSecretariaId = null)
     {
-        return await _repository.GetConsultasAsync();
+        var (doctorId, secretariaId) = _userScopeResolver.ResolveDoctorSecretariaScope(currentUserRole, currentUserId, requestedDoctorId, requestedSecretariaId);
+        return await _repository.GetConsultasAsync(doctorId, secretariaId);
     }
 
     public async Task<ConsultaRequestDTO?> UpdateRecetaAsync(int id, UpdateConsultaRecetaDTO dto)

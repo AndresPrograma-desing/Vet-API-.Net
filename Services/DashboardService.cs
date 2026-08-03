@@ -14,10 +14,10 @@ namespace vet_api_Net.Services;
 public class DashboardService : IDashboardService
 {
     private readonly IDashboardRepository _repository;
-    private readonly ICurrencyService _currencyService;
+    private readonly ICurrencyUtilities _currencyService;
     private readonly ApiSettingsOptions _apiSettings;
 
-    public DashboardService(IDashboardRepository repository, ICurrencyService currencyService, IOptions<ApiSettingsOptions> apiSettingsOptions)
+    public DashboardService(IDashboardRepository repository, ICurrencyUtilities currencyService, IOptions<ApiSettingsOptions> apiSettingsOptions)
     {
         _repository = repository;
         _currencyService = currencyService;

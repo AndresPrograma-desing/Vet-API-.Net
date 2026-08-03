@@ -64,12 +64,20 @@ public class CitasRepository : ICitasRepository
             .Where(c => c.FechaCita.Date == fecha.Date)
             .ToListAsync();
     }
-    public async Task<List<NotificationCitaDTO>> GetUpcomingNotificationsAsync(DateTime fecha, TimeOnly horaDesde, string dateFormat, string timeFormat)
+    public async Task<List<NotificationCitaDTO>> GetUpcomingNotificationsAsync(DateTime fecha, TimeOnly horaDesde, string dateFormat, string timeFormat, int? doctorId = null, int? secretariaId = null)
     {
-        return await _context.Citas
+        var query = _context.Citas
             .Where(c => c.FechaCita.Date == fecha.Date && c.HoraCita > horaDesde
             && c.Estado != Status.Completed
-            && c.Estado != Status.Cancelled)
+            && c.Estado != Status.Cancelled);
+
+        if (doctorId.HasValue)
+            query = query.Where(c => c.DoctorId == doctorId.Value);
+
+        if (secretariaId.HasValue)
+            query = query.Where(c => c.SecretariaId == secretariaId.Value);
+
+        return await query
             .OrderBy(c => c.HoraCita)
             .Select(c => new NotificationCitaDTO
             {

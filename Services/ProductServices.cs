@@ -15,9 +15,9 @@ namespace vet_api_Net.Services;
 public class ProductService : IProductService, ICreateProductService
 {
     private readonly IProductRepository _repository;
-    private readonly ICurrencyService _currencyService;
+    private readonly ICurrencyUtilities _currencyService;
 
-    public ProductService(IProductRepository repository, ICurrencyService currencyService)
+    public ProductService(IProductRepository repository, ICurrencyUtilities currencyService)
     {
         _repository = repository;
         _currencyService = currencyService;

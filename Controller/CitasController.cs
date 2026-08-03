@@ -1,5 +1,7 @@
 using System;
+using System.Security.Claims;
 using DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Services;
@@ -9,7 +11,7 @@ namespace vet_api_Net.Controller;
 
 [ApiController]
 [Route("api/[controller]")]
-
+[Authorize]
 public class CitasController : ControllerBase
 {
     private readonly ICitasRequestService _citasRequestService;
@@ -23,12 +25,21 @@ public class CitasController : ControllerBase
     public async Task<ActionResult<List<CitasRequestDTO>>> GetAllCitasRequests(
      [FromQuery] string? status = null,
      [FromQuery] DateTime? date = null,
-     [FromQuery] bool allDates = true)
+     [FromQuery] bool allDates = true,
+     [FromQuery] int? doctorId = null,
+     [FromQuery] int? secretariaId = null)
     {
         try
         {
-            var citasRequests = await _citasRequestService.GetAllCitasRequestsAsync(status, date, allDates);
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            int? currentUserId = int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var parsedId) ? parsedId : null;
+
+            var citasRequests = await _citasRequestService.GetAllCitasRequestsAsync(status, date, allDates, role, currentUserId, doctorId, secretariaId);
             return Ok(citasRequests);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, new { error = ex.Message });
         }
         catch (Exception)
         {
@@ -141,11 +152,16 @@ public class CitasController : ControllerBase
     //     }
 
     [HttpGet(Endpoints.Citas.CitaToday)]
-    public async Task<ActionResult<List<CitasRequestDTO>>> GetTodayNotifications()
+    public async Task<ActionResult<List<CitasRequestDTO>>> GetTodayNotifications(
+        [FromQuery] int? doctorId = null,
+        [FromQuery] int? secretariaId = null)
     {
         try
         {
-            var result = await _citasRequestService.NotificationCitaAsync();
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            int? currentUserId = int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var parsedId) ? parsedId : null;
+
+            var result = await _citasRequestService.NotificationCitaAsync(role, currentUserId, doctorId, secretariaId);
 
             if (result.Count == 0)
             {
@@ -153,6 +169,10 @@ public class CitasController : ControllerBase
             }
 
             return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, new { error = ex.Message });
         }
         catch (Exception ex)
         {

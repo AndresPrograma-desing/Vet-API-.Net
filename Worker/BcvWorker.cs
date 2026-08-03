@@ -19,14 +19,14 @@ public class BcvWorker : BackgroundService
     private readonly ILogger<BcvWorker> _logger;
     private readonly IConfiguration _configuration;
     private readonly ApiSettingsOptions _apiSettings;
-    private readonly IFailureTracker _failureTracker;
+    private readonly IFailureTrackerUtilities _failureTracker;
 
     public BcvWorker(
         IServiceScopeFactory scopeFactory,
         ILogger<BcvWorker> logger,
         IConfiguration configuration,
         IOptions<ApiSettingsOptions> apiSettingsOptions,
-        IFailureTracker failureTracker)
+        IFailureTrackerUtilities failureTracker)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
