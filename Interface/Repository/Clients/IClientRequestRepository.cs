@@ -10,4 +10,5 @@ public interface IClientRepository
     Task<(List<Cliente> Items, int TotalCount)> GetAllWithDetailsAsync(int pageNumber = 1, int pageSize = 10, string? searchTerm = null);
     Task<Cliente?> DeleteClientAsync(int id);
     Task<Cliente> UpdateClientAsync(Cliente client);
+    Task<Cliente?> GetByIdentificacionOrEmailSimpleAsync(string identifier);
 }

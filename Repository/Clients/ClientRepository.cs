@@ -70,4 +70,18 @@ public class ClientRepository : IClientRepository
         await _context.SaveChangesAsync();
         return client;
     }
+    public async Task<Cliente?> GetByIdentificacionOrEmailSimpleAsync(string identifier)
+    {
+        if (string.IsNullOrWhiteSpace(identifier))
+            return null;
+
+        var term = identifier.Trim().ToLower();
+
+        return await _context.Clientes
+            .AsNoTracking()
+            .Include(c => c.Mascota)
+            .FirstOrDefaultAsync(c =>
+                c.Identificacion.ToLower() == term ||
+                c.Email.ToLower() == term);
+    }
 }

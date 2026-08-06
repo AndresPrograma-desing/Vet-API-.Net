@@ -51,7 +51,7 @@ public class ClientsController : ControllerBase
         }
     }
 
-    
+
     [HttpDelete]
     [Route(Endpoints.Clients.Delete)]
     public async Task<ActionResult<Cliente>> DeleteClientAsync([FromRoute] int id)
@@ -78,6 +78,30 @@ public class ClientsController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { message = ResponseMessagesClient.ClientUpdatedError, details = ex.Message });
+        }
+    }
+    [HttpGet("validate")]
+    public async Task<ActionResult<ClientLookupResponseDTO>> GetByIdentificacionOrEmail([FromQuery] string identifier)
+    {
+        if (string.IsNullOrWhiteSpace(identifier))
+        {
+            return BadRequest(new { message = "Debe proporcionar una cédula o correo electrónico." });
+        }
+
+        try
+        {
+            var client = await _clientService.GetByIdentificacionOrEmailAsync(identifier);
+
+            if (client == null)
+            {
+                return NotFound(new { message = "No se encontró ningún cliente registrado con esa cédula o correo electrónico." });
+            }
+
+            return Ok(client);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Error al validar la cédula o email del cliente.", details = ex.Message });
         }
     }
 }

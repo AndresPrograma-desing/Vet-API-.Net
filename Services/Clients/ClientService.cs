@@ -40,8 +40,8 @@ public class ClientService : IClientService
     }
 
     public async Task<(List<ClientListWithMascotasDTO> Items, int TotalCount)> GetAllClientsWithDetailsAsync(int pageNumber = 1, int pageSize = 10, string? searchTerm = null)
-    { 
-        
+    {
+
         var (clients, totalCount) = await _repository.GetAllWithDetailsAsync(pageNumber, pageSize, searchTerm);
 
         var dtos = clients.Select(c => new ClientListWithMascotasDTO
@@ -118,5 +118,24 @@ public class ClientService : IClientService
         client.Actualizado = DateTime.Now;
 
         return await _repository.UpdateClientAsync(client);
+    }
+    public async Task<ClientLookupResponseDTO?> GetByIdentificacionOrEmailAsync(string identifier)
+    {
+        var client = await _repository.GetByIdentificacionOrEmailSimpleAsync(identifier);
+        if (client == null) return null;
+
+        return new ClientLookupResponseDTO
+        {
+            Id = client.Id,
+            Nombre = client.Nombre,
+            Apellido = client.Apellido,
+            Email = client.Email,
+            Identificacion = client.Identificacion ?? string.Empty,
+            Mascotas = client.Mascota.Select(m => new PetLookupDTO
+            {
+                Id = m.Id,
+                Nombre = m.Nombre
+            }).ToList()
+        };
     }
 }
