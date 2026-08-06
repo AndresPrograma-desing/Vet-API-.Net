@@ -11,4 +11,5 @@ public interface IClientService
     Task<(List<ClientListWithMascotasDTO> Items, int TotalCount)> GetAllClientsWithDetailsAsync(int pageNumber = 1, int pageSize = 10, string? searchTerm = null);
     Task<Cliente?> DeleteClientAsync(int id);
     Task<Cliente?> UpdateClientAsync(int id, UpdateClientDTO dto);
+    Task<ClientLookupResponseDTO?> GetByIdentificacionOrEmailAsync(string identifier);
 }
