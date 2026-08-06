@@ -3,12 +3,7 @@ using DTOs;
 
 namespace vet_api_Net.Exceptions;
 
-public class LoginSecurityException : Exception
+public class LoginSecurityException(LoginSecurityDTO security) : Exception(security.Message)
 {
-    public LoginSecurityDTO Security { get; }
-
-    public LoginSecurityException(LoginSecurityDTO security) : base(security.Message)
-    {
-        Security = security;
-    }
+    public LoginSecurityDTO Security { get; } = security;
 }

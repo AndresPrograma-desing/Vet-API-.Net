@@ -64,33 +64,44 @@ public class CitasRepository : ICitasRepository
             .Where(c => c.FechaCita.Date == fecha.Date)
             .ToListAsync();
     }
-    public async Task<List<NotificationCitaDTO>> GetUpcomingNotificationsAsync(DateTime fecha, TimeOnly horaDesde, string dateFormat, string timeFormat, int? doctorId = null, int? secretariaId = null)
+   public async Task<List<NotificationCitaDTO>> GetUpcomingNotificationsAsync(DateTime fecha, TimeOnly horaDesde, string dateFormat, string timeFormat, int? doctorId = null, int? secretariaId = null)
+{
+    var startDate = fecha.Date;
+
+    var query = _context.Citas.AsNoTracking()
+        .Where(c => c.FechaCita >= startDate 
+                 && c.FechaCita < startDate.AddDays(1)
+                 && c.HoraCita > horaDesde
+                 && c.Estado != Status.Completed
+                 && c.Estado != Status.Cancelled);
+
+    if (doctorId.HasValue)
+        query = query.Where(c => c.DoctorId == doctorId.Value);
+
+    if (secretariaId.HasValue)
+        query = query.Where(c => c.SecretariaId == secretariaId.Value);
+
+    var citasRaw = await query
+        .OrderBy(c => c.HoraCita)
+        .Select(c => new
+        {
+            c.FechaCita,
+            c.HoraCita,
+            MascotaNombre = c.Mascota != null ? c.Mascota.Nombre : string.Empty,
+            ClienteNombre = c.Mascota != null && c.Mascota.Cliente != null
+                ? (c.Mascota.Cliente.Nombre + " " + c.Mascota.Cliente.Apellido).Trim()
+                : string.Empty
+        })
+        .ToListAsync();
+
+    return citasRaw.Select(c => new NotificationCitaDTO
     {
-        var query = _context.Citas
-            .Where(c => c.FechaCita.Date == fecha.Date && c.HoraCita > horaDesde
-            && c.Estado != Status.Completed
-            && c.Estado != Status.Cancelled);
-
-        if (doctorId.HasValue)
-            query = query.Where(c => c.DoctorId == doctorId.Value);
-
-        if (secretariaId.HasValue)
-            query = query.Where(c => c.SecretariaId == secretariaId.Value);
-
-        return await query
-            .OrderBy(c => c.HoraCita)
-            .Select(c => new NotificationCitaDTO
-            {
-                FechaCita = c.FechaCita.ToString(dateFormat),
-                HoraCita = c.HoraCita.ToString(timeFormat),
-                MascotaNombre = c.Mascota != null ? c.Mascota.Nombre : string.Empty,
-                ClienteNombre = c.Mascota != null && c.Mascota.Cliente != null
-                    ? (c.Mascota.Cliente.Nombre + " " + c.Mascota.Cliente.Apellido).Trim()
-                    : string.Empty
-
-            })
-            .ToListAsync();
-    }
+        FechaCita = c.FechaCita.ToString(dateFormat),
+        HoraCita = c.HoraCita.ToString(timeFormat),
+        MascotaNombre = c.MascotaNombre,
+        ClienteNombre = c.ClienteNombre
+    }).ToList();
+}
 
     public async Task AddAsync(Cita cita) => await _context.Citas.AddAsync(cita);
 

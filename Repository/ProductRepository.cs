@@ -31,14 +31,16 @@ public class ProductRepository : IProductRepository
         query = query.Where(p => p.CategoriaId == categoriaId.Value);
     }
 
-    if (!string.IsNullOrWhiteSpace(searchTerm))
+    if (!string.IsNullOrWhiteSpace(noProductName))
     {
-        query = query.Where(p => p.Nombre.Contains(searchTerm));
+        var cleanNoProduct = noProductName.Trim().ToLower();
+        query = query.Where(p => p.Nombre.ToLower() != cleanNoProduct);
     }
 
-    if (maxPrice.HasValue)
+    if (!string.IsNullOrWhiteSpace(searchTerm))
     {
-        query = query.Where(p => p.PrecioVenta <= maxPrice.Value);
+        var cleanSearch = searchTerm.Trim().ToLower();
+        query = query.Where(p => p.Nombre.ToLower().Contains(cleanSearch));
     }
 
     return await query

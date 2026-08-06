@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DTOs;
 using Microsoft.EntityFrameworkCore;
@@ -18,27 +21,48 @@ public class UsersRepository : IUsersRepository
 
     public async Task<Usuario?> GetByEmailAndRolAsync(string email, string rol)
     {
-        return await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email && u.Rol == rol);
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(rol))
+            return null;
+
+        var cleanEmail = email.Trim().ToLower();
+        var cleanRol = rol.Trim().ToLower();
+
+        return await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.Email.ToLower() == cleanEmail 
+                                   && u.Rol != null 
+                                   && u.Rol.ToLower() == cleanRol);
     }
 
     public async Task<Usuario?> GetByEmailAsync(string email)
     {
-        return await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email);
+        if (string.IsNullOrWhiteSpace(email))
+            return null;
+
+        var cleanEmail = email.Trim().ToLower();
+
+        return await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.Email.ToLower() == cleanEmail);
     }
 
     public async Task<Usuario?> GetByNameAndApellidoAsync(string nombre, string apellido)
     {
-        return await _context.Usuarios.FirstOrDefaultAsync(u => u.Nombre == nombre && u.Apellido == apellido);
+        if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(apellido))
+            return null;
+
+        var cleanNombre = nombre.Trim().ToLower();
+        var cleanApellido = apellido.Trim().ToLower();
+
+        return await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.Nombre.ToLower() == cleanNombre 
+                                   && u.Apellido.ToLower() == cleanApellido);
     }
 
     public async Task<Usuario?> GetByIdAsync(int id)
     {
-        var users = await _context.Usuarios
-        .Where(u => u.Rol != "assistant")
-        .Where(u => u.Id == id)
-        .FirstOrDefaultAsync();
-
-        return users;
+        return await _context.Usuarios
+            .Where(u => u.Rol == null || u.Rol.ToLower() != "assistant")
+            .Where(u => u.Id == id)
+            .FirstOrDefaultAsync();
     }
 
     public void Update(Usuario usuario)
@@ -53,8 +77,13 @@ public class UsersRepository : IUsersRepository
 
     public async Task<bool> IsUserDisabledAsync(string email)
     {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+
+        var cleanEmail = email.Trim().ToLower();
+
         var user = await _context.Usuarios
-            .Where(u => u.Email == email)
+            .Where(u => u.Email.ToLower() == cleanEmail)
             .Select(u => new { u.Activo })
             .FirstOrDefaultAsync();
 
@@ -65,9 +94,14 @@ public class UsersRepository : IUsersRepository
 
     public async Task<string?> GetRoleByEmailAsync(string email)
     {
+        if (string.IsNullOrWhiteSpace(email))
+            return null;
+
+        var cleanEmail = email.Trim().ToLower();
+
         return await _context.Usuarios
             .AsNoTracking()
-            .Where(u => u.Email == email)
+            .Where(u => u.Email.ToLower() == cleanEmail)
             .Select(u => u.Rol)
             .FirstOrDefaultAsync();
     }
@@ -89,7 +123,7 @@ public class UsersRepository : IUsersRepository
 
         bool hasChanges = user.Nombre != cleanName ||
                           user.Apellido != cleanLastName ||
-                          user.Email != cleanEmail ||
+                          user.Email.ToLower() != cleanEmail.ToLower() ||
                           user.Telefono != cleanPhone;
 
         if (hasChanges)
@@ -115,15 +149,20 @@ public class UsersRepository : IUsersRepository
     public async Task<List<Usuario>> GetAllUsersAsync()
     {
         return await _context.Usuarios
-            .Where(u => u.Rol != "assistant")
+            .Where(u => u.Rol == null || u.Rol.ToLower() != "assistant")
             .OrderBy(u => u.Id)
             .ToListAsync();
     }
 
     public async Task<List<Usuario>> GetUsersByRoleAsync(string role)
     {
+        if (string.IsNullOrWhiteSpace(role))
+            return new List<Usuario>();
+
+        var cleanRole = role.Trim().ToLower();
+
         return await _context.Usuarios
-            .Where(u => u.Rol != null && u.Rol.ToLower() == role.ToLower())
+            .Where(u => u.Rol != null && u.Rol.ToLower() == cleanRole)
             .OrderBy(u => u.Id)
             .ToListAsync();
     }
@@ -150,18 +189,19 @@ public class UsersRepository : IUsersRepository
         await _context.SaveChangesAsync();
         return user;
     }
-    public async Task<RolesRequestDTO> GetRolesAsync()
-{
-    var rolesList = await _context.Usuarios
-        .AsNoTracking()
-        .Where(u => u.Rol != null && u.Rol != "")
-        .Select(u => u.Rol!)
-        .Distinct()
-        .ToListAsync();
 
-    return new RolesRequestDTO
+    public async Task<RolesRequestDTO> GetRolesAsync()
     {
-        Roles = rolesList
-    };
-}
+        var rolesList = await _context.Usuarios
+            .AsNoTracking()
+            .Where(u => u.Rol != null && u.Rol.Trim() != "")
+            .Select(u => u.Rol!)
+            .Distinct()
+            .ToListAsync();
+
+        return new RolesRequestDTO
+        {
+            Roles = rolesList
+        };
+    }
 }
