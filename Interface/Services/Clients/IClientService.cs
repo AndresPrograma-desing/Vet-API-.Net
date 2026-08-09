@@ -12,4 +12,5 @@ public interface IClientService
     Task<Cliente?> DeleteClientAsync(int id);
     Task<Cliente?> UpdateClientAsync(int id, UpdateClientDTO dto);
     Task<ClientLookupResponseDTO?> GetByIdentificacionOrEmailAsync(string identifier);
+    Task<List<MascotaResumenDTO>> GetClientMascotasAsync(int clienteId);
 }

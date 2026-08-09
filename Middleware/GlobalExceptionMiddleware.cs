@@ -8,7 +8,7 @@ using vet_api_Net.Interfaze.Services;
 
 namespace vet_api_Net.Middleware
 {
-    //Describe: Middleware global para capturar y registrar excepciones no controladas y respuestas de error de la API en la base de datos.
+    // Middleware global para capturar, registrar en BD y sanitizar errores 500 hacia el cliente.
     public class GlobalExceptionMiddleware
     {
         private readonly RequestDelegate _next;
@@ -20,7 +20,6 @@ namespace vet_api_Net.Middleware
 
         public async Task InvokeAsync(HttpContext context, ISystemLogService logService)
         {
-            // 1. Guardar el stream de respuesta original
             var originalBodyStream = context.Response.Body;
 
             using var responseBody = new MemoryStream();
@@ -33,31 +32,48 @@ namespace vet_api_Net.Middleware
             catch (Exception ex)
             {
                 await RegistrarLogErrorAsync(context, logService, $"ERROR_NO_CONTROLADO: {ex.Message}", ex.StackTrace);
-                await HandleExceptionAsync(context, ex);
                 
-                // Copiar la respuesta de error al stream original
+                await EscribirRespuestaGenerica500Async(context, responseBody);
+
                 responseBody.Seek(0, SeekOrigin.Begin);
                 await responseBody.CopyToAsync(originalBodyStream);
                 return;
             }
 
-            // Si el código de estado es de error, leer el cuerpo del buffer
             if (context.Response.StatusCode >= 400)
             {
                 context.Response.Body.Seek(0, SeekOrigin.Begin);
                 string responseText = await new StreamReader(context.Response.Body).ReadToEndAsync();
-                context.Response.Body.Seek(0, SeekOrigin.Begin);
 
-                string accion = context.Response.StatusCode == 500 
-                    ? "ERROR_INTERNO_CONTROLADO" 
-                    : "SOLICITUD_INCORRECTA (400)";
+                if (context.Response.StatusCode == StatusCodes.Status500InternalServerError)
+                {
+                    await RegistrarLogErrorAsync(context, logService, $"ERROR_INTERNO_CONTROLADO: {responseText}", null);
 
-                await RegistrarLogErrorAsync(context, logService, $"{accion}: {responseText}", null);
+                    await EscribirRespuestaGenerica500Async(context, responseBody);
+                }
+                else
+                {
+                    await RegistrarLogErrorAsync(context, logService, $"SOLICITUD_INCORRECTA ({context.Response.StatusCode}): {responseText}", null);
+                }
             }
 
-            // Copiar la respuesta original de vuelta al flujo HTTP
             responseBody.Seek(0, SeekOrigin.Begin);
             await responseBody.CopyToAsync(originalBodyStream);
+        }
+
+        private static async Task EscribirRespuestaGenerica500Async(HttpContext context, MemoryStream responseBody)
+        {
+            responseBody.SetLength(0); 
+
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+            var jsonResponse = JsonSerializer.Serialize(new 
+            { 
+                message = "Error al procesar la solictud enviada." 
+            });
+
+            await context.Response.WriteAsync(jsonResponse);
         }
 
         private static async Task RegistrarLogErrorAsync(HttpContext context, ISystemLogService logService, string accion, string? stackTrace)
@@ -81,19 +97,8 @@ namespace vet_api_Net.Middleware
             }
             catch
             {
-                // No permitir que falle el middleware si falla el registro de logs
+                //RETURN 0;
             }
-        }
-
-        private static Task HandleExceptionAsync(HttpContext context, Exception exception)
-        { 
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-
-            var response = new { message = exception.Message };
-            var jsonResponse = JsonSerializer.Serialize(response);
-
-            return context.Response.WriteAsync(jsonResponse);
         }
     }
 }

@@ -7,4 +7,5 @@ namespace vet_api_Net.Interface.Services;
 public interface INowGrodService
 {
     Task<GroqChatResponseDTO> EnviarConsultaAsync(GroqChatRequestDTO dto);
+    Task<GroqSessionTokenResponseDTO> ObtenerTokenSesionAsync();
 }

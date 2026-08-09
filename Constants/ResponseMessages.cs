@@ -107,6 +107,8 @@ namespace vet_api_Net.Constants
         public const string InvalidBirthDate = "La fecha de nacimiento no puede ser posterior a la fecha actual ni superior al año actual.";
         public const string ClientUpdatedSuccess = "Cliente actualizado exitosamente.";
         public const string ClientUpdatedError = "Error al actualizar el cliente, por favor verifique los datos ingresados.";
+        public const string DataRequired = "Debe proporcionar la cedula o correo electronico registrado en el sistema";
+        public const string ErrorValidateData = "Error al validar los datos";
     }
     public static class ResponseMessagesUsers
     {
@@ -326,6 +328,9 @@ namespace vet_api_Net.Constants
         public const string GroqApiError = "Hay un error de configuración en la solicitud enviada a NowGroq.ia.";
         public const string GroqResponseInvalid = "El modelo de ia devolvio una respuesta no valida, ";
         public const string GroqApiKeyError = "El Api Key de NowGroq.ia no se encuentra configurada en el sistema.";
+        public const string GroqSessionTokenUrlError = "La URL para generar el token de sesión de NowGroq.ia no se encuentra configurada en el sistema.";
+        public const string GroqCompanyEmailError = "El email de la empresa registrada en NowGroq.ia no se encuentra configurado en el sistema.";
+        public const string GroqSessionTokenError = "No se pudo generar el token de sesión temporal de NowGroq.ia.";
 
         public static class GroqPromts
         {
@@ -383,6 +388,13 @@ namespace vet_api_Net.Constants
         public const string ErrorGettingUser = "Ocurrió un error interno al obtener el usuario.";
         public const string ErrorGettingUsers = "Ocurrió un error interno al obtener los usuarios.";
         public const string ExistingUsername = "El nombre de usuario ya está en uso.";
+    }
+    public static class ResponseMessagesUserPermissions
+    {
+        public const string UserNotFound = "No se encontró el usuario indicado.";
+        public const string PermissionsRequired = "Debe indicar la lista de permisos.";
+        public const string ErrorGettingPermissions = "Ocurrió un error interno al obtener los permisos del usuario.";
+        public const string ErrorUpdatingPermissions = "Ocurrió un error interno al actualizar los permisos del usuario.";
     }
     public static class ResponseMessagesReportController
     {

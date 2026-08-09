@@ -22,20 +22,22 @@ public class CitasController : ControllerBase
     }
 
     [HttpGet(Endpoints.Citas.GetAllRequests)]
-    public async Task<ActionResult<List<CitasRequestDTO>>> GetAllCitasRequests(
+    public async Task<ActionResult<CitasListResponseDTO>> GetAllCitasRequests(
      [FromQuery] string? status = null,
      [FromQuery] DateTime? date = null,
      [FromQuery] bool allDates = true,
      [FromQuery] int? doctorId = null,
-     [FromQuery] int? secretariaId = null)
+     [FromQuery] int? secretariaId = null,
+     [FromQuery] int pageNumber = 1,
+     [FromQuery] int pageSize = 10)
     {
         try
         {
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
             int? currentUserId = int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var parsedId) ? parsedId : null;
 
-            var citasRequests = await _citasRequestService.GetAllCitasRequestsAsync(status, date, allDates, role, currentUserId, doctorId, secretariaId);
-            return Ok(citasRequests);
+            var (items, totalCount) = await _citasRequestService.GetAllCitasRequestsAsync(status, date, allDates, role, currentUserId, doctorId, secretariaId, pageNumber, pageSize);
+            return Ok(new CitasListResponseDTO { Items = items, TotalCount = totalCount });
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -200,6 +202,21 @@ public class CitasController : ControllerBase
         {
             var types = await _citasRequestService.GetCitaTypesAsync();
             return Ok(types);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    [HttpGet(Endpoints.Citas.PortalByCliente)]
+    [AllowAnonymous]
+    public async Task<ActionResult<List<PortalCitaDTO>>> GetCitasByCliente([FromRoute] int clienteId)
+    {
+        try
+        {
+            var citas = await _citasRequestService.GetCitasByClienteAsync(clienteId);
+            return Ok(citas);
         }
         catch (Exception ex)
         {

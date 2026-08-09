@@ -21,6 +21,8 @@ public class ApiSettingsOptions
     public string? GroqApiKey { get; set; }
     public string? GroqApiUrl { get; set; }
     public string? GroqModel { get; set; }
+    public string? GroqSessionTokenUrl { get; set; }
+    public string? GroqCompanyEmail { get; set; }
 }
 
 public class TokenTemporalOptions

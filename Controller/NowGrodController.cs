@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using vet_api_Net.Constants;
 using vet_api_Net.Interface.Services;
@@ -38,6 +39,25 @@ public class NowGrodController : ControllerBase
             }
 
             var result = await _groqService.EnviarConsultaAsync(dto);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    [HttpGet(Endpoints.NowGrod.SessionToken)]
+    [Authorize]
+    public async Task<ActionResult<GroqSessionTokenResponseDTO>> ObtenerTokenSesion()
+    {
+        try
+        {
+            var result = await _groqService.ObtenerTokenSesionAsync();
             return Ok(result);
         }
         catch (InvalidOperationException ex)

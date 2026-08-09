@@ -120,4 +120,64 @@ public class NowGrodService : INowGrodService
             Respuesta = contentResult ?? string.Empty
         };
     }
+
+    public async Task<GroqSessionTokenResponseDTO> ObtenerTokenSesionAsync()
+    {
+        var apiKey = _options.GroqApiKey;
+        var sessionTokenUrl = _options.GroqSessionTokenUrl;
+        var companyEmail = _options.GroqCompanyEmail;
+
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            _logger.LogError("API Key de NowGroq.ia no configurada.");
+            throw new InvalidOperationException(ResponseMessagesGroqServices.GroqApiKeyError);
+        }
+
+        if (string.IsNullOrEmpty(sessionTokenUrl))
+        {
+            _logger.LogError("URL para generar el token de sesión de NowGroq.ia no configurada.");
+            throw new InvalidOperationException(ResponseMessagesGroqServices.GroqSessionTokenUrlError);
+        }
+
+        if (string.IsNullOrEmpty(companyEmail))
+        {
+            _logger.LogError("Email de la empresa de NowGroq.ia no configurado.");
+            throw new InvalidOperationException(ResponseMessagesGroqServices.GroqCompanyEmailError);
+        }
+
+        using var client = _httpClientFactory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+
+        var requestBody = new { email = companyEmail };
+        var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+
+        HttpResponseMessage response;
+        try
+        {
+            response = await client.PostAsync(sessionTokenUrl, content);
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "No se pudo establecer conexión con NowGroq.ia en la URL: {SessionTokenUrl}", sessionTokenUrl);
+            throw new InvalidOperationException(ResponseMessagesGroqServices.GroqApiError, ex);
+        }
+
+        var responseString = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogError("Error al generar el token de sesión de NowGroq.ia: {StatusCode}. Detalles: {Error}", response.StatusCode, responseString);
+            throw new InvalidOperationException(ResponseMessagesGroqServices.GroqSessionTokenError + ": " + response.StatusCode);
+        }
+
+        using var doc = JsonDocument.Parse(responseString);
+        var token = doc.RootElement.TryGetProperty("token", out var tokenProp) ? tokenProp.GetString() ?? string.Empty : string.Empty;
+        var expiresIn = doc.RootElement.TryGetProperty("expiresIn", out var expiresProp) ? expiresProp.GetInt32() : 0;
+
+        return new GroqSessionTokenResponseDTO
+        {
+            Token = token,
+            ExpiresIn = expiresIn
+        };
+    }
 }

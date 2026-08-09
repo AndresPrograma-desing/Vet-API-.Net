@@ -45,9 +45,9 @@ public class ClientsController : ControllerBase
             var (items, totalCount) = await _clientService.GetAllClientsWithDetailsAsync(pageNumber, pageSize, query);
             return Ok(new ClientListResponseDTO { Items = items, TotalCount = totalCount });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = "Error Proviniente del el Controller de Clientes", details = ex.Message });
+            return StatusCode(500);
         }
     }
 
@@ -75,17 +75,30 @@ public class ClientsController : ControllerBase
             if (result == null) return NotFound(new { message = ResponseMessagesClient.ClientNotFound });
             return Ok(result);
         }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { message = ResponseMessagesClient.ClientUpdatedError, details = ex.Message });
+        catch (Exception)        {
+            return StatusCode(500, new { message = ResponseMessagesClient.ClientUpdatedError});
         }
     }
-    [HttpGet("validate")]
+    [HttpGet(Endpoints.Client.GetMascotas)]
+    public async Task<ActionResult<List<MascotaResumenDTO>>> GetClientMascotas([FromRoute] int id)
+    {
+        try
+        {
+            var mascotas = await _clientService.GetClientMascotasAsync(id);
+            return Ok(mascotas);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { ResponseMessagesClient.ErrorGettingClients });
+        }
+    }
+
+    [HttpGet(Endpoints.Client.ValidateClient)]
     public async Task<ActionResult<ClientLookupResponseDTO>> GetByIdentificacionOrEmail([FromQuery] string identifier)
     {
         if (string.IsNullOrWhiteSpace(identifier))
         {
-            return BadRequest(new { message = "Debe proporcionar una cédula o correo electrónico." });
+            return BadRequest(new { ResponseMessagesClient.DataRequired});
         }
 
         try
@@ -94,14 +107,14 @@ public class ClientsController : ControllerBase
 
             if (client == null)
             {
-                return NotFound(new { message = "No se encontró ningún cliente registrado con esa cédula o correo electrónico." });
+                return NotFound(new { ResponseMessagesClient.ClientNotFound });
             }
 
             return Ok(client);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = "Error al validar la cédula o email del cliente.", details = ex.Message });
+            return StatusCode(500, new { ResponseMessagesClient.ErrorValidateData });
         }
     }
 }

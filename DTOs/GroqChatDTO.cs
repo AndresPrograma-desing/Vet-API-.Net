@@ -29,3 +29,12 @@ public record GroqChatResponseDTO
     [JsonPropertyName("respuesta")]
     public string Respuesta { get; set; } = string.Empty;
 }
+
+public record GroqSessionTokenResponseDTO
+{
+    [JsonPropertyName("token")]
+    public string Token { get; set; } = string.Empty;
+
+    [JsonPropertyName("expires_in")]
+    public int ExpiresIn { get; set; }
+}

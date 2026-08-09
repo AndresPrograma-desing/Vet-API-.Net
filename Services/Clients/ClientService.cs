@@ -138,4 +138,28 @@ public class ClientService : IClientService
             }).ToList()
         };
     }
+
+    public async Task<List<MascotaResumenDTO>> GetClientMascotasAsync(int clienteId)
+    {
+        var mascotas = await _repository.GetMascotasByClienteIdAsync(clienteId);
+
+        return mascotas.Select(m => new MascotaResumenDTO
+        {
+            Id = m.Id,
+            ClienteId = m.ClienteId,
+            Nombre = m.Nombre,
+            Especie = m.Especie,
+            Raza = m.Raza,
+            Color = m.Color,
+            Sexo = m.Sexo,
+            FechaNacimiento = m.FechaNacimiento?.ToString(_appSettings.DateFormat),
+            Peso = m.Peso?.ToString("0.00", CultureInfo.InvariantCulture),
+            IdenteficacionMascota = m.IdenteficacionMascota,
+            Alergias = m.Alergias,
+            CondicionesMedicas = m.CondicionesMedicas,
+            Esterilizado = m.Esterilizado,
+            Creado = m.Creado,
+            Actualizado = m.Actualizado
+        }).ToList();
+    }
 }

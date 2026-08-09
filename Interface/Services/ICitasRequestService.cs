@@ -7,7 +7,7 @@ namespace vet_api_Net.Interfaze.Services;
 
 public interface ICitasRequestService
 {
-    Task<List<CitasRequestDTO>> GetAllCitasRequestsAsync(string? status = null, DateTime? date = null, bool allDates = false, string? currentUserRole = null, int? currentUserId = null, int? requestedDoctorId = null, int? requestedSecretariaId = null);
+    Task<(List<CitasRequestDTO> Items, int TotalCount)> GetAllCitasRequestsAsync(string? status = null, DateTime? date = null, bool allDates = false, string? currentUserRole = null, int? currentUserId = null, int? requestedDoctorId = null, int? requestedSecretariaId = null, int pageNumber = 1, int pageSize = 10);
     Task<CitaDetalleDTO?> GetCitaRequestDetailsAsync(int id);
     Task<DeleteCitaDTO?> DeleteCitaAsync(int id);
     Task<StatusCitaRequestDTO> StatusCitaRequestAsync(int id);
@@ -15,6 +15,7 @@ public interface ICitasRequestService
     Task<CreateCitaDTO> CreateCitaAsync(CreateCitaDTO dto);
     Task<CitasRequestDTO?> UpdateCitaAsync(int id, UpdateCitaDTO dto);
     Task<List<CitasRequestDTO>> CurrentCitaAsync();
+    Task<List<PortalCitaDTO>> GetCitasByClienteAsync(int clienteId);
     Task<List<NotificationCitaDTO>> NotificationCitaAsync(string? currentUserRole = null, int? currentUserId = null, int? requestedDoctorId = null, int? requestedSecretariaId = null);
     public Task<List<string>> GetCitaStatusesAsync();
     public Task<List<string>> GetCitaTypesAsync();

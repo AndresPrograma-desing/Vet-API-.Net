@@ -34,6 +34,12 @@ namespace vet_api_Net.Routes
             public const string GetRoles = "roles";
         }
 
+        public static class UserPermissions
+        {
+            public const string GetByUser = "{userId}";
+            public const string Update = "{userId}";
+        }
+
         public static class Citas
         {
             public const string GetAllRequests = "requests";
@@ -46,10 +52,13 @@ namespace vet_api_Net.Routes
             public const string CitaToday = "today";
             public const string Statuses = "statuses";
             public const string Types = "types";
+            public const string PortalByCliente = "portal/cliente/{clienteId}";
         }
         public static class Client
         {
             public const string GetById = "{id}";
+            public const string GetMascotas = "{id}/mascotas";
+            public const string ValidateClient = "Validate";
         }
         public static class Clients
         {
@@ -129,6 +138,7 @@ namespace vet_api_Net.Routes
             public const string Analyze = "analyze";
             public const string Chat = "chat";
             public const string Consultar = "consultar";
+            public const string SessionToken = "session-token";
         }
         public static class HistoriaClinica
         {

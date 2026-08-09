@@ -11,4 +11,5 @@ public interface IClientRepository
     Task<Cliente?> DeleteClientAsync(int id);
     Task<Cliente> UpdateClientAsync(Cliente client);
     Task<Cliente?> GetByIdentificacionOrEmailSimpleAsync(string identifier);
+    Task<List<Mascota>> GetMascotasByClienteIdAsync(int clienteId);
 }

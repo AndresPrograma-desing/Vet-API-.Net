@@ -57,7 +57,7 @@ namespace vet_api_Net.Controllers
         {
             try
             {
-                var citas = await _citasService.GetAllCitasRequestsAsync();
+                var (citas, _) = await _citasService.GetAllCitasRequestsAsync(pageSize: int.MaxValue);
                 if (citas == null) return NotFound(new { message = ResponseErrors.NotFound });
 
                 var fileBytes = _excelGenerator.GenerateCitasExcel(citas);

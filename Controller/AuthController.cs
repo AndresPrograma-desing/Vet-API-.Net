@@ -17,12 +17,14 @@ namespace vet_api_Net.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IUserPermissionService _userPermissionService;
     private readonly TokenTemporalOptions _tokenTemporalOptions;
 
 
-    public AuthController(IAuthService authService, Microsoft.Extensions.Options.IOptions<TokenTemporalOptions> options)
+    public AuthController(IAuthService authService, IUserPermissionService userPermissionService, Microsoft.Extensions.Options.IOptions<TokenTemporalOptions> options)
     {
         _authService = authService;
+        _userPermissionService = userPermissionService;
         _tokenTemporalOptions = options.Value;
     }
 
@@ -93,6 +95,8 @@ public class AuthController : ControllerBase
                 ? string.Empty
                 : $"{user.Nombre} {user.Apellido}".Trim();
 
+            var permissions = await _userPermissionService.GetPermissionsAsync(user.Id);
+
             return Ok(new
             {
                 id = user.Id.ToString(),
@@ -101,7 +105,8 @@ public class AuthController : ControllerBase
                 phone = user.Telefono,
                 rol = user.Rol,
                 avatar = user.AvatarUrl,
-                doctor_id = (int?)null
+                doctor_id = (int?)null,
+                permissions
             });
         }
         catch (Exception ex)

@@ -70,6 +70,7 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<Models.WSMessageAPIData> WSMessageAPIData { get; set; }
     public virtual DbSet<Models.EmailTemplate> EmailTemplates { get; set; }
     public virtual DbSet<Models.PasswordResetTicket> PasswordResetTickets { get; set; }
+    public virtual DbSet<Models.UserPermission> UserPermissions { get; set; }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -106,6 +107,26 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.UsuarioId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("fk_password_reset_usuario");
+        });
+
+        modelBuilder.Entity<UserPermission>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.ToTable("user_permissions");
+
+            entity.HasIndex(e => e.UserId, "idx_user_permissions_user_id").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.Permissions).HasColumnType("jsonb").HasColumnName("permissions");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+
+            entity.HasOne(d => d.User)
+                .WithOne(p => p.UserPermission)
+                .HasForeignKey<UserPermission>(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_user_permissions_user");
         });
 
         modelBuilder.Entity<AlertasInterna>(entity =>

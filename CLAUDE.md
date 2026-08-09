@@ -1,19 +1,21 @@
-# GEMINI.md — Guía de Arquitectura y Reglas del Proyecto `vet-api-Net`
+# CLAUDE.md — Guía de Arquitectura y Reglas del Proyecto `vet-api-Net`
 
-> **Propósito:** Este documento es la referencia definitiva para cualquier agente de IA o desarrollador que modifique este proyecto.
+> **Propósito:** Este documento es la referencia definitiva para cualquier agente de IA (Claude Code u otro) o desarrollador que modifique este proyecto.
 > Antes de crear, modificar o eliminar cualquier archivo, DEBES leer y seguir estas reglas estrictamente.
+
+**Índice:** [1. Visión General](#1-visión-general-del-proyecto) · [2. Estructura de Carpetas](#2-estructura-de-carpetas) · [3. Patrón Repository + Service](#3-patrón-arquitectónico-repository--service) · [4. Convenciones de Código](#4-convenciones-de-código) · [5. Constantes](#5-sistema-de-constantes) · [6. DI](#6-inyección-de-dependencias-extensionsdependencyinjectioncs) · [7. Workers](#7-workers-background-services) · [8. SignalR](#8-signalr-hubs) · [9. Documentos](#9-generación-de-documentos) · [10. appsettings](#10-configuración-de-la-aplicación-appsettingsjson) · [11. Seeding](#11-data-seeding-dataseedsseedsdatacs) · [12. Modelo de Datos](#12-modelo-de-datos-entidades-principales) · [13. Manejo Global de Errores](#13-manejo-global-de-errores) · [14. Reglas Críticas](#14-reglas-críticas-para-cambios) · [15. Comandos](#15-comandos-frecuentes) · [16. Puertos](#16-puertos-y-urls) · [17. Dependencias Externas](#17-resumen-de-dependencias-externas) · [18. Comentarios](#18-comentarios) · [19. Planificación](#19-planificación-de-cambios)
 
 ---
 
 ## 1. Visión General del Proyecto
 
 **Nombre:** Happy Pets API (vet-api-Net)
-**Framework:** ASP.NET Core (.NET 8) — Minimal hosting (`Program.cs`)
-**Base de datos:** PostgreSQL (Supabase) con soporte dual MySQL/PostgreSQL (configurado por `DatabaseSettings:Provider`)
+**Framework:** ASP.NET Core (.NET 10, SDK `10.0.103` — ver `global.json`) — Minimal hosting (`Program.cs`)
+**Base de datos:** PostgreSQL (Supabase) con soporte dual MySQL/PostgreSQL (configurado por `DatabaseSettings:Provider` en `appsettings.json`)
 **ORM:** Entity Framework Core (Npgsql + Pomelo para MySQL)
 **Autenticación:** JWT Bearer
 **Tiempo Real:** SignalR (Hubs)
-**Documentos:** QuestPDF (generación de facturas PDF)
+**Documentos:** QuestPDF (facturas PDF), ClosedXML (Excel), DocumentFormat.OpenXml (DOCX)
 **Idioma del código:** Los nombres de modelos, propiedades, tablas y DTOs están en **español**. Los nombres de namespaces, clases de infraestructura y patrones de diseño están en **inglés**.
 
 ---
@@ -33,6 +35,7 @@ vet-api-Net/
 │   ├── AppDbContext.cs     # Configuración de EF Core y Fluent API
 │   └── seeds/SeedsData.cs  # Datos iniciales de la base de datos
 ├── DTOs/                   # Data Transfer Objects (entrada y salida)
+├── Exceptions/             # Excepciones de dominio personalizadas (ej. LoginSecurityException)
 ├── Extensions/             # Métodos de extensión (DI, mapeos)
 │   ├── DependencyInjection.cs   # TODA la configuración de servicios y DI
 │   └── CitaMappingExtensions.cs # Extensiones de mapeo Model → DTO
@@ -43,9 +46,11 @@ vet-api-Net/
 │   ├── Repository/         # Interfaces de repositorios
 │   ├── Services/           # Interfaces de servicios de negocio
 │   └── Utilities/          # Interfaces de utilidades y soporte transversal
+├── Middleware/             # Middlewares del pipeline HTTP (ej. GlobalExceptionMiddleware)
 ├── Migrations/             # Migraciones de EF Core (auto-generadas)
 ├── Models/                 # Entidades del dominio (mapeo directo a tablas)
 ├── Repository/             # Implementaciones de repositorios (acceso a datos)
+├── Security/               # Utilidades de seguridad transversales (ej. bloqueo de login)
 ├── Services/               # Implementaciones de servicios (lógica de negocio pura)
 ├── Templates/              # Plantillas HTML para emails
 ├── Utilities/              # Implementaciones de utilidades y soporte técnico transversal
@@ -54,6 +59,8 @@ vet-api-Net/
 ├── appsettings.json        # Configuración principal
 └── wwwroot/                # Archivos estáticos (facturas PDF generadas)
 ```
+
+> **Subcarpetas por dominio:** `Controller/`, `Interface/Repository/`, `Interface/Services/`, `Repository/` y `Services/` pueden agrupar archivos en subcarpetas por dominio cuando la lógica de un módulo crece (ej. `Clients/` para clientes/mascotas). Ver la nota de namespaces en [4.1](#41-namespaces) — las interfaces SÍ anidan el namespace con el nombre del dominio, las implementaciones NO.
 
 ---
 
@@ -70,8 +77,10 @@ Controller (HTTP) → Service (Lógica) → Repository (Datos)
 | Capa | Responsabilidad | Lo que NO debe hacer |
 |---|---|---|
 | **Controller** | Recibir HTTP requests, validar entrada básica, delegar al Service, devolver HTTP responses | NO debe tener lógica de negocio NI acceso directo a `AppDbContext` |
-| **Service** | Contener TODA la lógica de negocio, orquestación, validaciones complejas | NO debe devolver `IActionResult`. Lanza excepciones para indicar errores |
-| **Repository** | Acceso directo a `AppDbContext`, queries LINQ/EF Core | NO debe tener lógica de negocio |
+| **Service** | Contener TODA la lógica de negocio, orquestación, validaciones complejas | NO debe devolver `IActionResult`. NO debe construir queries LINQ sobre `AppDbContext` (eso es del Repository). Lanza excepciones para indicar errores |
+| **Repository** | Acceso directo a `AppDbContext`, TODAS las queries LINQ/EF Core (`Where`, `OrderBy`, `Skip`/`Take`, `Include`) | NO debe tener lógica de negocio |
+
+> **Error común a evitar:** traer todas las filas con un `GetAllAsync()` y luego filtrar/paginar en el Service con `.Where()`/`.Skip()`/`.Take()` sobre una `List<T>` ya materializada. Esos operadores van en el Repository sobre `IQueryable<T>` para que se traduzcan a SQL. Ver [4.9 Paginación](#49-paginación).
 
 ### Flujo de creación de una nueva funcionalidad:
 
@@ -114,6 +123,8 @@ Controller (HTTP) → Service (Lógica) → Repository (Datos)
 | Hubs | `vet_api_Net.Hubs` |
 
 > **NOTA:** El namespace de interfaces usa `Interfaze` (con 'z'), NO `Interface`. Respetar este patrón existente.
+
+> **NOTA — dominios agrupados en subcarpetas (ej. `Clients/`):** las interfaces anidan el dominio en el namespace (`vet_api_Net.Interfaze.Repositories.Clients`, `vet_api_Net.Interfaze.Services.Clients`), pero las implementaciones bajo `Repository/{Dominio}/`, `Services/{Dominio}/` y `Controller/{Dominio}/` **mantienen el namespace raíz sin el sufijo del dominio** (`vet_api_Net.Repositories`, `vet_api_Net.Services`, `vet_api_Net.Controllers`). Es una asimetría real del código existente — respétala al añadir archivos nuevos dentro de una subcarpeta de dominio.
 
 ### 4.2 Controllers
 
@@ -167,7 +178,7 @@ public class {Nombre}Controller : ControllerBase
 - Usar rutas desde `Endpoints.{Clase}.{Propiedad}` — NUNCA strings hardcodeados
 - Usar mensajes desde `ResponseMessages{Dominio}.{Mensaje}` — NUNCA strings hardcodeados
 - Estructura de error: `new { message = "..." }` para NotFound, `new { error = "..." }` para errores
-- El patrón de try/catch debe capturar excepciones específicas antes del `Exception` genérico
+- El patrón de try/catch debe capturar excepciones específicas antes del `Exception` genérico. `GlobalExceptionMiddleware` (ver [13](#13-manejo-global-de-errores)) es solo la red de seguridad, no reemplaza este try/catch
 - Inyectar servicios por constructor (NUNCA repositorios directamente)
 
 ### 4.3 Services
@@ -203,6 +214,7 @@ public class {Nombre}Service : I{Nombre}Service
 - Implementar la interfaz correspondiente en `Interface/Services/`
 - Inyectar SOLO repositorios (interfaces), otros services u `IOptions<T>` por constructor
 - NUNCA inyectar `AppDbContext` directamente (excepción: servicios simples sin repositorio dedicado como `PetsService`, `ReportSystemService`)
+- NUNCA construir queries LINQ sobre listas materializadas para simular filtrado/paginación de base de datos — eso se pide al Repository (ver [4.9](#49-paginación))
 - Para comunicar errores al Controller, lanzar excepciones tipadas (NO devolver null genérico)
 - Usar constantes de `ResponseMessages.cs` en los mensajes de las excepciones
 
@@ -237,6 +249,7 @@ public class {Nombre}Repository : I{Nombre}Repository
 - El repositorio es el ÚNICO lugar que accede a `AppDbContext`
 - Métodos simples usar expresión de una línea (`=>`)
 - Queries complejos con `.Include()` y `.ThenInclude()` van aquí
+- Todo `Where`/`OrderBy`/`Skip`/`Take` de filtrado y paginación se construye aquí sobre `IQueryable`, nunca en el Service sobre una lista ya cargada en memoria
 - La proyección a DTOs (`.Select(x => new DTO {...})`) puede hacerse aquí para optimizar
 - `SaveChangesAsync` devuelve `Task<bool>`
 
@@ -328,6 +341,52 @@ public class {Nombre}Service : I{Nombre}Service
 - Deben registrarse en la sección dedicada a `//Utilities` en `DependencyInjection.cs`.
 - No deben acoplarse directamente a la lógica del flujo de negocio veterinario, sino actuar como soporte reutilizable.
 
+### 4.9 Paginación
+
+Patrón estándar para listados paginados (referencia real en el código: `ClientRepository`/`ClientService` y `CitasRepository`/`CitasRequestService`).
+
+```csharp
+// Interface/Repository/I{Entidad}Repository.cs
+Task<(List<{Entidad}> Items, int TotalCount)> GetPagedAsync(int pageNumber = 1, int pageSize = 10, string? searchTerm = null);
+
+// Repository/{Entidad}Repository.cs
+public async Task<(List<{Entidad}> Items, int TotalCount)> GetPagedAsync(int pageNumber = 1, int pageSize = 10, string? searchTerm = null)
+{
+    var query = _context.{DbSet}.AsQueryable();
+
+    if (!string.IsNullOrWhiteSpace(searchTerm))
+        query = query.Where(x => ...);
+
+    var totalCount = await query.CountAsync();
+
+    var items = await query
+        .OrderByDescending(x => x.Id)
+        .Skip((pageNumber - 1) * pageSize)
+        .Take(pageSize)
+        .ToListAsync();
+
+    return (items, totalCount);
+}
+```
+
+```csharp
+// DTOs/{Dominio}ListResponseDTO.cs
+public record {Dominio}ListResponseDTO
+{
+    [JsonPropertyName("items")]
+    public List<{Dominio}DTO> Items { get; set; } = new();
+
+    [JsonPropertyName("total_count")]
+    public int TotalCount { get; set; }
+}
+```
+
+**Reglas de Paginación:**
+- El `Where` (filtros), el `OrderBy` y el `Skip`/`Take` SIEMPRE van en el Repository sobre `IQueryable` — así se traducen a SQL en lugar de traer toda la tabla a memoria
+- El Repository devuelve `(List<T> Items, int TotalCount)`; el Service solo mapea `Items` a DTOs y propaga `TotalCount` tal cual, sin recalcularlo sobre listas en memoria
+- El Controller expone `pageNumber` (default `1`) y `pageSize` (default `10`) como `[FromQuery]`, y responde con `{Dominio}ListResponseDTO { Items, TotalCount }`
+- Si un endpoint interno (ej. exportación a Excel/PDF) necesita el set completo, pedirlo explícitamente con `pageSize: int.MaxValue` en vez de crear un método paralelo sin paginar
+
 ---
 
 ## 5. Sistema de Constantes
@@ -398,9 +457,11 @@ public static class DependencyInjection
         // 6. Swagger, SignalR, HealthChecks
         // 7. Repositorios (AddScoped)
         // 8. Servicios (AddScoped)
-        // 9. Workers (AddHostedService)
-        // 10. HttpClients externos
-        // 11. Options Pattern (Configure<T>)
+        // 9. Utilities (AddScoped)
+        // 10. Seguridad de datos
+        // 11. Workers (AddHostedService)
+        // 12. HttpClients externos
+        // 13. Options Pattern (Configure<T>)
     }
 }
 ```
@@ -466,8 +527,8 @@ app.MapHub<NotificactionsPush>("/hubs/notificaciones");
 ## 9. Generación de Documentos
 
 - **PDF:** `Services/GeneratePdfService.cs` usa **QuestPDF** (licencia Community)
-- **Excel:** `Services/GenerateReportExcel.cs`
-- **DOCX:** `Services/GenerateDocxService.cs`
+- **Excel:** `Services/GenerateReportExcel.cs` usa **ClosedXML**
+- **DOCX:** `Services/GenerateDocxService.cs` usa **DocumentFormat.OpenXml**
 - Los archivos generados se guardan en `wwwroot/` y se sirven como archivos estáticos
 
 ---
@@ -477,6 +538,7 @@ app.MapHub<NotificactionsPush>("/hubs/notificaciones");
 | Sección | Clase de opciones | Propósito |
 |---|---|---|
 | `ApiSettings` | `ApiSettingsOptions` | Nombre del sistema, formatos de fecha, monedas |
+| `DatabaseSettings` | (directo de IConfiguration) | Selector de proveedor de BD (`PostgreSQL`/`MySQL`) |
 | `token-temporal` | `TokenTemporalOptions` | Token de desarrollo temporal |
 | `SeedData` | `SeedDataOptions` | Control de datos iniciales |
 | `BcvSettings` | (directo de IConfiguration) | Worker de tasa BCV |
@@ -513,8 +575,17 @@ Usuario ──< Cita >── Mascota ──< Cliente
 
 ---
 
+## 13. Manejo Global de Errores
 
-## 13. Reglas Críticas para Cambios
+`Middleware/GlobalExceptionMiddleware.cs` se registra en `Program.cs` con `app.UseMiddleware<GlobalExceptionMiddleware>()`, antes de `UseAuthentication`/`UseAuthorization`.
+
+- Actúa como red de seguridad para excepciones que se escapan del try/catch de un Controller (bugs, errores de infraestructura) — **no reemplaza** el try/catch descrito en [4.2](#42-controllers), que sigue siendo obligatorio para devolver códigos y mensajes específicos del dominio
+- `Exceptions/` contiene excepciones de dominio personalizadas (ej. `LoginSecurityException`) que los Services lanzan y que los Controllers (o el middleware, como último recurso) traducen a respuestas HTTP
+- `Security/` contiene utilidades de seguridad transversales no ligadas a un dominio de negocio (ej. `LoginSecurity` para bloqueo de intentos fallidos)
+
+---
+
+## 14. Reglas Críticas para Cambios
 
 ### SIEMPRE hacer:
 1. Usar constantes de `EndpointRoutes.cs` para rutas en Controllers
@@ -525,6 +596,7 @@ Usuario ──< Cita >── Mascota ──< Cliente
 6. Usar `DateTime.Now` para timestamps (NO `DateTime.UtcNow` para campos de visualización)
 7. Mantener los nombres de propiedades de modelos en español
 8. Usar `[JsonPropertyName("snake_case")]` en DTOs para el frontend
+9. Aplicar `Where`/`OrderBy`/`Skip`/`Take` en el Repository sobre `IQueryable`, nunca en el Service sobre una lista ya materializada (ver [4.9](#49-paginación))
 
 ### NUNCA hacer:
 1. NO inyectar `AppDbContext` directamente en Controllers
@@ -534,10 +606,11 @@ Usuario ──< Cita >── Mascota ──< Cliente
 5. NO modificar migraciones existentes — crear nuevas con `dotnet ef migrations add`
 6. NO olvidar registrar nuevos servicios en `DependencyInjection.cs`
 7. NO usar `Console.WriteLine` para logging en producción — usar `ILogger<T>`
+8. NO traer una tabla completa a memoria (`GetAllAsync()` + `.Where()` en el Service) cuando lo que se necesita es un listado filtrado o paginado
 
 ---
 
-## 14. Comandos Frecuentes
+## 15. Comandos Frecuentes
 
 ```bash
 # Ejecutar el proyecto
@@ -558,7 +631,7 @@ dotnet build
 
 ---
 
-## 15. Puertos y URLs
+## 16. Puertos y URLs
 
 | Servicio | URL | Puerto |
 |---|---|---|
@@ -571,16 +644,36 @@ dotnet build
 
 ---
 
-## 16. Resumen de Dependencias Externas
+## 17. Resumen de Dependencias Externas
 
-- **Npgsql** + **EF Core** — PostgreSQL
+- **Npgsql.EntityFrameworkCore.PostgreSQL** — PostgreSQL (Supabase)
 - **Pomelo.EntityFrameworkCore.MySql** — MySQL (soporte dual)
-- **QuestPDF** — Generación de PDFs
+- **Microsoft.EntityFrameworkCore.Design/Tools** — Migraciones EF Core
+- **Microsoft.AspNetCore.Authentication.JwtBearer** — Autenticación JWT
+- **QuestPDF** — Generación de PDFs (facturas)
+- **ClosedXML** — Generación de reportes Excel
+- **DocumentFormat.OpenXml** — Generación de documentos DOCX
+- **HtmlAgilityPack** — Parsing HTML (scraper de tasa BCV)
+- **BCrypt.Net-Next** — Hashing de contraseñas
 - **NCrontab** — Parsing de expresiones cron en Workers
-- **SignalR** — Comunicación en tiempo real
-- **Resend API** — Envío de correos electrónicos
-- **BCV Scraper** — Scraping de la tasa del dólar del Banco Central de Venezuela
+- **Swashbuckle.AspNetCore** — Swagger / OpenAPI
+- **supabase-csharp** — Cliente de Supabase (Storage, ej. avatares)
+- **SignalR** (incluido en ASP.NET Core) — Comunicación en tiempo real
+- **Resend API** — Envío de correos electrónicos (HTTP directo, sin SDK dedicado)
+- **BCV Scraper** — Scraping de la tasa del dólar del Banco Central de Venezuela (usa HtmlAgilityPack)
 
-## 17. Comentarios
+---
 
-**Regla**: Nunca colocar comentarios en lineas aleatorias del codigo, simpre colocarlos despues de las importaciones de namespaces **using** o antes de un **namespace** que sigan //Describe: y luego lo que se quiera comentar sobre el servicio, su funcion o logica que tiene.
+## 18. Comentarios
+
+**Regla:** Nunca colocar comentarios en líneas sueltas en medio del código. Colocarlos únicamente:
+- Justo después de las directivas `using`, o
+- Justo antes de la declaración de `namespace`
+
+En ambos casos con el formato `//Describe:` seguido de una descripción breve del servicio, su función o la lógica de negocio que implementa el archivo.
+
+---
+
+## 19. Planificación de Cambios
+
+**Regla:** Cuando se genere un plan de implementación (ej. con `EnterPlanMode`), el archivo del plan se guarda en la raíz del repositorio.

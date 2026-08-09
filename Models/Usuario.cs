@@ -58,4 +58,6 @@ public partial class Usuario
     public virtual ICollection<Mensaje> MensajesReceptor { get; set; } = new List<Mensaje>();
 
     public virtual ICollection<PasswordResetTicket> PasswordResetTickets { get; set; } = new List<PasswordResetTicket>();
+
+    public virtual UserPermission? UserPermission { get; set; }
 }

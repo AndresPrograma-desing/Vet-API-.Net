@@ -266,9 +266,11 @@ public static class DependencyInjection
         services.AddScoped<IPasswordResetTicketRepository, PasswordResetTicketRepository>();
         services.AddScoped<ICalendarRepository, CalendarRepository>();
         services.AddScoped<ILogsSistemaRepository, LogsSistemaRepository>();
+        services.AddScoped<IUserPermissionRepository, UserPermissionRepository>();
 
         // Servicios de la Aplicación
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IUserPermissionService, UserPermissionService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<ICreateProductService, ProductCreateService>();

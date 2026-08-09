@@ -21,14 +21,56 @@ public class CitasRepository : ICitasRepository
         _context = context;
     }
 
-    public async Task<List<Cita>> GetAllWithRelationsAsync()
+    public async Task<List<Cita>> GetActiveForExpirationCheckAsync(int? doctorId, int? secretariaId)
     {
-        return await _context.Citas
+        var query = _context.Citas
+            .Where(c => c.Estado != Status.Cancelled
+                     && c.Estado != Status.Completed
+                     && c.Estado != Status.NotAssisted);
+
+        if (doctorId.HasValue)
+            query = query.Where(c => c.DoctorId == doctorId.Value);
+
+        if (secretariaId.HasValue)
+            query = query.Where(c => c.SecretariaId == secretariaId.Value);
+
+        return await query.ToListAsync();
+    }
+
+    public async Task<(List<Cita> Items, int TotalCount)> GetPagedWithRelationsAsync(int? doctorId, int? secretariaId, DateTime? date, bool allDates, string? status, int pageNumber, int pageSize)
+    {
+        var query = _context.Citas
             .Include(c => c.Mascota).ThenInclude(m => m.Cliente)
             .Include(c => c.Doctor)
             .Include(c => c.Secretaria)
             .Include(c => c.MetodoPago)
+            .AsQueryable();
+
+        if (doctorId.HasValue)
+            query = query.Where(c => c.DoctorId == doctorId.Value);
+
+        if (secretariaId.HasValue)
+            query = query.Where(c => c.SecretariaId == secretariaId.Value);
+
+        if (!allDates)
+        {
+            var targetDate = (date ?? DateTime.Today).Date;
+            query = query.Where(c => c.FechaCita.Date == targetDate);
+        }
+
+        if (!string.IsNullOrWhiteSpace(status))
+            query = query.Where(c => c.Estado != null && c.Estado.ToLower() == status.ToLower());
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .OrderByDescending(c => c.FechaCita)
+            .ThenByDescending(c => c.HoraCita)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+
+        return (items, totalCount);
     }
 
     public async Task<Cita?> GetByIdWithRelationsAsync(int id)
@@ -62,6 +104,15 @@ public class CitasRepository : ICitasRepository
         return await _context.Citas
             .Include(c => c.Mascota).ThenInclude(m => m.Cliente)
             .Where(c => c.FechaCita.Date == fecha.Date)
+            .ToListAsync();
+    }
+
+    public async Task<List<Cita>> GetByClienteIdAsync(int clienteId)
+    {
+        return await _context.Citas
+            .Include(c => c.Mascota)
+            .Where(c => c.Mascota.ClienteId == clienteId)
+            .OrderByDescending(c => c.FechaCita)
             .ToListAsync();
     }
    public async Task<List<NotificationCitaDTO>> GetUpcomingNotificationsAsync(DateTime fecha, TimeOnly horaDesde, string dateFormat, string timeFormat, int? doctorId = null, int? secretariaId = null)

@@ -84,4 +84,12 @@ public class ClientRepository : IClientRepository
                 c.Identificacion.ToLower() == term ||
                 c.Email.ToLower() == term);
     }
+
+    public async Task<List<Mascota>> GetMascotasByClienteIdAsync(int clienteId)
+    {
+        return await _context.Mascotas
+            .AsNoTracking()
+            .Where(m => m.ClienteId == clienteId)
+            .ToListAsync();
+    }
 }
