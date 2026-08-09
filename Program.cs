@@ -63,10 +63,6 @@ using (var scope = app.Services.CreateScope())
 app.Use(async (context, next) =>
 {
     Console.WriteLine($"[req] {context.Request.Method} {context.Request.Path}");
-    if (context.Request.Method != "OPTIONS")
-    {
-        await Task.Delay(100);
-    }
     await next();
 });
 

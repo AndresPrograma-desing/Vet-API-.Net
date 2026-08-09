@@ -133,6 +133,11 @@ namespace vet_api_Net.Routes
             public const string DownloadCitas = "download-citas";
             public const string DownloadClientes = "download-clientes";
         }
+        public static class PdfController
+        {
+            public const string DownloadConsulta = "consulta/{id}";
+            public const string DownloadCredencial = "credencial/{id}";
+        }
         public static class NowGrod
         {
             public const string Analyze = "analyze";

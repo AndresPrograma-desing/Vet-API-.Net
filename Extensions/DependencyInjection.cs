@@ -27,6 +27,7 @@ using vet_api_Net.Services;
 using vet_api_Net.Services.Supabase;
 using vet_api_Net.Services.WSMessage;
 using vet_api_Net.Utilities;
+using vet_api_Net.Utilities.Pdf;
 using vet_api_Net.Worker;
 using vet_api_Net.Workers;
 using vet_api_Net.Interfaze.Security;
@@ -282,7 +283,7 @@ public static class DependencyInjection
         services.AddScoped<IMessagingService, MessagingService>();
         services.AddScoped<IInvoiceService, InvoiceService>();
         services.AddScoped<IClientService, ClientService>();
-        services.AddScoped<GeneratePdfService>();
+        services.AddScoped<GeneratePdfUtilities>();
         services.AddScoped<IClientPetService, ClientPetService>();
         services.AddScoped<IReportSystemService, ReportSystemService>();
         services.AddScoped<GenerateReportExcel>();
@@ -312,6 +313,9 @@ public static class DependencyInjection
         services.AddScoped<IHistoriaClinicaAnalizadorUtilities, HistoriaClinicaAnalizadorUtilities>();
         services.AddScoped<ICurrencyUtilities, CurrencyUtilities>();
         services.AddScoped<IExcelGeneratorUtilities, ExcelGeneratorUtilities>();
+        services.AddScoped<IConsultaPdfUtilities, ConsultaPdfUtilities>();
+        services.AddScoped<IImageConversionUtilities, ImageConversionUtilities>();
+        services.AddHttpClient<IProfilePdfUtilities, ProfilePdfUtilities>();
         services.AddScoped<IUserScopeResolver, UserScopeResolver>();
 
         // Seguridad de datos

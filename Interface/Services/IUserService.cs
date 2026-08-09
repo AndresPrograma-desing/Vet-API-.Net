@@ -29,4 +29,5 @@ public interface IUserService
     Task<ChangeNameUsersDTO?> ChangeNameUsersAsync(int id, string newName, string newLastName, string newEmail, string newPhone);
     Task<Usuario?> SaveAvatarUrl(int userId, string avatarUrl);
     Task<RolesRequestDTO> GetRolesAsync();
+    Task<CredencialUsuarioPdfDTO?> GetCredencialDataAsync(int id);
 }

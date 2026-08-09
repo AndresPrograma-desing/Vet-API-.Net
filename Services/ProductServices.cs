@@ -26,27 +26,22 @@ public class ProductService : IProductService, ICreateProductService
     public async Task<List<ProductDTO>> GetProductsAsync(int? categoriaId, string searchTerm, decimal? maxPrice, int pageNumber, int pageSize)
     {
         var productsRaw = await _repository.GetActiveProductsAsync(ResponseMessagesProduct.NoProductName, categoriaId, searchTerm, maxPrice, pageNumber, pageSize);
-        var productList = new List<ProductDTO>();
+        var money = await _currencyService.GetActiveMoneyTypeAsync();
 
-        foreach (var p in productsRaw)
+        return productsRaw.Select(p => new ProductDTO
         {
-            productList.Add(new ProductDTO
-            {
-                Id = p.Id,
-                Codigo = p.Codigo,
-                Nombre = p.Nombre,
-                Descripcion = p.Descripcion,
-                CategoriaId = p.CategoriaId,
-                Tipo = p.Tipo,
-                Precio = await _currencyService.ConvertPriceAsync(p.Precio),
-                PrecioVenta = await _currencyService.ConvertPriceAsync(p.PrecioVenta),
-                Stock = p.Stock,
-                StockMinimo = p.StockMinimo,
-                Proveedor = p.Proveedor
-            });
-        }
-
-        return productList;
+            Id = p.Id,
+            Codigo = p.Codigo,
+            Nombre = p.Nombre,
+            Descripcion = p.Descripcion,
+            CategoriaId = p.CategoriaId,
+            Tipo = p.Tipo,
+            Precio = _currencyService.ConvertPrice(p.Precio, money),
+            PrecioVenta = _currencyService.ConvertPrice(p.PrecioVenta, money),
+            Stock = p.Stock,
+            StockMinimo = p.StockMinimo,
+            Proveedor = p.Proveedor
+        }).ToList();
     }
 
     public async Task<Producto> CreateProductAsync(ProductCreateDTO productDto)

@@ -30,7 +30,7 @@ public class CurrencyUtilities : ICurrencyUtilities
         _targetId = _configuration.GetValue<int>("BcvSettings:TargetId", 1);
     }
 
-    public async Task<decimal> ConvertPriceAsync(decimal originalPriceInUsd)
+    public async Task<MoneyTypesDTO> GetActiveMoneyTypeAsync()
     {
         var Money = await _moneyTypeService.GetMoneyTypeAsync();
 
@@ -38,12 +38,24 @@ public class CurrencyUtilities : ICurrencyUtilities
         {
             throw new Exception(ResponseMessagesUtilties.ErroConverMoney);
         }
-        if (Money.TypeMoney == _apiSettings.VES)
+
+        return Money;
+    }
+
+    public decimal ConvertPrice(decimal originalPriceInUsd, MoneyTypesDTO money)
+    {
+        if (money.TypeMoney == _apiSettings.VES)
         {
-            return originalPriceInUsd * Money.TasaBcv;
+            return originalPriceInUsd * money.TasaBcv;
         }
 
         return originalPriceInUsd;
+    }
+
+    public async Task<decimal> ConvertPriceAsync(decimal originalPriceInUsd)
+    {
+        var money = await GetActiveMoneyTypeAsync();
+        return ConvertPrice(originalPriceInUsd, money);
     }
 
     public async Task<decimal> ConvertToUsdAsync(decimal currentPrice)

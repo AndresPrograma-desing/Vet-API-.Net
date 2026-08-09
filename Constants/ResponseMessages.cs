@@ -316,6 +316,7 @@ namespace vet_api_Net.Constants
     {
         public const string ErrorCreated = "Error al crear la consulta";
         public const string TemperaturaInvalid = "La temperatura no puede superar los 100 grados";
+        public const string NotFound = "Consulta no encontrada.";
     }
     public static class ResponseMessagesGroqServices
     {

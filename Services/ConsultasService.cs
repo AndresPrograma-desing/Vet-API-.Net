@@ -105,6 +105,11 @@ public class ConsultasService : IConsultasService
         return await _repository.GetConsultaDtoByIdAsync(id);
     }
 
+    public async Task<ConsultaPdfDTO?> GetConsultaPdfDataAsync(int id)
+    {
+        return await _repository.GetConsultaPdfDataAsync(id);
+    }
+
     public async Task<IEnumerable<ConsultaRequestDTO>> GetConsultasAsync(string? currentUserRole = null, int? currentUserId = null, int? requestedDoctorId = null, int? requestedSecretariaId = null)
     {
         var (doctorId, secretariaId) = _userScopeResolver.ResolveDoctorSecretariaScope(currentUserRole, currentUserId, requestedDoctorId, requestedSecretariaId);
