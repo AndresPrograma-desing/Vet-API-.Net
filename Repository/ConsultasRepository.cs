@@ -81,6 +81,46 @@ public class ConsultasRepository : IConsultasRepository
             .FirstOrDefaultAsync();
     }
 
+    public async Task<ConsultaPdfDTO?> GetConsultaPdfDataAsync(int id)
+    {
+        return await _context.Consultas
+            .Where(c => c.Id == id)
+            .Select(c => new ConsultaPdfDTO
+            {
+                Id = c.Id,
+                CitaId = c.CitaId,
+                MascotaId = c.MascotaId,
+                DoctorId = c.DoctorId,
+                FechaConsulta = c.FechaConsulta,
+                Sintomas = c.Sintomas,
+                Diagnostico = c.Diagnostico,
+                Tratamiento = c.Tratamiento,
+                Receta = c.Receta,
+                Observaciones = c.Observaciones,
+                ConsultaPrice = c.ConsultaPrice ?? 0m,
+                MascotaNombre = c.Mascota != null ? c.Mascota.Nombre : null,
+                ClienteId = c.Mascota != null && c.Mascota.Cliente != null ? c.Mascota.Cliente.Id : (int?)null,
+                ClienteNombre = c.Mascota != null && c.Mascota.Cliente != null ? (c.Mascota.Cliente.Nombre + " " + c.Mascota.Cliente.Apellido) : null,
+                ClienteTelefono = c.Mascota != null && c.Mascota.Cliente != null ? c.Mascota.Cliente.Telefono : null,
+                TelefonoCliente = c.Mascota != null && c.Mascota.Cliente != null ? c.Mascota.Cliente.Telefono : null,
+                CorreoCliente = c.Mascota != null && c.Mascota.Cliente != null ? c.Mascota.Cliente.Email : null,
+                Productos = c.ConsultasProductos.Select(cp => new ConsultaProductoDetalleDTO
+                {
+                    Id = cp.Id,
+                    ProductoId = cp.ProductoId,
+                    NombreProducto = cp.Producto.Nombre,
+                    Cantidad = cp.Cantidad,
+                    PrecioUnitario = cp.PrecioUnitario,
+                    Dosis = cp.Dosis,
+                    ViaAdministracion = cp.ViaAdministracion,
+                    Frecuencia = cp.Frecuencia,
+                    Duracion = cp.Duracion,
+                    Instrucciones = cp.Instrucciones
+                }).ToList()
+            })
+            .FirstOrDefaultAsync();
+    }
+
     public async Task<IEnumerable<ConsultaRequestDTO>> GetConsultasAsync(int? doctorId = null, int? secretariaId = null)
     {
         var query = _context.Consultas.AsQueryable();

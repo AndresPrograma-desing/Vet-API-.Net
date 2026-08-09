@@ -12,6 +12,7 @@ using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Services;
 using vet_api_Net.Constants;
 using vet_api_Net.Routes;
+using vet_api_Net.Utilities.Pdf;
 
 namespace vet_api_Net.Controller;
 
@@ -20,7 +21,7 @@ namespace vet_api_Net.Controller;
 public class FacturasController : ControllerBase
 {
     private readonly IInvoiceService _invoiceService;
-    private readonly GeneratePdfService _pdfService;
+    private readonly GeneratePdfUtilities _pdfService;
     private readonly IWebHostEnvironment _env;
     private readonly IFacturasRepository _facturasRepository;
     private readonly string? _externalBaseUrl;
@@ -28,7 +29,7 @@ public class FacturasController : ControllerBase
 
     public FacturasController(
         IInvoiceService invoiceService, 
-        GeneratePdfService pdfService, 
+        GeneratePdfUtilities pdfService, 
         IWebHostEnvironment env, 
         IFacturasRepository facturasRepository, 
         IConfiguration config, 

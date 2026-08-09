@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DTOs;
+using Microsoft.EntityFrameworkCore;
 using vet_api_Net.Models;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
@@ -43,7 +44,16 @@ public class SystemLogService : ISystemLogService
         };
 
         await _repository.AddLogAsync(log);
-        await _repository.SaveChangesAsync();
+
+        try
+        {
+            await _repository.SaveChangesAsync();
+        }
+        catch (DbUpdateException) when (log.UsuarioId != null)
+        {
+            log.UsuarioId = null;
+            await _repository.SaveChangesAsync();
+        }
     }
 
     public async Task<List<LogsSistemaResponseDTO>> GetLogsAsync(int pageNumber, int pageSize)

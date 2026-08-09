@@ -9,9 +9,9 @@ using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using vet_api_Net.Constants;
 
-namespace vet_api_Net.Services
+namespace vet_api_Net.Utilities.Pdf
 {
-    public class GeneratePdfService
+    public class GeneratePdfUtilities
     {
         public string GenerateInvoicePdf(FacturationDTO invoice, string webRootPath, string currencySymbol)
         {

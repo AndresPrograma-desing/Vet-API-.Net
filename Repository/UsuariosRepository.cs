@@ -65,6 +65,22 @@ public class UsersRepository : IUsersRepository
             .FirstOrDefaultAsync();
     }
 
+    public async Task<CredencialUsuarioPdfDTO?> GetCredencialDataAsync(int id)
+    {
+        return await _context.Usuarios
+            .Where(u => u.Id == id)
+            .Select(u => new CredencialUsuarioPdfDTO
+            {
+                Id = u.Id.ToString(),
+                Name = u.Nombre + " " + u.Apellido,
+                Email = u.Email,
+                Phone = u.Telefono,
+                Rol = u.Rol,
+                Avatar = u.AvatarUrl
+            })
+            .FirstOrDefaultAsync();
+    }
+
     public void Update(Usuario usuario)
     {
         _context.Usuarios.Update(usuario);

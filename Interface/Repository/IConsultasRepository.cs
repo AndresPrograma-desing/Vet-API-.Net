@@ -19,6 +19,7 @@ public interface IConsultasRepository
     void AddDetalleFactura(DetallesFactura invoiceDetail);
     Task<bool> SaveChangesAsync();
     Task<ConsultaRequestDTO?> GetConsultaDtoByIdAsync(int id);
+    Task<ConsultaPdfDTO?> GetConsultaPdfDataAsync(int id);
     Task<IEnumerable<ConsultaRequestDTO>> GetConsultasAsync(int? doctorId = null, int? secretariaId = null);
     Task<Consulta?> GetConsultaByIdEntityAsync(int id);
     

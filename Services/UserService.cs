@@ -406,4 +406,9 @@ public class UserService : IUserService
             throw new InvalidOperationException(ResponseMessagesUsers.RolesError);
         }
     }
+
+    public async Task<CredencialUsuarioPdfDTO?> GetCredencialDataAsync(int id)
+    {
+        return await _userRepository.GetCredencialDataAsync(id);
+    }
 }

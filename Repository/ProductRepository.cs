@@ -24,6 +24,7 @@ public class ProductRepository : IProductRepository
     public async Task<List<Producto>> GetActiveProductsAsync(string noProductName, int? categoriaId, string searchTerm, decimal? maxPrice, int pageNumber, int pageSize)
 {
     var query = _context.Productos
+        .AsNoTracking()
         .Where(p => p.Nombre != noProductName);
 
     if (categoriaId.HasValue)
