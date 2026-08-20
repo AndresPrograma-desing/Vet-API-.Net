@@ -124,6 +124,11 @@ namespace vet_api_Net.Routes
             public const string ToggleAutoGenerate = "settings/autogenerate";
             public const string Settings = "settings";
         }
+        public static class WorkerConfigController
+        {
+            public const string GetByName = "{workerName}";
+            public const string UpdateByName = "{workerName}";
+        }
         public static class ExcellController
         {
             public const string GenerateFull = "generate-full";
@@ -137,6 +142,27 @@ namespace vet_api_Net.Routes
         {
             public const string DownloadConsulta = "consulta/{id}";
             public const string DownloadCredencial = "credencial/{id}";
+            public const string DownloadCarnet = "mascota/{mascotaId}/carnet";
+        }
+        public static class Vaccine
+        {
+            public const string Create = "create";
+            public const string GetById = "{id}";
+            public const string Update = "{id}";
+            public const string Delete = "{id}";
+            public const string Batches = "{id}/batches";
+            public const string CreateBatch = "{id}/batches";
+            public const string SchemeStages = "{id}/scheme-stages";
+            public const string DeleteSchemeStage = "{id}/scheme-stages/{stageId}";
+        }
+        public static class PetVaccination
+        {
+            public const string Register = "register";
+            public const string Postpone = "{id}/postpone";
+            public const string SendToInvoice = "{id}/send-to-invoice";
+            public const string StatusByMascota = "mascota/{mascotaId}/status";
+            public const string HistoryByMascota = "mascota/{mascotaId}/history";
+            public const string PendingThisWeek = "pending-this-week";
         }
         public static class NowGrod
         {

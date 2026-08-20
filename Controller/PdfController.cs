@@ -22,6 +22,8 @@ public class PdfController : ControllerBase
     private readonly IProfilePdfUtilities _profilePdfUtilities;
     private readonly IMoneyTypeService _moneyTypeService;
     private readonly IWebHostEnvironment _env;
+    private readonly IPetVaccinationService _petVaccinationService;
+    private readonly IVaccinationCertificatePdfUtilities _vaccinationCertificatePdfUtilities;
 
     public PdfController(
         IConsultasService consultasService,
@@ -29,7 +31,9 @@ public class PdfController : ControllerBase
         IUserService userService,
         IProfilePdfUtilities profilePdfUtilities,
         IMoneyTypeService moneyTypeService,
-        IWebHostEnvironment env)
+        IWebHostEnvironment env,
+        IPetVaccinationService petVaccinationService,
+        IVaccinationCertificatePdfUtilities vaccinationCertificatePdfUtilities)
     {
         _consultasService = consultasService;
         _consultaPdfUtilities = consultaPdfUtilities;
@@ -37,6 +41,8 @@ public class PdfController : ControllerBase
         _profilePdfUtilities = profilePdfUtilities;
         _moneyTypeService = moneyTypeService;
         _env = env;
+        _petVaccinationService = petVaccinationService;
+        _vaccinationCertificatePdfUtilities = vaccinationCertificatePdfUtilities;
     }
 
     [HttpGet(Endpoints.PdfController.DownloadConsulta)]
@@ -79,6 +85,27 @@ public class PdfController : ControllerBase
 
             var fileBytes = _profilePdfUtilities.GenerateCredencialPdf(usuario, webRoot);
             var fileName = _profilePdfUtilities.BuildFileName(usuario);
+
+            return File(fileBytes, "application/pdf", fileName);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    [HttpGet(Endpoints.PdfController.DownloadCarnet)]
+    public async Task<IActionResult> DownloadCarnetPdf(int mascotaId)
+    {
+        try
+        {
+            var carnet = await _petVaccinationService.GetCarnetDataAsync(mascotaId);
+            if (carnet == null) return NotFound(new { message = ResponseMessagesVaccination.MascotaNotFound });
+
+            var webRoot = _env?.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+            var fileBytes = _vaccinationCertificatePdfUtilities.GenerateCarnetPdf(carnet, webRoot);
+            var fileName = _vaccinationCertificatePdfUtilities.BuildFileName(carnet);
 
             return File(fileBytes, "application/pdf", fileName);
         }

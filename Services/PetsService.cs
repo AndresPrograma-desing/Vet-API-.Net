@@ -181,8 +181,8 @@ public class PetsService : IPetsService
             .Where(f => f.MascotaId == id)
             .ExecuteDeleteAsync();
 
-        // 4. Delete Vacunas
-        await _context.Vacunas
+        // 4. Delete PetVaccinations
+        await _context.PetVaccinations
             .Where(v => v.MascotaId == id)
             .ExecuteDeleteAsync();
 

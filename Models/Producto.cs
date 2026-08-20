@@ -45,5 +45,5 @@ public partial class Producto
 
     public virtual ICollection<MovimientosInventario> MovimientosInventarios { get; set; } = new List<MovimientosInventario>();
 
-    public virtual ICollection<Vacuna> Vacunas { get; set; } = new List<Vacuna>();
+    public virtual ICollection<Vaccine> Vaccines { get; set; } = new List<Vaccine>();
 }

@@ -43,13 +43,13 @@ public class NowGrodService : INowGrodService
         if (string.IsNullOrEmpty(apiKey))
         {
             _logger.LogError("API Key para chat no configurada.");
-            throw new InvalidOperationException(ResponseMessagesGroqServices.GroqApiKeyError);
+            throw new InvalidOperationException(ResponseMessagesGroqServices.ServiceUnavailable);
         }
 
         if (string.IsNullOrEmpty(apiUrl))
         {
             _logger.LogError("API URL para chat no configurada.");
-            throw new InvalidOperationException(ResponseMessagesGroqServices.GroqApiError);
+            throw new InvalidOperationException(ResponseMessagesGroqServices.ServiceUnavailable);
         }
 
         using var client = _httpClientFactory.CreateClient();
@@ -90,30 +90,30 @@ public class NowGrodService : INowGrodService
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "No se pudo establecer conexión con el servicio de Groq/NowGroq en la URL: {ApiUrl}", apiUrl);
-            throw new InvalidOperationException(ResponseMessagesGroqServices.GroqApiError, ex);
+            throw new InvalidOperationException(ResponseMessagesGroqServices.ServiceUnavailable, ex);
         }
 
         if (!response.IsSuccessStatusCode)
         {
             var errorContent = await response.Content.ReadAsStringAsync();
-            var contentType = response.Content.Headers.ContentType?.MediaType;
 
             _logger.LogError("Error en respuesta de la API de Chat: {StatusCode}. Detalles: {Error}", response.StatusCode, errorContent);
 
-            if ((contentType != null && contentType.Contains("text/html")) || 
-                (errorContent != null && errorContent.TrimStart().StartsWith("<")))
-            {
-                throw new InvalidOperationException(ResponseMessagesGroqServices.GroqApiError);
-            }
-
-            throw new InvalidOperationException(ResponseMessagesGroqServices.GroqComunicationError + ": " + response.StatusCode);
+            throw new InvalidOperationException(ResponseMessagesGroqServices.ServiceUnavailable);
         }
 
         var responseString = await response.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(responseString);
-        var contentResult = doc.RootElement
-            .GetProperty("respuesta")
-            .GetString();   
+        string? contentResult;
+        try
+        {
+            using var doc = JsonDocument.Parse(responseString);
+            contentResult = doc.RootElement.GetProperty("respuesta").GetString();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Respuesta de la API de Chat con formato inesperado: {Response}", responseString);
+            throw new InvalidOperationException(ResponseMessagesGroqServices.ServiceUnavailable, ex);
+        }
 
         return new GroqChatResponseDTO
         {
@@ -130,19 +130,19 @@ public class NowGrodService : INowGrodService
         if (string.IsNullOrEmpty(apiKey))
         {
             _logger.LogError("API Key de NowGroq.ia no configurada.");
-            throw new InvalidOperationException(ResponseMessagesGroqServices.GroqApiKeyError);
+            throw new InvalidOperationException(ResponseMessagesGroqServices.ServiceUnavailable);
         }
 
         if (string.IsNullOrEmpty(sessionTokenUrl))
         {
             _logger.LogError("URL para generar el token de sesión de NowGroq.ia no configurada.");
-            throw new InvalidOperationException(ResponseMessagesGroqServices.GroqSessionTokenUrlError);
+            throw new InvalidOperationException(ResponseMessagesGroqServices.ServiceUnavailable);
         }
 
         if (string.IsNullOrEmpty(companyEmail))
         {
             _logger.LogError("Email de la empresa de NowGroq.ia no configurado.");
-            throw new InvalidOperationException(ResponseMessagesGroqServices.GroqCompanyEmailError);
+            throw new InvalidOperationException(ResponseMessagesGroqServices.ServiceUnavailable);
         }
 
         using var client = _httpClientFactory.CreateClient();
@@ -159,7 +159,7 @@ public class NowGrodService : INowGrodService
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "No se pudo establecer conexión con NowGroq.ia en la URL: {SessionTokenUrl}", sessionTokenUrl);
-            throw new InvalidOperationException(ResponseMessagesGroqServices.GroqApiError, ex);
+            throw new InvalidOperationException(ResponseMessagesGroqServices.ServiceUnavailable, ex);
         }
 
         var responseString = await response.Content.ReadAsStringAsync();
@@ -167,12 +167,22 @@ public class NowGrodService : INowGrodService
         if (!response.IsSuccessStatusCode)
         {
             _logger.LogError("Error al generar el token de sesión de NowGroq.ia: {StatusCode}. Detalles: {Error}", response.StatusCode, responseString);
-            throw new InvalidOperationException(ResponseMessagesGroqServices.GroqSessionTokenError + ": " + response.StatusCode);
+            throw new InvalidOperationException(ResponseMessagesGroqServices.ServiceUnavailable);
         }
 
-        using var doc = JsonDocument.Parse(responseString);
-        var token = doc.RootElement.TryGetProperty("token", out var tokenProp) ? tokenProp.GetString() ?? string.Empty : string.Empty;
-        var expiresIn = doc.RootElement.TryGetProperty("expiresIn", out var expiresProp) ? expiresProp.GetInt32() : 0;
+        string token;
+        int expiresIn;
+        try
+        {
+            using var doc = JsonDocument.Parse(responseString);
+            token = doc.RootElement.TryGetProperty("token", out var tokenProp) ? tokenProp.GetString() ?? string.Empty : string.Empty;
+            expiresIn = doc.RootElement.TryGetProperty("expiresIn", out var expiresProp) ? expiresProp.GetInt32() : 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Respuesta con formato inesperado al generar el token de sesión de NowGroq.ia: {Response}", responseString);
+            throw new InvalidOperationException(ResponseMessagesGroqServices.ServiceUnavailable, ex);
+        }
 
         return new GroqSessionTokenResponseDTO
         {

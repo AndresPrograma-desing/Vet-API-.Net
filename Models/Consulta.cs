@@ -43,5 +43,5 @@ public partial class Consulta
 
     public virtual Mascota Mascota { get; set; } = null!;
 
-    public virtual ICollection<Vacuna> Vacunas { get; set; } = new List<Vacuna>();
+    public virtual ICollection<PetVaccination> PetVaccinations { get; set; } = new List<PetVaccination>();
 }

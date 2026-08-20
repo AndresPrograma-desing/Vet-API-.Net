@@ -43,7 +43,7 @@ public partial class Mascota
 
     public virtual ICollection<Factura> Facturas { get; set; } = new List<Factura>();
 
-    public virtual ICollection<Vacuna> Vacunas { get; set; } = new List<Vacuna>();
+    public virtual ICollection<PetVaccination> PetVaccinations { get; set; } = new List<PetVaccination>();
 
     public virtual ICollection<HistoriaClinica> HistoriasClinicas { get; set; } = new List<HistoriaClinica>();
 }

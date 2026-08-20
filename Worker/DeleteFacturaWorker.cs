@@ -139,12 +139,12 @@ namespace vet_api_Net.Worker
                         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                         var messagingService = scope.ServiceProvider.GetService<IMessagingService>();
                         var notificationsPushService = scope.ServiceProvider.GetRequiredService<INotificationsPushService>();
-                        var dbSetting = await db.FacturaConfigs.FirstOrDefaultAsync(stoppingToken);
+                        var dbSetting = await db.WorkerConfigs.FirstOrDefaultAsync(w => w.WorkerName == WorkerNames.DeleteFacturaWorker, stoppingToken);
 
                         var effectiveThreshold = _threshold;
                         if (dbSetting != null && !dbSetting.IsEnabled)
                         {
-                            var minutosRetencion = dbSetting.Days > 0 ? dbSetting.Days : 30;
+                            var minutosRetencion = dbSetting.RetentionValue > 0 ? dbSetting.RetentionValue!.Value : 30;
                             effectiveThreshold = TimeSpan.FromMinutes(minutosRetencion);
                         }
 

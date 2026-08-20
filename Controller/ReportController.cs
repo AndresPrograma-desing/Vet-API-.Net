@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
 using System.IO;
+using DTOs;
 using vet_api_Net.Models;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Services;
@@ -146,27 +147,27 @@ namespace vet_api_Net.Controller
 			return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Reporte_{id}.xlsx");
 		}
 [HttpPost(Endpoints.ReportController.UpdateRetentionDays)]
-public async Task<IActionResult> UpdateRetentionDays([FromBody] ReporConfig data)
-{ 
-    if (data.Days <= 0) 
+public async Task<IActionResult> UpdateRetentionDays([FromBody] UpdateReportRetentionDaysDTO data)
+{
+    if (data.Days <= 0)
         return BadRequest(new { message = ResponseMessagesReportController.MinNumber });
 
-    var setting = await _context.ReporConfigs.FirstOrDefaultAsync();
-    
+    var setting = await _context.WorkerConfigs.FirstOrDefaultAsync(w => w.WorkerName == WorkerNames.DeleteReportWorker);
+
     if (setting == null)
-    { 
-        setting = new ReporConfig { Days = data.Days };
-        _context.ReporConfigs.Add(setting);
+    {
+        setting = new WorkerConfig { WorkerName = WorkerNames.DeleteReportWorker, RetentionValue = data.Days };
+        _context.WorkerConfigs.Add(setting);
     }
     else
     {
-        setting.Days = data.Days;
+        setting.RetentionValue = data.Days;
         setting.LastUpdated = DateTime.UtcNow;
     }
 
     await _context.SaveChangesAsync();
-    
-    return Ok(new { 
+
+    return Ok(new {
         message = ResponseMessagesReportController.RetentionDaysUpdated(data.Days)
     });
 }
@@ -174,12 +175,12 @@ public async Task<IActionResult> UpdateRetentionDays([FromBody] ReporConfig data
 [HttpPost(Endpoints.ReportController.ToggleAutoDelete)]
 public async Task<IActionResult> ToggleAutoDelete([FromBody] bool enable)
 {
-    var setting = await _context.ReporConfigs.FirstOrDefaultAsync();
-    
+    var setting = await _context.WorkerConfigs.FirstOrDefaultAsync(w => w.WorkerName == WorkerNames.DeleteReportWorker);
+
     if (setting == null)
     {
-        setting = new ReporConfig { IsEnabled = enable, Days = 30 };
-        _context.ReporConfigs.Add(setting);
+        setting = new WorkerConfig { WorkerName = WorkerNames.DeleteReportWorker, IsEnabled = enable, RetentionValue = 30 };
+        _context.WorkerConfigs.Add(setting);
     }
     else
     {
@@ -188,19 +189,19 @@ public async Task<IActionResult> ToggleAutoDelete([FromBody] bool enable)
     }
 
     await _context.SaveChangesAsync();
-    
+
     string status = enable ? ResponseMessagesReportController.Enabled : ResponseMessagesReportController.Disabled;
     return Ok(new { message = $"{ResponseMessagesReportController.AutoDeleteStatus}{status}." });
 }
 [HttpPost(Endpoints.ReportController.ToggleAutoGenerate)]
 public async Task<IActionResult> ToggleAutoGenerate([FromBody] bool enable)
 {
-	var setting = await _context.ReporConfigs.FirstOrDefaultAsync();
-	
+	var setting = await _context.WorkerConfigs.FirstOrDefaultAsync(w => w.WorkerName == WorkerNames.AutoGenerateReportWorker);
+
 	if (setting == null)
 	{
-		setting = new ReporConfig { GenerateEnabled = enable, Days = 30 };
-		_context.ReporConfigs.Add(setting);
+		setting = new WorkerConfig { WorkerName = WorkerNames.AutoGenerateReportWorker, GenerateEnabled = enable };
+		_context.WorkerConfigs.Add(setting);
 	}
 	else
 	{
@@ -209,7 +210,7 @@ public async Task<IActionResult> ToggleAutoGenerate([FromBody] bool enable)
 	}
 
 	await _context.SaveChangesAsync();
-	
+
 	string status = enable ? ResponseMessagesReportController.Enabled : ResponseMessagesReportController.Disabled;
 	return Ok(new { message = $"{ResponseMessagesReportController.AutoGenerateStatus}{status}." });
 }

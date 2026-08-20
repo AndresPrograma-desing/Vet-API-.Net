@@ -32,10 +32,18 @@ namespace vet_api_Net.Data.seeds
 
         public static void Initialize(AppDbContext context, ApiSettingsOptions apiSettings, SeedDataOptions seedDataOptions)
         {
-            //Reseteo de tablas
+            //Reseteo de tablas. La tabla usuarios solo se trunca si seedDataOptions.SeedUsers está habilitado,
+            //lo que permite regenerar el resto de los datos conservando los usuarios existentes.
+            var truncateUsuariosNpgsql = seedDataOptions.SeedUsers ? "TRUNCATE TABLE usuarios RESTART IDENTITY CASCADE;" : "";
+            var truncateUsuariosMySql = seedDataOptions.SeedUsers ? "TRUNCATE TABLE usuarios;" : "";
+
             if (context.Database.IsNpgsql())
             {
-                context.Database.ExecuteSqlRaw(@"
+                var npgsqlTruncateSql = @"
+                    TRUNCATE TABLE pet_vaccinations RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE vaccine_batches RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE vaccine_scheme_stages RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE vaccines RESTART IDENTITY CASCADE;
                     TRUNCATE TABLE detalles_factura RESTART IDENTITY CASCADE;
                     TRUNCATE TABLE consultas_productos RESTART IDENTITY CASCADE;
                     TRUNCATE TABLE historial_precios RESTART IDENTITY CASCADE;
@@ -46,20 +54,24 @@ namespace vet_api_Net.Data.seeds
                     TRUNCATE TABLE mascotas RESTART IDENTITY CASCADE;
                     TRUNCATE TABLE clientes RESTART IDENTITY CASCADE;
                     TRUNCATE TABLE productos RESTART IDENTITY CASCADE;
-                    TRUNCATE TABLE usuarios RESTART IDENTITY CASCADE;
+                    {{TRUNCATE_USUARIOS}}
                     TRUNCATE TABLE categorias_productos RESTART IDENTITY CASCADE;
                     TRUNCATE TABLE metodos_pago RESTART IDENTITY CASCADE;
                     TRUNCATE TABLE ""MoneyTypes"" RESTART IDENTITY CASCADE;
-                    TRUNCATE TABLE ""FacturaConfigs"" RESTART IDENTITY CASCADE;
-                    TRUNCATE TABLE ""ReporConfigs"" RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE worker_configs RESTART IDENTITY CASCADE;
                     TRUNCATE TABLE ""Reportes"" RESTART IDENTITY CASCADE;
                     TRUNCATE TABLE system_configs RESTART IDENTITY CASCADE;
-                ");
+                ".Replace("{{TRUNCATE_USUARIOS}}", truncateUsuariosNpgsql);
+                context.Database.ExecuteSqlRaw(npgsqlTruncateSql);
             }
             else
             {
-                context.Database.ExecuteSqlRaw(@"
+                var mySqlTruncateSql = @"
                     SET FOREIGN_KEY_CHECKS = 0;
+                    TRUNCATE TABLE pet_vaccinations;
+                    TRUNCATE TABLE vaccine_batches;
+                    TRUNCATE TABLE vaccine_scheme_stages;
+                    TRUNCATE TABLE vaccines;
                     TRUNCATE TABLE detalles_factura;
                     TRUNCATE TABLE consultas_productos;
                     TRUNCATE TABLE historial_precios;
@@ -70,21 +82,21 @@ namespace vet_api_Net.Data.seeds
                     TRUNCATE TABLE mascotas;
                     TRUNCATE TABLE clientes;
                     TRUNCATE TABLE productos;
-                    TRUNCATE TABLE usuarios;
+                    {{TRUNCATE_USUARIOS}}
                     TRUNCATE TABLE categorias_productos;
                     TRUNCATE TABLE metodos_pago;
                     TRUNCATE TABLE MoneyTypes;
-                    TRUNCATE TABLE FacturaConfigs;
-                    TRUNCATE TABLE ReporConfigs;
+                    TRUNCATE TABLE worker_configs;
                     TRUNCATE TABLE Reportes;
                     TRUNCATE TABLE system_configs;
                     TRUNCATE TABLE consultas;
                     TRUNCATE TABLE citas;
                     SET FOREIGN_KEY_CHECKS = 1;
-                ");
+                ".Replace("{{TRUNCATE_USUARIOS}}", truncateUsuariosMySql);
+                context.Database.ExecuteSqlRaw(mySqlTruncateSql);
             }
 
-            if (!context.Usuarios.Any() && seedDataOptions.DummyData != null)
+            if (seedDataOptions.SeedUsers && !context.Usuarios.Any() && seedDataOptions.DummyData != null)
             {
                 foreach (var userEntry in seedDataOptions.DummyData.Values)
                 {
@@ -95,6 +107,7 @@ namespace vet_api_Net.Data.seeds
                         Rol = userEntry.Rol,
                         Nombre = userEntry.Nombre,
                         Apellido = userEntry.Apellido,
+                        Telefono = userEntry.Telefono ?? "0000-0000000",
                         AvatarUrl = userEntry.AvatarUrl,
                         Activo = true,
                         Creado = DateTime.Now,
@@ -116,6 +129,7 @@ namespace vet_api_Net.Data.seeds
                     Email = groqEmail,
                     Password = BCrypt.Net.BCrypt.HashPassword("groq_secure_system_pass_123!"),
                     Rol = "assistant",
+                    Telefono = "0000-0000000",
                     AvatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=groq",
                     Activo = true,
                     Creado = DateTime.Now,
@@ -195,27 +209,40 @@ namespace vet_api_Net.Data.seeds
                 context.SaveChanges();
             }
 
-            if (!context.FacturaConfigs.Any())
+            if (!context.WorkerConfigs.Any())
             {
-                context.FacturaConfigs.Add(new FacturaConfig
-                {
-                    Days = 1,
-                    IsEnabled = true,
-                    GenerateEnabled = true,
-                    LastUpdated = DateTime.Now
-                });
-                context.SaveChanges();
-            }
-
-            if (!context.ReporConfigs.Any())
-            {
-                context.ReporConfigs.Add(new ReporConfig
-                {
-                    Days = 30,
-                    IsEnabled = false,
-                    GenerateEnabled = false,
-                    LastUpdated = DateTime.Now
-                });
+                context.WorkerConfigs.AddRange(
+                    new WorkerConfig
+                    {
+                        WorkerName = WorkerNames.DeleteFacturaWorker,
+                        IsEnabled = false,
+                        RetentionValue = 1,
+                        RetentionUnit = "minutes",
+                        LastUpdated = DateTime.Now
+                    },
+                    new WorkerConfig
+                    {
+                        WorkerName = WorkerNames.DeleteReportWorker,
+                        IsEnabled = false,
+                        RetentionValue = 30,
+                        RetentionUnit = "minutes",
+                        LastUpdated = DateTime.Now
+                    },
+                    new WorkerConfig
+                    {
+                        WorkerName = WorkerNames.AutoGenerateReportWorker,
+                        GenerateEnabled = false,
+                        LastUpdated = DateTime.Now
+                    },
+                    new WorkerConfig
+                    {
+                        WorkerName = WorkerNames.VaccinationReminderWorker,
+                        IsEnabled = true,
+                        IntervalValue = 1,
+                        IntervalUnit = "minutes",
+                        LastUpdated = DateTime.Now
+                    }
+                );
                 context.SaveChanges();
             }
 
@@ -608,26 +635,317 @@ namespace vet_api_Net.Data.seeds
             context.Consultas.AddRange(consultas);
             context.SaveChanges();
 
-            // Seed a vaccine for mascotas[0] to test the clinical history service with vaccines data.
+            // Seed del catálogo de vacunas + lotes + aplicaciones, vinculadas a las mascotas/clientes creados arriba,
+            // cubriendo los 3 estados de semaforización, un esquema de cachorro en curso y una postergación médica.
             var vaccineProduct = context.Productos.FirstOrDefault(p => p.Codigo == "P-001");
-            if (vaccineProduct != null)
+            if (vaccineProduct != null && !context.Vaccines.Any())
             {
-                var vacunas = new List<Vacuna>
+                var today = DateOnly.FromDateTime(DateTime.Now);
+
+                var rabiaCanina = new Vaccine
                 {
-                    new Vacuna
+                    Name = "Antirrábica",
+                    Species = "canino",
+                    MinimumAgeWeeks = 12,
+                    BoosterFrequencyValue = 1,
+                    BoosterFrequencyUnit = "years",
+                    Description = "Vacuna anual contra la rabia",
+                    Price = 15.00m,
+                    ProductoId = vaccineProduct.Id,
+                    Active = true,
+                    CreatedAt = DateTime.Now
+                };
+                var rabiaFelina = new Vaccine
+                {
+                    Name = "Antirrábica",
+                    Species = "felino",
+                    MinimumAgeWeeks = 12,
+                    BoosterFrequencyValue = 1,
+                    BoosterFrequencyUnit = "years",
+                    Description = "Vacuna anual contra la rabia (felinos). Sin producto de facturación vinculado todavía.",
+                    Price = 15.00m,
+                    ProductoId = null,
+                    Active = true,
+                    CreatedAt = DateTime.Now
+                };
+                var parvovirusCanino = new Vaccine
+                {
+                    Name = "Parvovirus",
+                    Species = "canino",
+                    MinimumAgeWeeks = 6,
+                    BoosterFrequencyValue = 1,
+                    BoosterFrequencyUnit = "years",
+                    Description = "Esquema inicial de cachorro (series con intervalos de 21 días) y refuerzo anual en adultos.",
+                    Price = 12.00m,
+                    ProductoId = null,
+                    Active = true,
+                    CreatedAt = DateTime.Now
+                };
+                var tripleFelina = new Vaccine
+                {
+                    Name = "Triple Felina",
+                    Species = "felino",
+                    MinimumAgeWeeks = 8,
+                    BoosterFrequencyValue = 1,
+                    BoosterFrequencyUnit = "years",
+                    Description = "Panleucopenia, Rinotraqueitis y Calicivirus.",
+                    Price = 18.00m,
+                    ProductoId = null,
+                    Active = true,
+                    CreatedAt = DateTime.Now
+                };
+                var moquilloCanino = new Vaccine
+                {
+                    Name = "Moquillo",
+                    Species = "canino",
+                    MinimumAgeWeeks = 8,
+                    BoosterFrequencyValue = 6,
+                    BoosterFrequencyUnit = "months",
+                    Description = "Refuerzo semestral en adultos.",
+                    Price = 14.00m,
+                    ProductoId = null,
+                    Active = true,
+                    CreatedAt = DateTime.Now
+                };
+
+                context.Vaccines.AddRange(rabiaCanina, rabiaFelina, parvovirusCanino, tripleFelina, moquilloCanino);
+                context.SaveChanges();
+
+                // Esquema de cachorro para Parvovirus: dosis 1 y 2 con 21 días de intervalo hacia la siguiente.
+                // Al no existir etapa para la dosis 4, el sistema cae automáticamente al refuerzo anual del catálogo.
+                context.VaccineSchemeStages.AddRange(
+                    new VaccineSchemeStage { VaccineId = parvovirusCanino.Id, StageType = "Initial", DoseNumber = 1, IntervalDaysFromPrevious = 21, CreatedAt = DateTime.Now },
+                    new VaccineSchemeStage { VaccineId = parvovirusCanino.Id, StageType = "Initial", DoseNumber = 2, IntervalDaysFromPrevious = 21, CreatedAt = DateTime.Now }
+                );
+                context.SaveChanges();
+
+                var loteRabiaCanina = new VaccineBatch
+                {
+                    VaccineId = rabiaCanina.Id,
+                    Laboratory = "Pfizer",
+                    BatchNumber = "LOT-12345",
+                    ExpirationDate = today.AddMonths(10),
+                    QuantityInStock = 50,
+                    ReceivedDate = today.AddMonths(-1),
+                    Active = true,
+                    CreatedAt = DateTime.Now
+                };
+                var loteRabiaCaninaPorVencer = new VaccineBatch
+                {
+                    VaccineId = rabiaCanina.Id,
+                    Laboratory = "Pfizer",
+                    BatchNumber = "LOT-99001",
+                    ExpirationDate = today.AddDays(20),
+                    QuantityInStock = 5,
+                    ReceivedDate = today.AddMonths(-6),
+                    Active = true,
+                    CreatedAt = DateTime.Now
+                };
+                var loteRabiaFelina = new VaccineBatch
+                {
+                    VaccineId = rabiaFelina.Id,
+                    Laboratory = "Zoetis",
+                    BatchNumber = "LOT-55010",
+                    ExpirationDate = today.AddMonths(8),
+                    QuantityInStock = 30,
+                    ReceivedDate = today.AddMonths(-2),
+                    Active = true,
+                    CreatedAt = DateTime.Now
+                };
+                var loteParvovirus = new VaccineBatch
+                {
+                    VaccineId = parvovirusCanino.Id,
+                    Laboratory = "MSD",
+                    BatchNumber = "LOT-77003",
+                    ExpirationDate = today.AddMonths(12),
+                    QuantityInStock = 40,
+                    ReceivedDate = today.AddMonths(-2),
+                    Active = true,
+                    CreatedAt = DateTime.Now
+                };
+                var loteTripleFelina = new VaccineBatch
+                {
+                    VaccineId = tripleFelina.Id,
+                    Laboratory = "Virbac",
+                    BatchNumber = "LOT-88004",
+                    ExpirationDate = today.AddMonths(9),
+                    QuantityInStock = 25,
+                    ReceivedDate = today.AddMonths(-3),
+                    Active = true,
+                    CreatedAt = DateTime.Now
+                };
+                var loteMoquillo = new VaccineBatch
+                {
+                    VaccineId = moquilloCanino.Id,
+                    Laboratory = "Boehringer",
+                    BatchNumber = "LOT-66005",
+                    ExpirationDate = today.AddMonths(7),
+                    QuantityInStock = 20,
+                    ReceivedDate = today.AddMonths(-1),
+                    Active = true,
+                    CreatedAt = DateTime.Now
+                };
+
+                context.VaccineBatches.AddRange(
+                    loteRabiaCanina, loteRabiaCaninaPorVencer, loteRabiaFelina, loteParvovirus, loteTripleFelina, loteMoquillo);
+                context.SaveChanges();
+
+                // Aplicaciones vinculadas a las mascotas (y por lo tanto a los clientes) sembrados arriba:
+                // Firulais (cliente Ignacio) -> Verde | Michi (cliente Anastacia) -> Amarillo | Rex (cliente Luis) -> Rojo
+                // Luna (cliente Maria) -> Verde | Rocky (cliente Jorge) -> esquema de cachorro en curso (Amarillo)
+                // Pelusa (cliente Sofia) -> Postergada | Max (cliente Maria) -> Verde
+                var petVaccinations = new List<PetVaccination>
+                {
+                    new PetVaccination
                     {
-                        MascotaId = mascotas[0].Id,
-                        ProductoId = vaccineProduct.Id,
+                        MascotaId = mascotas[0].Id, // Firulais
+                        VaccineId = rabiaCanina.Id,
+                        VaccineBatchId = loteRabiaCanina.Id,
                         ConsultaId = consultas[0].Id,
-                        FechaVacunacion = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1)),
-                        ProximaDosis = DateOnly.FromDateTime(DateTime.Now.AddMonths(11)),
-                        Lote = "LOT-12345",
                         DoctorId = doctor.Id,
-                        Nota = "Refuerzo anual administrado",
-                        Creado = DateTime.Now
+                        ApplicationDate = today.AddMonths(-1),
+                        NextDoseDate = today.AddMonths(11),
+                        WeightAtApplication = 15.5m,
+                        Dose = "1ml",
+                        Status = "Applied",
+                        ClinicalObservations = "Refuerzo anual administrado sin complicaciones.",
+                        CreatedAt = DateTime.Now
+                    },
+                    new PetVaccination
+                    {
+                        MascotaId = mascotas[1].Id, // Michi
+                        VaccineId = rabiaFelina.Id,
+                        VaccineBatchId = loteRabiaFelina.Id,
+                        DoctorId = doctor.Id,
+                        ApplicationDate = today.AddMonths(-11),
+                        NextDoseDate = today.AddDays(20),
+                        WeightAtApplication = 4.0m,
+                        Dose = "1ml",
+                        Status = "Applied",
+                        ClinicalObservations = "Próxima a vencer, notificar al cliente.",
+                        CreatedAt = DateTime.Now
+                    },
+                    new PetVaccination
+                    {
+                        MascotaId = mascotas[2].Id, // Rex
+                        VaccineId = rabiaCanina.Id,
+                        VaccineBatchId = loteRabiaCanina.Id,
+                        DoctorId = doctor.Id,
+                        ApplicationDate = today.AddYears(-1).AddDays(-20),
+                        NextDoseDate = today.AddDays(-20),
+                        WeightAtApplication = 29.0m,
+                        Dose = "1ml",
+                        Status = "Applied",
+                        ClinicalObservations = "Refuerzo vencido, pendiente de reagendar.",
+                        CreatedAt = DateTime.Now
+                    },
+                    new PetVaccination
+                    {
+                        MascotaId = mascotas[3].Id, // Luna
+                        VaccineId = tripleFelina.Id,
+                        VaccineBatchId = loteTripleFelina.Id,
+                        DoctorId = doctor.Id,
+                        ApplicationDate = today.AddMonths(-2),
+                        NextDoseDate = today.AddMonths(10),
+                        WeightAtApplication = 3.5m,
+                        Dose = "1ml",
+                        Status = "Applied",
+                        ClinicalObservations = "Esquema al día.",
+                        CreatedAt = DateTime.Now
+                    },
+                    new PetVaccination
+                    {
+                        MascotaId = mascotas[4].Id, // Rocky - dosis 1 de la serie de cachorro
+                        VaccineId = parvovirusCanino.Id,
+                        VaccineBatchId = loteParvovirus.Id,
+                        DoctorId = doctor.Id,
+                        ApplicationDate = today.AddDays(-42),
+                        NextDoseDate = today.AddDays(-21),
+                        WeightAtApplication = 6.0m,
+                        Dose = "1ml",
+                        Status = "Applied",
+                        ClinicalObservations = "Primera dosis del esquema inicial.",
+                        CreatedAt = DateTime.Now
+                    },
+                    new PetVaccination
+                    {
+                        MascotaId = mascotas[4].Id, // Rocky - dosis 2 de la serie de cachorro
+                        VaccineId = parvovirusCanino.Id,
+                        VaccineBatchId = loteParvovirus.Id,
+                        DoctorId = doctor.Id,
+                        ApplicationDate = today.AddDays(-21),
+                        NextDoseDate = today.AddDays(9),
+                        WeightAtApplication = 7.2m,
+                        Dose = "1ml",
+                        Status = "Applied",
+                        ClinicalObservations = "Segunda dosis del esquema inicial, falta la tercera.",
+                        CreatedAt = DateTime.Now
+                    },
+                    new PetVaccination
+                    {
+                        MascotaId = mascotas[5].Id, // Pelusa - postergada por evaluación clínica
+                        VaccineId = tripleFelina.Id,
+                        VaccineBatchId = null,
+                        DoctorId = doctor.Id,
+                        ApplicationDate = today,
+                        NextDoseDate = null,
+                        Status = "Postponed",
+                        PostponementReason = "Mascota con fiebre, se reprograma tras evaluación clínica.",
+                        ClinicalObservations = "Se pospone la aplicación hasta que la mascota esté clínicamente estable.",
+                        CreatedAt = DateTime.Now
+                    },
+                    new PetVaccination
+                    {
+                        MascotaId = mascotas[6].Id, // Max
+                        VaccineId = moquilloCanino.Id,
+                        VaccineBatchId = loteMoquillo.Id,
+                        DoctorId = doctor.Id,
+                        ApplicationDate = today.AddMonths(-1),
+                        NextDoseDate = today.AddMonths(5),
+                        WeightAtApplication = 8.3m,
+                        Dose = "1ml",
+                        Status = "Applied",
+                        ClinicalObservations = "Refuerzo semestral al día.",
+                        CreatedAt = DateTime.Now
+                    },
+                    new PetVaccination
+                    {
+                        MascotaId = mascotas[0].Id, // Firulais - candidato al recordatorio de 7 días de VaccinationReminderWorker
+                        VaccineId = moquilloCanino.Id,
+                        VaccineBatchId = loteMoquillo.Id,
+                        DoctorId = doctor.Id,
+                        ApplicationDate = today.AddDays(-173),
+                        NextDoseDate = today.AddDays(VaccinationVariables.ReminderSevenDays),
+                        WeightAtApplication = 15.5m,
+                        Dose = "1ml",
+                        Status = "Applied",
+                        ClinicalObservations = "Refuerzo semestral próximo a vencer en 7 días.",
+                        CreatedAt = DateTime.Now
+                    },
+                    new PetVaccination
+                    {
+                        MascotaId = mascotas[2].Id, // Rex - candidato al recordatorio de 3 días de VaccinationReminderWorker
+                        VaccineId = parvovirusCanino.Id,
+                        VaccineBatchId = loteParvovirus.Id,
+                        DoctorId = doctor.Id,
+                        ApplicationDate = today.AddYears(-1).AddDays(-3),
+                        NextDoseDate = today.AddDays(VaccinationVariables.ReminderThreeDays),
+                        WeightAtApplication = 30.0m,
+                        Dose = "1ml",
+                        Status = "Applied",
+                        ClinicalObservations = "Refuerzo anual próximo a vencer en 3 días.",
+                        CreatedAt = DateTime.Now
                     }
                 };
-                context.Vacunas.AddRange(vacunas);
+                context.PetVaccinations.AddRange(petVaccinations);
+
+                // Reflejar el descuento de stock que habría hecho RegisterApplicationAsync por cada dosis aplicada.
+                loteRabiaCanina.QuantityInStock -= 2; // Firulais + Rex
+                loteRabiaFelina.QuantityInStock -= 1; // Michi
+                loteTripleFelina.QuantityInStock -= 1; // Luna (Pelusa quedó postergada, no consume lote)
+                loteParvovirus.QuantityInStock -= 3; // Rocky (dosis 1 y 2) + Rex
+                loteMoquillo.QuantityInStock -= 2; // Max + Firulais
+
                 context.SaveChanges();
             }
 
@@ -663,3 +981,49 @@ namespace vet_api_Net.Data.seeds
         }
     }
 }
+
+
+/*---------------------------------------------------------------------------------------
+
+Script for permissions insert data base 
+
+-- ADMIN: todos los usuarios con rol admin
+INSERT INTO user_permissions (user_id, permissions, created_at, updated_at)
+SELECT
+    u.id,
+    '["admin.panel","admin.dashboard","admin.users","admin.products.view","admin.products.manage","admin.messages","admin.invoices.view","admin.notifications.create","admin.clients","admin.emails","admin.settings"]'::jsonb,
+    now(),
+    now()
+FROM usuarios u
+WHERE lower(u.rol) = 'admin'
+ON CONFLICT (user_id) DO UPDATE SET
+    permissions = EXCLUDED.permissions,
+    updated_at = now();
+
+-- SECRETARIA: todos los usuarios con rol secretaria
+INSERT INTO user_permissions (user_id, permissions, created_at, updated_at)
+SELECT
+    u.id,
+    '["secretaria.panel","secretaria.citas.list","secretaria.citas.create","secretaria.citas.newClient","secretaria.calendar","secretaria.invoices.manage","secretaria.messages","secretaria.invoices.view","secretaria.recipes","secretaria.notifications.create","secretaria.clients"]'::jsonb,
+    now(),
+    now()
+FROM usuarios u
+WHERE lower(u.rol) = 'secretaria'
+ON CONFLICT (user_id) DO UPDATE SET
+    permissions = EXCLUDED.permissions,
+    updated_at = now();
+
+-- DOCTOR: todos los usuarios con rol doctor
+INSERT INTO user_permissions (user_id, permissions, created_at, updated_at)
+SELECT
+    u.id,
+    '["doctor.panel","doctor.citas","doctor.calendar","doctor.records","doctor.recipes","doctor.messages","doctor.invoices.view","doctor.notifications.create"]'::jsonb,
+    now(),
+    now()
+FROM usuarios u
+WHERE lower(u.rol) = 'doctor'
+ON CONFLICT (user_id) DO UPDATE SET
+    permissions = EXCLUDED.permissions,
+    updated_at = now();
+
+--------------------------------------------------------------------------------------------*/

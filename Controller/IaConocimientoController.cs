@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using DTOs;
 using vet_api_Net.Routes;
 using vet_api_Net.Constants;
@@ -20,11 +21,13 @@ public class IaConocimientoController : ControllerBase
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ApiSettingsOptions _options;
+    private readonly ILogger<IaConocimientoController> _logger;
 
-    public IaConocimientoController(IHttpClientFactory httpClientFactory, IOptions<ApiSettingsOptions> options)
+    public IaConocimientoController(IHttpClientFactory httpClientFactory, IOptions<ApiSettingsOptions> options, ILogger<IaConocimientoController> logger)
     {
         _httpClientFactory = httpClientFactory;
         _options = options.Value;
+        _logger = logger;
     }
 
     [HttpGet(Endpoints.IaConocimiento.Categoria)]
@@ -37,29 +40,26 @@ public class IaConocimientoController : ControllerBase
                 return BadRequest(new { error = ResponseMessagesIaConocimiento.CategoryRequired });
             }
 
-            if (string.IsNullOrEmpty(_options.GroqApiUrl))
+            if (string.IsNullOrEmpty(_options.GroqApiUrl) || string.IsNullOrEmpty(_options.GroqApiKey))
             {
-                return StatusCode(500, new { error = ResponseMessagesGroqServices.GroqApiError });
-            }
-
-            if (string.IsNullOrEmpty(_options.GroqApiKey))
-            {
-                return StatusCode(500, new { error = ResponseMessagesGroqServices.GroqApiKeyError });
+                _logger.LogError("NowGrod.ia no está configurada (GroqApiUrl/GroqApiKey faltante).");
+                return StatusCode(503, new { error = ResponseMessagesGroqServices.ServiceUnavailable });
             }
 
             using var client = _httpClientFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _options.GroqApiKey);
 
             var requestUrl = _options.GroqApiUrl.Replace("/chat", $"/conocimientos/ia-config/{categoria.ToLower().Trim()}");
-            
+
             HttpResponseMessage response;
             try
             {
                 response = await client.GetAsync(requestUrl);
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
-                return StatusCode(503, new { error = ResponseMessagesGroqServices.GroqApiError });
+                _logger.LogError(ex, "No se pudo establecer conexión con NowGrod.ia en la URL: {RequestUrl}", requestUrl);
+                return StatusCode(503, new { error = ResponseMessagesGroqServices.ServiceUnavailable });
             }
 
             if (!response.IsSuccessStatusCode)
@@ -73,7 +73,8 @@ public class IaConocimientoController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = ex.Message });
+            _logger.LogError(ex, "Error inesperado al consultar la base de conocimiento de NowGrod.ia.");
+            return StatusCode(503, new { error = ResponseMessagesGroqServices.ServiceUnavailable });
         }
     }
 
@@ -87,14 +88,10 @@ public class IaConocimientoController : ControllerBase
                 return BadRequest(new { error = ResponseMessagesIaConocimiento.CategoryRequired });
             }
 
-            if (string.IsNullOrEmpty(_options.GroqApiUrl))
+            if (string.IsNullOrEmpty(_options.GroqApiUrl) || string.IsNullOrEmpty(_options.GroqApiKey))
             {
-                return StatusCode(500, new { error = ResponseMessagesGroqServices.GroqApiError });
-            }
-
-            if (string.IsNullOrEmpty(_options.GroqApiKey))
-            {
-                return StatusCode(500, new { error = ResponseMessagesGroqServices.GroqApiKeyError });
+                _logger.LogError("NowGrod.ia no está configurada (GroqApiUrl/GroqApiKey faltante).");
+                return StatusCode(503, new { error = ResponseMessagesGroqServices.ServiceUnavailable });
             }
 
             using var client = _httpClientFactory.CreateClient();
@@ -112,9 +109,10 @@ public class IaConocimientoController : ControllerBase
             {
                 response = await client.PostAsync(requestUrl, content);
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
-                return StatusCode(503, new { error = ResponseMessagesGroqServices.GroqApiError });
+                _logger.LogError(ex, "No se pudo establecer conexión con NowGrod.ia en la URL: {RequestUrl}", requestUrl);
+                return StatusCode(503, new { error = ResponseMessagesGroqServices.ServiceUnavailable });
             }
 
             if (!response.IsSuccessStatusCode)
@@ -128,38 +126,16 @@ public class IaConocimientoController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = ex.Message });
+            _logger.LogError(ex, "Error inesperado al guardar la base de conocimiento de NowGrod.ia.");
+            return StatusCode(503, new { error = ResponseMessagesGroqServices.ServiceUnavailable });
         }
     }
 
     private async Task<ActionResult> HandleErrorResponseAsync(HttpResponseMessage response)
     {
         var errorContent = await response.Content.ReadAsStringAsync();
-        var contentType = response.Content.Headers.ContentType?.MediaType;
+        _logger.LogError("Error en respuesta de NowGrod.ia: {StatusCode}. Detalles: {Error}", response.StatusCode, errorContent);
 
-        if ((contentType != null && contentType.Contains("text/html")) || 
-            (!string.IsNullOrEmpty(errorContent) && errorContent.TrimStart().StartsWith("<")))
-        {
-            return StatusCode((int)response.StatusCode, new { error = ResponseMessagesGroqServices.GroqApiError });
-        }
-
-        try
-        {
-            using var doc = JsonDocument.Parse(errorContent);
-            if (doc.RootElement.TryGetProperty("error", out var errProp))
-            {
-                var errStr = errProp.GetString();
-                if (!string.IsNullOrEmpty(errStr))
-                {
-                    return StatusCode((int)response.StatusCode, new { error = errStr });
-                }
-            }
-        }
-        catch
-        {
-            // El contenido no es JSON válido
-        }
-
-        return StatusCode((int)response.StatusCode, new { error = errorContent });
+        return StatusCode(503, new { error = ResponseMessagesGroqServices.ServiceUnavailable });
     }
 }

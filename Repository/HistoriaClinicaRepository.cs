@@ -51,11 +51,11 @@ public class HistoriaClinicaRepository : IHistoriaClinicaRepository
             .OrderByDescending(c => c.FechaConsulta)
             .ToListAsync();
 
-    public async Task<List<Vacuna>> GetVacunasByMascotaIdAsync(int mascotaId)
-        => await _context.Vacunas
+    public async Task<List<PetVaccination>> GetPetVaccinationsByMascotaIdAsync(int mascotaId)
+        => await _context.PetVaccinations
             .Where(v => v.MascotaId == mascotaId)
-            .Include(v => v.Producto)
+            .Include(v => v.Vaccine)
             .Include(v => v.Doctor)
-            .OrderByDescending(v => v.FechaVacunacion)
+            .OrderByDescending(v => v.ApplicationDate)
             .ToListAsync();
 }

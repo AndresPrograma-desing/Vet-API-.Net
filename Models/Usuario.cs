@@ -51,7 +51,7 @@ public partial class Usuario
 
     public virtual ICollection<MovimientosInventario> MovimientosInventarios { get; set; } = new List<MovimientosInventario>();
 
-    public virtual ICollection<Vacuna> Vacunas { get; set; } = new List<Vacuna>();
+    public virtual ICollection<PetVaccination> PetVaccinations { get; set; } = new List<PetVaccination>();
 
     public virtual ICollection<Mensaje> MensajesEmisor { get; set; } = new List<Mensaje>();
 

@@ -36,10 +36,11 @@ public class TokenTemporalOptions
     public string Apellido { get; set; } = string.Empty;
 }
 
-public class SeedDataOptions 
+public class SeedDataOptions
 {
     public const string SectionName = "SeedData";
     public bool Initialize { get; set; } = false;
+    public bool SeedUsers { get; set; } = true;
     public Dictionary<string, UserData> DummyData { get; set; } = new Dictionary<string, UserData>();
 }
 
@@ -50,6 +51,7 @@ public class UserData
     public string Rol { get; set; } = string.Empty;
     public string Nombre { get; set; } = string.Empty;
     public string Apellido { get; set; } = string.Empty;
+    public string? Telefono { get; set; }
     public string? AvatarUrl { get; set; }
 }
 public class TemplatesHTML
@@ -61,6 +63,7 @@ public class TemplatesHTML
     public string? ConfirmChangePass { get; set; }
     public string? ConfirmChangePassPage { get; set; }
     public string? BirthdayPets { get; set; }
+    public string? VaccinePets { get; set; }
     
 }
 

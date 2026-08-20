@@ -56,13 +56,17 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<HistoriaClinica> HistoriasClinicas { get; set; }
     public virtual DbSet<IaConocimiento> IaConocimientos { get; set; }
 
-    public virtual DbSet<Vacuna> Vacunas { get; set; }
+    public virtual DbSet<Vaccine> Vaccines { get; set; }
+
+    public virtual DbSet<VaccineSchemeStage> VaccineSchemeStages { get; set; }
+
+    public virtual DbSet<VaccineBatch> VaccineBatches { get; set; }
+
+    public virtual DbSet<PetVaccination> PetVaccinations { get; set; }
 
     public virtual DbSet<Models.Reporte> Reportes { get; set; }
 
-    public virtual DbSet<Models.ReporConfig> ReporConfigs { get; set; }
-
-    public virtual DbSet<Models.FacturaConfig> FacturaConfigs { get; set; }
+    public virtual DbSet<Models.WorkerConfig> WorkerConfigs { get; set; }
 
     public virtual DbSet<Models.MoneyType> MoneyTypes { get; set; }
 
@@ -1065,69 +1069,161 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("ultimo_acceso");
         });
 
-        modelBuilder.Entity<Vacuna>(entity =>
+        modelBuilder.Entity<Vaccine>(entity =>
         {
             entity.HasKey(e => e.Id);
 
-            entity
-                .ToTable("vacunas")
-;
+            entity.ToTable("vaccines");
+
+            entity.HasIndex(e => e.ProductoId, "idx_vaccine_producto");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Name).HasMaxLength(150).HasColumnName("name");
+            entity.Property(e => e.Species).HasMaxLength(50).HasColumnName("species");
+            entity.Property(e => e.MinimumAgeWeeks).HasColumnName("minimum_age_weeks");
+            entity.Property(e => e.BoosterFrequencyValue).HasColumnName("booster_frequency_value");
+            entity.Property(e => e.BoosterFrequencyUnit).HasMaxLength(20).HasColumnName("booster_frequency_unit");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.Price).HasPrecision(10, 2).HasColumnName("price");
+            entity.Property(e => e.ProductoId).HasColumnName("producto_id");
+            entity.Property(e => e.Active).HasColumnName("active");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+
+            entity.HasOne(d => d.Producto).WithMany(p => p.Vaccines)
+                .HasForeignKey(d => d.ProductoId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("vaccines_ibfk_1");
+        });
+
+        modelBuilder.Entity<VaccineSchemeStage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("vaccine_scheme_stages");
+
+            entity.HasIndex(e => e.VaccineId, "idx_scheme_stage_vaccine");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.VaccineId).HasColumnName("vaccine_id");
+            entity.Property(e => e.StageType).HasMaxLength(20).HasColumnName("stage_type");
+            entity.Property(e => e.DoseNumber).HasColumnName("dose_number");
+            entity.Property(e => e.IntervalDaysFromPrevious).HasColumnName("interval_days_from_previous");
+            entity.Property(e => e.MinimumAgeWeeksOverride).HasColumnName("minimum_age_weeks_override");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+
+            entity.HasOne(d => d.Vaccine).WithMany(p => p.SchemeStages)
+                .HasForeignKey(d => d.VaccineId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("vaccine_scheme_stages_ibfk_1");
+        });
+
+        modelBuilder.Entity<VaccineBatch>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("vaccine_batches");
+
+            entity.HasIndex(e => new { e.VaccineId, e.ExpirationDate }, "idx_batch_vaccine_expiration");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.VaccineId).HasColumnName("vaccine_id");
+            entity.Property(e => e.Laboratory).HasMaxLength(100).HasColumnName("laboratory");
+            entity.Property(e => e.BatchNumber).HasMaxLength(50).HasColumnName("batch_number");
+            entity.Property(e => e.ExpirationDate).HasColumnName("expiration_date");
+            entity.Property(e => e.QuantityInStock).HasColumnName("quantity_in_stock");
+            entity.Property(e => e.ReceivedDate).HasColumnName("received_date");
+            entity.Property(e => e.Active).HasColumnName("active");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+
+            entity.HasOne(d => d.Vaccine).WithMany(p => p.Batches)
+                .HasForeignKey(d => d.VaccineId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("vaccine_batches_ibfk_1");
+        });
+
+        modelBuilder.Entity<PetVaccination>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("pet_vaccinations");
+
+            entity.HasIndex(e => e.MascotaId, "idx_pet_vaccination_mascota");
+
+            entity.HasIndex(e => e.NextDoseDate, "idx_pet_vaccination_next_dose");
+
+            entity.HasIndex(e => e.VaccineId, "vaccine_id");
+
+            entity.HasIndex(e => e.VaccineBatchId, "vaccine_batch_id");
 
             entity.HasIndex(e => e.ConsultaId, "consulta_id");
 
             entity.HasIndex(e => e.DoctorId, "doctor_id");
 
-            entity.HasIndex(e => e.FechaVacunacion, "idx_fecha_vacuna");
+            entity.HasIndex(e => e.DetalleFacturaId, "detalle_factura_id");
 
-            entity.HasIndex(e => e.MascotaId, "idx_mascota_vacuna");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.MascotaId).HasColumnName("mascota_id");
+            entity.Property(e => e.VaccineId).HasColumnName("vaccine_id");
+            entity.Property(e => e.VaccineBatchId).HasColumnName("vaccine_batch_id");
+            entity.Property(e => e.ConsultaId).HasColumnName("consulta_id");
+            entity.Property(e => e.DoctorId).HasColumnName("doctor_id");
+            entity.Property(e => e.ApplicationDate).HasColumnName("application_date");
+            entity.Property(e => e.WeightAtApplication).HasPrecision(5, 2).HasColumnName("weight_at_application");
+            entity.Property(e => e.Dose).HasMaxLength(100).HasColumnName("dose");
+            entity.Property(e => e.NextDoseDate).HasColumnName("next_dose_date");
+            entity.Property(e => e.Status).HasMaxLength(20).HasColumnName("status");
+            entity.Property(e => e.PostponementReason).HasColumnName("postponement_reason");
+            entity.Property(e => e.ClinicalObservations).HasColumnName("clinical_observations");
+            entity.Property(e => e.DetalleFacturaId).HasColumnName("detalle_factura_id");
+            entity.Property(e => e.ReminderSevenSentAt).HasColumnName("reminder_seven_sent_at");
+            entity.Property(e => e.ReminderThreeSentAt).HasColumnName("reminder_three_sent_at");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
-            entity.HasIndex(e => e.ProductoId, "producto_id");
+            entity.HasOne(d => d.Mascota).WithMany(p => p.PetVaccinations)
+                .HasForeignKey(d => d.MascotaId)
+                .HasConstraintName("pet_vaccinations_ibfk_1");
 
-            entity.Property(e => e.Id)
+            entity.HasOne(d => d.Vaccine).WithMany(p => p.PetVaccinations)
+                .HasForeignKey(d => d.VaccineId)
+                .HasConstraintName("pet_vaccinations_ibfk_2");
 
-                .HasColumnName("id");
-            entity.Property(e => e.ConsultaId)
+            entity.HasOne(d => d.VaccineBatch).WithMany(p => p.PetVaccinations)
+                .HasForeignKey(d => d.VaccineBatchId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("pet_vaccinations_ibfk_3");
 
-                .HasColumnName("consulta_id");
-            entity.Property(e => e.Creado)
-
-
-                .HasColumnName("creado");
-            entity.Property(e => e.DoctorId)
-
-                .HasColumnName("doctor_id");
-            entity.Property(e => e.FechaVacunacion).HasColumnName("fecha_vacunacion");
-            entity.Property(e => e.Lote)
-                .HasMaxLength(50)
-                .HasColumnName("lote");
-            entity.Property(e => e.MascotaId)
-
-                .HasColumnName("mascota_id");
-            entity.Property(e => e.Nota)
-
-                .HasColumnName("nota");
-            entity.Property(e => e.ProductoId)
-
-                .HasColumnName("producto_id");
-            entity.Property(e => e.ProximaDosis).HasColumnName("proxima_dosis");
-
-            entity.HasOne(d => d.Consulta).WithMany(p => p.Vacunas)
+            entity.HasOne(d => d.Consulta).WithMany(p => p.PetVaccinations)
                 .HasForeignKey(d => d.ConsultaId)
                 .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("vacunas_ibfk_3");
+                .HasConstraintName("pet_vaccinations_ibfk_4");
 
-            entity.HasOne(d => d.Doctor).WithMany(p => p.Vacunas)
+            entity.HasOne(d => d.Doctor).WithMany(p => p.PetVaccinations)
                 .HasForeignKey(d => d.DoctorId)
                 .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("vacunas_ibfk_4");
+                .HasConstraintName("pet_vaccinations_ibfk_5");
 
-            entity.HasOne(d => d.Mascota).WithMany(p => p.Vacunas)
-                .HasForeignKey(d => d.MascotaId)
-                .HasConstraintName("vacunas_ibfk_1");
+            entity.HasOne(d => d.DetalleFactura).WithMany()
+                .HasForeignKey(d => d.DetalleFacturaId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("pet_vaccinations_ibfk_6");
+        });
 
-            entity.HasOne(d => d.Producto).WithMany(p => p.Vacunas)
-                .HasForeignKey(d => d.ProductoId)
-                .HasConstraintName("vacunas_ibfk_2");
+        modelBuilder.Entity<Models.WorkerConfig>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.ToTable("worker_configs");
+
+            entity.HasIndex(e => e.WorkerName, "idx_worker_configs_worker_name").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.WorkerName).HasMaxLength(100).HasColumnName("worker_name");
+            entity.Property(e => e.IsEnabled).HasColumnName("is_enabled");
+            entity.Property(e => e.IntervalValue).HasColumnName("interval_value");
+            entity.Property(e => e.IntervalUnit).HasMaxLength(20).HasColumnName("interval_unit");
+            entity.Property(e => e.RetentionValue).HasColumnName("retention_value");
+            entity.Property(e => e.RetentionUnit).HasMaxLength(20).HasColumnName("retention_unit");
+            entity.Property(e => e.GenerateEnabled).HasColumnName("generate_enabled");
+            entity.Property(e => e.LastUpdated).HasColumnName("last_updated");
         });
 
         modelBuilder.Entity<Mensaje>(entity =>

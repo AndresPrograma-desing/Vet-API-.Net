@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using DTOs;
 using Microsoft.EntityFrameworkCore;
 using vet_api_Net.Constants;
-using vet_api_Net.Constants;
 using vet_api_Net.Data;
+using vet_api_Net.Extensions;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Models;
 
@@ -61,16 +61,10 @@ public class CitasRepository : ICitasRepository
         if (!string.IsNullOrWhiteSpace(status))
             query = query.Where(c => c.Estado != null && c.Estado.ToLower() == status.ToLower());
 
-        var totalCount = await query.CountAsync();
-
-        var items = await query
+        return await query
             .OrderByDescending(c => c.FechaCita)
             .ThenByDescending(c => c.HoraCita)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
-        return (items, totalCount);
+            .ToPagedResultAsync(pageNumber, pageSize);
     }
 
     public async Task<Cita?> GetByIdWithRelationsAsync(int id)

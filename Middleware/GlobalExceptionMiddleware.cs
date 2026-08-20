@@ -49,7 +49,13 @@ namespace vet_api_Net.Middleware
                 {
                     await RegistrarLogErrorAsync(context, logService, $"ERROR_INTERNO_CONTROLADO: {responseText}", null);
 
-                    await EscribirRespuestaGenerica500Async(context, responseBody);
+                    // Solo se reemplaza por el mensaje genérico cuando el controller no dejó
+                    // un cuerpo de error propio (500 vacío o no controlado). Si ya viene un
+                    // mensaje (ej. try/catch del controller), se respeta tal cual.
+                    if (string.IsNullOrWhiteSpace(responseText))
+                    {
+                        await EscribirRespuestaGenerica500Async(context, responseBody);
+                    }
                 }
                 else
                 {

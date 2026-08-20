@@ -32,7 +32,7 @@ namespace vet_api_Net.Worker
                         var reportService = scope.ServiceProvider.GetRequiredService<IReportSystemService>();
                         var notificationsPushService = scope.ServiceProvider.GetRequiredService<INotificationsPushService>();
 
-                        var config = await db.ReporConfigs.FirstOrDefaultAsync(stoppingToken);
+                        var config = await db.WorkerConfigs.FirstOrDefaultAsync(w => w.WorkerName == WorkerNames.AutoGenerateReportWorker, stoppingToken);
                         bool GenerateEnabled = config?.GenerateEnabled ?? false;
 
                         if (GenerateEnabled)

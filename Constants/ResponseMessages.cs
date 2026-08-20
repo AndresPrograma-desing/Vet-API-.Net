@@ -325,13 +325,7 @@ namespace vet_api_Net.Constants
         public const string RequestFailed = "Petición fallida";
         public const string ServiceError = "Error en servicio";
         public const string TimeoutError = "Tiempo de espera agotado";
-        public const string GroqComunicationError = "Error al comunicarse con api externa de NowGroq.ia";
-        public const string GroqApiError = "Hay un error de configuración en la solicitud enviada a NowGroq.ia.";
-        public const string GroqResponseInvalid = "El modelo de ia devolvio una respuesta no valida, ";
-        public const string GroqApiKeyError = "El Api Key de NowGroq.ia no se encuentra configurada en el sistema.";
-        public const string GroqSessionTokenUrlError = "La URL para generar el token de sesión de NowGroq.ia no se encuentra configurada en el sistema.";
-        public const string GroqCompanyEmailError = "El email de la empresa registrada en NowGroq.ia no se encuentra configurado en el sistema.";
-        public const string GroqSessionTokenError = "No se pudo generar el token de sesión temporal de NowGroq.ia.";
+        public const string ServiceUnavailable = "El servicio de Nowgrod.ia no está disponible.";
 
         public static class GroqPromts
         {
@@ -405,6 +399,12 @@ namespace vet_api_Net.Constants
         public const string AutoGenerateStatus = "La generación de reportes automática ha sido ";
         public static string RetentionDaysUpdated(int days) => $"Los reportes ahora se eliminarán tras {days} días.";
         public const string MinNumber = "La cantidad de días debe ser mayor a 0.";
+    }
+    public static class ResponseMessagesWorkerConfig
+    {
+        public const string WorkerConfigNotFound = "No se encontró configuración para el worker indicado.";
+        public const string WorkerConfigUpdated = "Configuración del worker actualizada correctamente.";
+        public const string InvalidIntervalValue = "El intervalo debe ser mayor a 0.";
     }
     public static class ResponseMessagesMoneyTypes
     {
@@ -607,5 +607,37 @@ namespace vet_api_Net.Constants
     {
         public const string LogRegistered = "Log registrado con éxito.";
         public const string ErrorLoadingLogs = "Error al obtener los logs del sistema.";
+    }
+    public static class ResponseMessagesVaccination
+    {
+        public const string VaccineNotFound = "Vacuna no encontrada.";
+        public const string VaccineNameRequired = "El nombre de la vacuna es requerido.";
+        public const string VaccineSpeciesRequired = "La especie de la vacuna es requerida.";
+        public const string InvalidMinimumAge = "La edad mínima de inicio no puede ser negativa.";
+        public const string InvalidBoosterFrequency = "La frecuencia de refuerzo debe ser mayor a cero.";
+        public const string InvalidBoosterFrequencyUnit = "La unidad de frecuencia de refuerzo debe ser days, months o years.";
+        public const string SchemeStageNotFound = "Etapa de esquema no encontrada.";
+        public const string DoseNumberMustBePositive = "El número de dosis de la etapa debe ser mayor a cero.";
+        public const string IntervalDaysMustBeNonNegative = "El intervalo de días entre dosis no puede ser negativo.";
+        public const string InvalidStageType = "El tipo de etapa debe ser Initial o Booster.";
+        public const string BatchNotFound = "Lote no encontrado.";
+        public const string BatchExpirationMustBeFuture = "La fecha de vencimiento del lote debe ser posterior a hoy.";
+        public const string BatchExpired = "El lote seleccionado está vencido y no puede aplicarse.";
+        public const string BatchInactive = "El lote seleccionado está inactivo.";
+        public const string BatchNoStock = "El lote seleccionado no tiene dosis disponibles en stock.";
+        public const string MascotaNotFound = "Mascota no encontrada.";
+        public const string PetVaccinationNotFound = "Registro de vacunación no encontrado.";
+        public const string PostponementReasonRequired = "El motivo de la postergación es requerido.";
+        public const string AlreadyPostponed = "Esta vacunación ya se encuentra postergada.";
+        public const string VaccineNotLinkedToProduct = "La vacuna no está vinculada a un producto facturable. Configure el producto antes de enviar a factura.";
+        public const string NoConsultaLinked = "El registro de vacunación no está asociado a una consulta.";
+        public const string FacturaNotFoundForConsulta = "No existe una factura generada para la consulta de esta vacunación.";
+        public const string AlreadySentToInvoice = "Esta vacunación ya fue enviada a una factura.";
+        public static string ReminderEmailSubject(string systemName) => $"Recordatorio de vacunación - {systemName}";
+        public static string ReminderEmailBody(string petName, string vaccineName, string dueDate) =>
+            $"<p>Hola,</p><p>Te recordamos que <strong>{petName}</strong> tiene programada la vacuna <strong>{vaccineName}</strong> para el día <strong>{dueDate}</strong>.</p><p>Agenda tu cita con anticipación.</p>";
+        public static string PendingReminderNotificationTitle(string petName) => $"Refuerzo próximo: {petName}";
+        public static string PendingReminderNotificationMessage(string petName, string vaccineName, string dueDate) =>
+            $"La mascota {petName} tiene el refuerzo de {vaccineName} programado para el {dueDate}. Da seguimiento telefónico al cliente.";
     }
 }

@@ -674,6 +674,14 @@ En ambos casos con el formato `//Describe:` seguido de una descripción breve de
 
 ---
 
+## idioma
+
+**Regla** Simpre colocar la sintaxis en ingles, pero respuestas de errores o otra cosa si van en espanol, como lo hece mayormente todo el API
+
+## Variables de entorno
+
+**Regla** tambien se tienen que modificar el archivo appsettings.Development.json si se meodifica el appsettings.json, ya que en local toma los datos del appsettings.Development.json
+
 ## 19. Planificación de Cambios
 
 **Regla:** Cuando se genere un plan de implementación (ej. con `EnterPlanMode`), el archivo del plan se guarda en la raíz del repositorio.

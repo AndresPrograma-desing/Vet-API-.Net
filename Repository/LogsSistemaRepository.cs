@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using vet_api_Net.Data;
+using vet_api_Net.Extensions;
 using vet_api_Net.Models;
 using vet_api_Net.Interfaze.Repositories;
 
@@ -27,9 +28,7 @@ public class LogsSistemaRepository : ILogsSistemaRepository
         return await _context.LogsSistemas
             .Include(l => l.Usuario)
             .OrderByDescending(l => l.CreatedAt)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+            .ToPagedListAsync(pageNumber, pageSize);
     }
 
     public async Task<bool> SaveChangesAsync()

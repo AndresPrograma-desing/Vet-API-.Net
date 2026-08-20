@@ -167,15 +167,21 @@ namespace vet_api_Net.Services
 		
 		public async Task<object?> IsEnabledAsync()
 {
-    return await _context.ReporConfigs
+    var deleteConfig = await _context.WorkerConfigs
         .AsNoTracking()
-        .Select(c => new 
-        { 
-            c.Days, 
-            c.IsEnabled,
-			c.GenerateEnabled
-        })
-        .FirstOrDefaultAsync();
+        .FirstOrDefaultAsync(w => w.WorkerName == WorkerNames.DeleteReportWorker);
+    var generateConfig = await _context.WorkerConfigs
+        .AsNoTracking()
+        .FirstOrDefaultAsync(w => w.WorkerName == WorkerNames.AutoGenerateReportWorker);
+
+    if (deleteConfig == null && generateConfig == null) return null;
+
+    return new
+    {
+        Days = deleteConfig?.RetentionValue ?? 30,
+        IsEnabled = deleteConfig?.IsEnabled ?? true,
+        GenerateEnabled = generateConfig?.GenerateEnabled ?? false
+    };
 }
 	}
 }

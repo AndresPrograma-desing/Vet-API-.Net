@@ -15,5 +15,5 @@ public interface IHistoriaClinicaRepository
     Task<bool> SaveChangesAsync();
     Task<Mascota?> GetMascotaWithDetailsAsync(int mascotaId);
     Task<List<Consulta>> GetConsultasByMascotaIdAsync(int mascotaId);
-    Task<List<Vacuna>> GetVacunasByMascotaIdAsync(int mascotaId);
+    Task<List<PetVaccination>> GetPetVaccinationsByMascotaIdAsync(int mascotaId);
 }

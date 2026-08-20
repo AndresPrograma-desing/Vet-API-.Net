@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using vet_api_Net.Data;
+using vet_api_Net.Extensions;
 using vet_api_Net.Interfaze.Repositories.Clients;
 using vet_api_Net.Models;
 
@@ -35,14 +36,10 @@ public class ClientRepository : IClientRepository
                                      c.Mascota.Any(m => m.Nombre.ToLower().Contains(term)));
         }
 
-        var totalCount = await query.CountAsync();
-
-        var clientIds = await query
+        var (clientIds, totalCount) = await query
             .OrderBy(c => c.Id)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
             .Select(c => c.Id)
-            .ToListAsync();
+            .ToPagedResultAsync(pageNumber, pageSize);
 
         var items = await _context.Clientes
             .Where(c => clientIds.Contains(c.Id))

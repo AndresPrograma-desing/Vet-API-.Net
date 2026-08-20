@@ -619,31 +619,6 @@ namespace vet_api_Net.Migrations
                     b.ToTable("facturas", (string)null);
                 });
 
-            modelBuilder.Entity("vet_api_Net.Models.FacturaConfig", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Days")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("GenerateEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FacturaConfigs");
-                });
-
             modelBuilder.Entity("vet_api_Net.Models.HistoriaClinica", b =>
                 {
                     b.Property<int>("Id")
@@ -1120,6 +1095,104 @@ namespace vet_api_Net.Migrations
                     b.ToTable("password_reset_tickets", (string)null);
                 });
 
+            modelBuilder.Entity("vet_api_Net.Models.PetVaccination", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("ApplicationDate")
+                        .HasColumnType("date")
+                        .HasColumnName("application_date");
+
+                    b.Property<string>("ClinicalObservations")
+                        .HasColumnType("text")
+                        .HasColumnName("clinical_observations");
+
+                    b.Property<int?>("ConsultaId")
+                        .HasColumnType("integer")
+                        .HasColumnName("consulta_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int?>("DetalleFacturaId")
+                        .HasColumnType("integer")
+                        .HasColumnName("detalle_factura_id");
+
+                    b.Property<int?>("DoctorId")
+                        .HasColumnType("integer")
+                        .HasColumnName("doctor_id");
+
+                    b.Property<string>("Dose")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("dose");
+
+                    b.Property<int>("MascotaId")
+                        .HasColumnType("integer")
+                        .HasColumnName("mascota_id");
+
+                    b.Property<DateOnly?>("NextDoseDate")
+                        .HasColumnType("date")
+                        .HasColumnName("next_dose_date");
+
+                    b.Property<string>("PostponementReason")
+                        .HasColumnType("text")
+                        .HasColumnName("postponement_reason");
+
+                    b.Property<DateTime?>("ReminderSevenSentAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("reminder_seven_sent_at");
+
+                    b.Property<DateTime?>("ReminderThreeSentAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("reminder_three_sent_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<int?>("VaccineBatchId")
+                        .HasColumnType("integer")
+                        .HasColumnName("vaccine_batch_id");
+
+                    b.Property<int>("VaccineId")
+                        .HasColumnType("integer")
+                        .HasColumnName("vaccine_id");
+
+                    b.Property<decimal?>("WeightAtApplication")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("weight_at_application");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "ConsultaId" }, "consulta_id")
+                        .HasDatabaseName("consulta_id1");
+
+                    b.HasIndex(new[] { "DetalleFacturaId" }, "detalle_factura_id");
+
+                    b.HasIndex(new[] { "DoctorId" }, "doctor_id")
+                        .HasDatabaseName("doctor_id1");
+
+                    b.HasIndex(new[] { "MascotaId" }, "idx_pet_vaccination_mascota");
+
+                    b.HasIndex(new[] { "NextDoseDate" }, "idx_pet_vaccination_next_dose");
+
+                    b.HasIndex(new[] { "VaccineBatchId" }, "vaccine_batch_id");
+
+                    b.HasIndex(new[] { "VaccineId" }, "vaccine_id");
+
+                    b.ToTable("pet_vaccinations", (string)null);
+                });
+
             modelBuilder.Entity("vet_api_Net.Models.Producto", b =>
                 {
                     b.Property<int>("Id")
@@ -1208,31 +1281,6 @@ namespace vet_api_Net.Migrations
                     b.HasIndex(new[] { "Stock" }, "idx_stock");
 
                     b.ToTable("productos", (string)null);
-                });
-
-            modelBuilder.Entity("vet_api_Net.Models.ReporConfig", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Days")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("GenerateEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ReporConfigs");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.Reporte", b =>
@@ -1427,7 +1475,7 @@ namespace vet_api_Net.Migrations
                     b.ToTable("usuarios", (string)null);
                 });
 
-            modelBuilder.Entity("vet_api_Net.Models.Vacuna", b =>
+            modelBuilder.Entity("vet_api_Net.Models.Vaccine", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1436,59 +1484,152 @@ namespace vet_api_Net.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ConsultaId")
-                        .HasColumnType("integer")
-                        .HasColumnName("consulta_id");
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean")
+                        .HasColumnName("active");
 
-                    b.Property<DateTime>("Creado")
+                    b.Property<string>("BoosterFrequencyUnit")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("booster_frequency_unit");
+
+                    b.Property<int>("BoosterFrequencyValue")
+                        .HasColumnType("integer")
+                        .HasColumnName("booster_frequency_value");
+
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone")
-                        .HasColumnName("creado");
+                        .HasColumnName("created_at");
 
-                    b.Property<int?>("DoctorId")
-                        .HasColumnType("integer")
-                        .HasColumnName("doctor_id");
-
-                    b.Property<DateOnly>("FechaVacunacion")
-                        .HasColumnType("date")
-                        .HasColumnName("fecha_vacunacion");
-
-                    b.Property<string>("Lote")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("lote");
-
-                    b.Property<int>("MascotaId")
-                        .HasColumnType("integer")
-                        .HasColumnName("mascota_id");
-
-                    b.Property<string>("Nota")
+                    b.Property<string>("Description")
                         .HasColumnType("text")
-                        .HasColumnName("nota");
+                        .HasColumnName("description");
 
-                    b.Property<int>("ProductoId")
+                    b.Property<int>("MinimumAgeWeeks")
+                        .HasColumnType("integer")
+                        .HasColumnName("minimum_age_weeks");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("name");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("price");
+
+                    b.Property<int?>("ProductoId")
                         .HasColumnType("integer")
                         .HasColumnName("producto_id");
 
-                    b.Property<DateOnly?>("ProximaDosis")
-                        .HasColumnType("date")
-                        .HasColumnName("proxima_dosis");
+                    b.Property<string>("Species")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("species");
 
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "ConsultaId" }, "consulta_id")
-                        .HasDatabaseName("consulta_id1");
+                    b.HasIndex(new[] { "ProductoId" }, "idx_vaccine_producto");
 
-                    b.HasIndex(new[] { "DoctorId" }, "doctor_id")
-                        .HasDatabaseName("doctor_id1");
+                    b.ToTable("vaccines", (string)null);
+                });
 
-                    b.HasIndex(new[] { "FechaVacunacion" }, "idx_fecha_vacuna");
+            modelBuilder.Entity("vet_api_Net.Models.VaccineBatch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
-                    b.HasIndex(new[] { "MascotaId" }, "idx_mascota_vacuna");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.HasIndex(new[] { "ProductoId" }, "producto_id")
-                        .HasDatabaseName("producto_id2");
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean")
+                        .HasColumnName("active");
 
-                    b.ToTable("vacunas", (string)null);
+                    b.Property<string>("BatchNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("batch_number");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateOnly>("ExpirationDate")
+                        .HasColumnType("date")
+                        .HasColumnName("expiration_date");
+
+                    b.Property<string>("Laboratory")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("laboratory");
+
+                    b.Property<int>("QuantityInStock")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity_in_stock");
+
+                    b.Property<DateOnly>("ReceivedDate")
+                        .HasColumnType("date")
+                        .HasColumnName("received_date");
+
+                    b.Property<int>("VaccineId")
+                        .HasColumnType("integer")
+                        .HasColumnName("vaccine_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "VaccineId", "ExpirationDate" }, "idx_batch_vaccine_expiration");
+
+                    b.ToTable("vaccine_batches", (string)null);
+                });
+
+            modelBuilder.Entity("vet_api_Net.Models.VaccineSchemeStage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("DoseNumber")
+                        .HasColumnType("integer")
+                        .HasColumnName("dose_number");
+
+                    b.Property<int>("IntervalDaysFromPrevious")
+                        .HasColumnType("integer")
+                        .HasColumnName("interval_days_from_previous");
+
+                    b.Property<int?>("MinimumAgeWeeksOverride")
+                        .HasColumnType("integer")
+                        .HasColumnName("minimum_age_weeks_override");
+
+                    b.Property<string>("StageType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("stage_type");
+
+                    b.Property<int>("VaccineId")
+                        .HasColumnType("integer")
+                        .HasColumnName("vaccine_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "VaccineId" }, "idx_scheme_stage_vaccine");
+
+                    b.ToTable("vaccine_scheme_stages", (string)null);
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.WSMessageAPIData", b =>
@@ -1508,6 +1649,60 @@ namespace vet_api_Net.Migrations
                     b.HasKey("ClientId");
 
                     b.ToTable("WSMessageAPIData");
+                });
+
+            modelBuilder.Entity("vet_api_Net.Models.WorkerConfig", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool?>("GenerateEnabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("generate_enabled");
+
+                    b.Property<string>("IntervalUnit")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("interval_unit");
+
+                    b.Property<int>("IntervalValue")
+                        .HasColumnType("integer")
+                        .HasColumnName("interval_value");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_enabled");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("last_updated");
+
+                    b.Property<string>("RetentionUnit")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("retention_unit");
+
+                    b.Property<int?>("RetentionValue")
+                        .HasColumnType("integer")
+                        .HasColumnName("retention_value");
+
+                    b.Property<string>("WorkerName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("worker_name");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "WorkerName" }, "idx_worker_configs_worker_name")
+                        .IsUnique();
+
+                    b.ToTable("worker_configs", (string)null);
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.AlertasInterna", b =>
@@ -1801,6 +1996,59 @@ namespace vet_api_Net.Migrations
                     b.Navigation("Usuario");
                 });
 
+            modelBuilder.Entity("vet_api_Net.Models.PetVaccination", b =>
+                {
+                    b.HasOne("vet_api_Net.Models.Consulta", "Consulta")
+                        .WithMany("PetVaccinations")
+                        .HasForeignKey("ConsultaId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("pet_vaccinations_ibfk_4");
+
+                    b.HasOne("vet_api_Net.Models.DetallesFactura", "DetalleFactura")
+                        .WithMany()
+                        .HasForeignKey("DetalleFacturaId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("pet_vaccinations_ibfk_6");
+
+                    b.HasOne("vet_api_Net.Models.Usuario", "Doctor")
+                        .WithMany("PetVaccinations")
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("pet_vaccinations_ibfk_5");
+
+                    b.HasOne("vet_api_Net.Models.Mascota", "Mascota")
+                        .WithMany("PetVaccinations")
+                        .HasForeignKey("MascotaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("pet_vaccinations_ibfk_1");
+
+                    b.HasOne("vet_api_Net.Models.VaccineBatch", "VaccineBatch")
+                        .WithMany("PetVaccinations")
+                        .HasForeignKey("VaccineBatchId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("pet_vaccinations_ibfk_3");
+
+                    b.HasOne("vet_api_Net.Models.Vaccine", "Vaccine")
+                        .WithMany("PetVaccinations")
+                        .HasForeignKey("VaccineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("pet_vaccinations_ibfk_2");
+
+                    b.Navigation("Consulta");
+
+                    b.Navigation("DetalleFactura");
+
+                    b.Navigation("Doctor");
+
+                    b.Navigation("Mascota");
+
+                    b.Navigation("Vaccine");
+
+                    b.Navigation("VaccineBatch");
+                });
+
             modelBuilder.Entity("vet_api_Net.Models.Producto", b =>
                 {
                     b.HasOne("vet_api_Net.Models.CategoriasProducto", "Categoria")
@@ -1824,41 +2072,39 @@ namespace vet_api_Net.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("vet_api_Net.Models.Vacuna", b =>
+            modelBuilder.Entity("vet_api_Net.Models.Vaccine", b =>
                 {
-                    b.HasOne("vet_api_Net.Models.Consulta", "Consulta")
-                        .WithMany("Vacunas")
-                        .HasForeignKey("ConsultaId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("vacunas_ibfk_3");
-
-                    b.HasOne("vet_api_Net.Models.Usuario", "Doctor")
-                        .WithMany("Vacunas")
-                        .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("vacunas_ibfk_4");
-
-                    b.HasOne("vet_api_Net.Models.Mascota", "Mascota")
-                        .WithMany("Vacunas")
-                        .HasForeignKey("MascotaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("vacunas_ibfk_1");
-
                     b.HasOne("vet_api_Net.Models.Producto", "Producto")
-                        .WithMany("Vacunas")
+                        .WithMany("Vaccines")
                         .HasForeignKey("ProductoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("vacunas_ibfk_2");
-
-                    b.Navigation("Consulta");
-
-                    b.Navigation("Doctor");
-
-                    b.Navigation("Mascota");
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("vaccines_ibfk_1");
 
                     b.Navigation("Producto");
+                });
+
+            modelBuilder.Entity("vet_api_Net.Models.VaccineBatch", b =>
+                {
+                    b.HasOne("vet_api_Net.Models.Vaccine", "Vaccine")
+                        .WithMany("Batches")
+                        .HasForeignKey("VaccineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("vaccine_batches_ibfk_1");
+
+                    b.Navigation("Vaccine");
+                });
+
+            modelBuilder.Entity("vet_api_Net.Models.VaccineSchemeStage", b =>
+                {
+                    b.HasOne("vet_api_Net.Models.Vaccine", "Vaccine")
+                        .WithMany("SchemeStages")
+                        .HasForeignKey("VaccineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("vaccine_scheme_stages_ibfk_1");
+
+                    b.Navigation("Vaccine");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.CategoriasProducto", b =>
@@ -1884,7 +2130,7 @@ namespace vet_api_Net.Migrations
 
                     b.Navigation("Facturas");
 
-                    b.Navigation("Vacunas");
+                    b.Navigation("PetVaccinations");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.ConsultasProducto", b =>
@@ -1907,7 +2153,7 @@ namespace vet_api_Net.Migrations
 
                     b.Navigation("HistoriasClinicas");
 
-                    b.Navigation("Vacunas");
+                    b.Navigation("PetVaccinations");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.MetodoPago", b =>
@@ -1925,7 +2171,7 @@ namespace vet_api_Net.Migrations
 
                     b.Navigation("MovimientosInventarios");
 
-                    b.Navigation("Vacunas");
+                    b.Navigation("Vaccines");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.Usuario", b =>
@@ -1956,9 +2202,23 @@ namespace vet_api_Net.Migrations
 
                     b.Navigation("PasswordResetTickets");
 
-                    b.Navigation("UserPermission");
+                    b.Navigation("PetVaccinations");
 
-                    b.Navigation("Vacunas");
+                    b.Navigation("UserPermission");
+                });
+
+            modelBuilder.Entity("vet_api_Net.Models.Vaccine", b =>
+                {
+                    b.Navigation("Batches");
+
+                    b.Navigation("PetVaccinations");
+
+                    b.Navigation("SchemeStages");
+                });
+
+            modelBuilder.Entity("vet_api_Net.Models.VaccineBatch", b =>
+                {
+                    b.Navigation("PetVaccinations");
                 });
 #pragma warning restore 612, 618
         }

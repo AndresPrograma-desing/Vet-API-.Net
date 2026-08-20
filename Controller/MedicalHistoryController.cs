@@ -41,6 +41,10 @@ public class MedicalHistoryController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
+        catch (InvalidOperationException ex)
+        {
+            return StatusCode(503, new { error = ex.Message });
+        }
         catch (Exception ex)
         {
             return StatusCode(500, new { error = ex.Message });
@@ -92,6 +96,10 @@ public class MedicalHistoryController : ControllerBase
         catch (ArgumentException ex)
         {
             return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return StatusCode(503, new { error = ex.Message });
         }
         catch (Exception ex)
         {

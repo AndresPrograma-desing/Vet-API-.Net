@@ -268,6 +268,9 @@ public static class DependencyInjection
         services.AddScoped<ICalendarRepository, CalendarRepository>();
         services.AddScoped<ILogsSistemaRepository, LogsSistemaRepository>();
         services.AddScoped<IUserPermissionRepository, UserPermissionRepository>();
+        services.AddScoped<IVaccineRepository, VaccineRepository>();
+        services.AddScoped<IPetVaccinationRepository, PetVaccinationRepository>();
+        services.AddScoped<IWorkerConfigRepository, WorkerConfigRepository>();
 
         // Servicios de la Aplicación
         services.AddScoped<IUserService, UserService>();
@@ -302,6 +305,9 @@ public static class DependencyInjection
         services.AddScoped<IIaConocimientoService, IaConocimientoService>();
         services.AddScoped<ICalendarService, CalendarService>();
         services.AddScoped<ISystemLogService, SystemLogService>();
+        services.AddScoped<IVaccineService, VaccineService>();
+        services.AddScoped<IPetVaccinationService, PetVaccinationService>();
+        services.AddScoped<IWorkerConfigService, WorkerConfigService>();
         services.AddHttpClient<IEmailSenderService, vet_api_Net.HttpServices.ResendEmailService>()
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {
@@ -316,6 +322,7 @@ public static class DependencyInjection
         services.AddScoped<IConsultaPdfUtilities, ConsultaPdfUtilities>();
         services.AddScoped<IImageConversionUtilities, ImageConversionUtilities>();
         services.AddHttpClient<IProfilePdfUtilities, ProfilePdfUtilities>();
+        services.AddScoped<IVaccinationCertificatePdfUtilities, VacunaCertifyPdfUtilities>();
         services.AddScoped<IUserScopeResolver, UserScopeResolver>();
 
         // Seguridad de datos
@@ -328,6 +335,7 @@ public static class DependencyInjection
         services.AddHostedService<AutoGenerateReportWorker>();
         services.AddHostedService<BcvWorker>();
         services.AddHostedService<ClearNotificationsWorker>();
+        services.AddHostedService<VaccinationReminderWorker>();
 
         // Clientes HTTP Externos (BCV)
         services.AddHttpClient("BcvClient", client =>

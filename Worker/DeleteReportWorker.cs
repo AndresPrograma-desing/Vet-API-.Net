@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
+using vet_api_Net.Constants;
 using vet_api_Net.WorkerSettings;
 
 namespace vet_api_Net.Worker
@@ -105,13 +106,13 @@ namespace vet_api_Net.Worker
                     {
                         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                         
-                        var dbSetting = await db.ReporConfigs.FirstOrDefaultAsync(stoppingToken);
+                        var dbSetting = await db.WorkerConfigs.FirstOrDefaultAsync(w => w.WorkerName == WorkerNames.DeleteReportWorker, stoppingToken);
 
                         DateTime deadline;
 
                         if (dbSetting != null && !dbSetting.IsEnabled)
                         {
-                            int diasRetencion = dbSetting.Days > 0 ? dbSetting.Days : 30;
+                            int diasRetencion = dbSetting.RetentionValue > 0 ? dbSetting.RetentionValue!.Value : 30;
                             deadline = DateTime.UtcNow.AddMinutes(-diasRetencion);
                         }
                         else

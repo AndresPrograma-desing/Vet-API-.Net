@@ -43,7 +43,7 @@ public class NowGrodController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { error = ex.Message });
+            return StatusCode(503, new { error = ex.Message });
         }
         catch (Exception ex)
         {
@@ -62,7 +62,7 @@ public class NowGrodController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new { error = ex.Message });
+            return StatusCode(503, new { error = ex.Message });
         }
         catch (Exception ex)
         {

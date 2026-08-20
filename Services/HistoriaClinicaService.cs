@@ -34,7 +34,7 @@ public class HistoriaClinicaService : IHistoriaClinicaService
         var allHcs = await _repository.GetAllByMascotaIdAsync(mascotaId);
         var hc = allHcs.FirstOrDefault();
         var consultas = await _repository.GetConsultasByMascotaIdAsync(mascotaId);
-        var vacunas = await _repository.GetVacunasByMascotaIdAsync(mascotaId);
+        var vacunas = await _repository.GetPetVaccinationsByMascotaIdAsync(mascotaId);
 
         if (hc == null)
         {
@@ -95,7 +95,7 @@ public class HistoriaClinicaService : IHistoriaClinicaService
         await _repository.SaveChangesAsync();
 
         var consultas = await _repository.GetConsultasByMascotaIdAsync(hc.MascotaId);
-        var vacunas = await _repository.GetVacunasByMascotaIdAsync(hc.MascotaId);
+        var vacunas = await _repository.GetPetVaccinationsByMascotaIdAsync(hc.MascotaId);
         var allHcs = await _repository.GetAllByMascotaIdAsync(hc.MascotaId);
         var versionesAnteriores = allHcs.Where(h => h.Id != hc.Id).ToList();
 
@@ -114,13 +114,13 @@ public class HistoriaClinicaService : IHistoriaClinicaService
         var latestHc = allHcs.FirstOrDefault();
 
         var consultas = await _repository.GetConsultasByMascotaIdAsync(mascotaId);
-        var vacunas = await _repository.GetVacunasByMascotaIdAsync(mascotaId);
+        var vacunas = await _repository.GetPetVaccinationsByMascotaIdAsync(mascotaId);
 
         // Validar si hay nuevos datos clínicos creados después de la fecha del último análisis
         bool hasNewData = latestHc == null || 
                           latestHc.UltimoAnalisisIa == null ||
                           consultas.Any(c => c.FechaConsulta > latestHc.UltimoAnalisisIa.Value) ||
-                          vacunas.Any(v => v.FechaVacunacion > DateOnly.FromDateTime(latestHc.UltimoAnalisisIa.Value));
+                          vacunas.Any(v => v.ApplicationDate > DateOnly.FromDateTime(latestHc.UltimoAnalisisIa.Value));
 
         if (hasNewData)
         {
@@ -155,7 +155,7 @@ public class HistoriaClinicaService : IHistoriaClinicaService
         return MapToResponse(latestHc!, mascota, consultas, vacunas, versionesAnteriores);
     }
 
-    private HistoriaClinicaResponseDTO MapToResponse(HistoriaClinica hc, Mascota mascota, List<Consulta> consultas, List<Vacuna> vacunas, List<HistoriaClinica> versionesAnteriores)
+    private HistoriaClinicaResponseDTO MapToResponse(HistoriaClinica hc, Mascota mascota, List<Consulta> consultas, List<PetVaccination> vacunas, List<HistoriaClinica> versionesAnteriores)
     {
         return new HistoriaClinicaResponseDTO
         {
@@ -193,12 +193,12 @@ public class HistoriaClinicaService : IHistoriaClinicaService
             Vacunas = vacunas.Select(v => new HistoriaClinicaVacunaDTO
             {
                 Id = v.Id,
-                NombreVacuna = v.Producto != null ? v.Producto.Nombre : "Vacuna",
-                FechaVacunacion = v.FechaVacunacion,
-                ProximaDosis = v.ProximaDosis,
-                Lote = v.Lote,
+                NombreVacuna = v.Vaccine != null ? v.Vaccine.Name : "Vacuna",
+                FechaVacunacion = v.ApplicationDate,
+                ProximaDosis = v.NextDoseDate,
+                Lote = v.VaccineBatch?.BatchNumber,
                 DoctorNombre = v.Doctor != null ? $"{v.Doctor.Nombre} {v.Doctor.Apellido}" : "Veterinario",
-                Nota = v.Nota
+                Nota = v.ClinicalObservations
             }).ToList(),
             VersionesAnteriores = versionesAnteriores.Select(v => new HistoriaClinicaVersionDTO
             {

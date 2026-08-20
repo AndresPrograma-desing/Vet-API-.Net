@@ -28,8 +28,8 @@ public class UsersRepository : IUsersRepository
         var cleanRol = rol.Trim().ToLower();
 
         return await _context.Usuarios
-            .FirstOrDefaultAsync(u => u.Email.ToLower() == cleanEmail 
-                                   && u.Rol != null 
+            .FirstOrDefaultAsync(u => u.Email.ToLower() == cleanEmail
+                                   && u.Rol != null
                                    && u.Rol.ToLower() == cleanRol);
     }
 
@@ -53,7 +53,7 @@ public class UsersRepository : IUsersRepository
         var cleanApellido = apellido.Trim().ToLower();
 
         return await _context.Usuarios
-            .FirstOrDefaultAsync(u => u.Nombre.ToLower() == cleanNombre 
+            .FirstOrDefaultAsync(u => u.Nombre.ToLower() == cleanNombre
                                    && u.Apellido.ToLower() == cleanApellido);
     }
 
@@ -210,7 +210,9 @@ public class UsersRepository : IUsersRepository
     {
         var rolesList = await _context.Usuarios
             .AsNoTracking()
-            .Where(u => u.Rol != null && u.Rol.Trim() != "")
+            .Where(u => u.Rol != null
+                     && u.Rol.Trim() != ""
+                     && u.Rol.ToLower() != "assistant")
             .Select(u => u.Rol!)
             .Distinct()
             .ToListAsync();

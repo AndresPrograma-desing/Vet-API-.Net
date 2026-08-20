@@ -402,9 +402,9 @@ public class InvoiceService : IInvoiceService
 
         return new FacturaSettingDTO
         {
-            Days = fc.Days,
+            Days = fc.RetentionValue ?? 30,
             IsEnabled = fc.IsEnabled,
-            GenerateEnabled = fc.GenerateEnabled,
+            GenerateEnabled = fc.GenerateEnabled ?? false,
             LastUpdated = fc.LastUpdated
         };
     }

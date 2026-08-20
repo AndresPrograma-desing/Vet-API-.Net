@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using vet_api_Net.Constants;
 using vet_api_Net.Data;
 using vet_api_Net.Models;
 using vet_api_Net.Interfaze.Repositories;
@@ -101,9 +102,11 @@ public class FacturasRepository : IFacturasRepository
             .ToListAsync();
     }
 
-    public async Task<FacturaConfig?> GetFirstFacturaConfigAsync()
+    public async Task<WorkerConfig?> GetFirstFacturaConfigAsync()
     {
-        return await _db.FacturaConfigs.AsNoTracking().FirstOrDefaultAsync();
+        return await _db.WorkerConfigs
+            .AsNoTracking()
+            .FirstOrDefaultAsync(w => w.WorkerName == WorkerNames.DeleteFacturaWorker);
     }
 
     public async Task<Cita?> GetCitaByIdAsync(int citaId)
