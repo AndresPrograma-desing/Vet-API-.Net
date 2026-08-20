@@ -23,6 +23,11 @@ EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 
+# Desactiva el FileSystemWatcher de appsettings*.json: no hace falta hot-reload
+# en un contenedor, y en instancias con pocos recursos (ej. Render free tier)
+# agota el limite de inotify del sistema y tumba el arranque.
+ENV DOTNET_hostBuilder__reloadConfigOnChange=false
+
 # Instalar fontconfig y fuentes del sistema (CRÍTICO para que QuestPDF genere reportes en Linux sin fallos)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     fontconfig \
