@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -12,10 +13,12 @@ using DTOs;
 public class ProfileController : ControllerBase
 {
     private readonly ISupabaseService _storageService;
+    private readonly ILogger<ProfileController> _logger;
 
-    public ProfileController(ISupabaseService storageService)
+    public ProfileController(ISupabaseService storageService, ILogger<ProfileController> logger)
     {
         _storageService = storageService;
+        _logger = logger;
     }
 
     [HttpPost("update-profile")]
@@ -43,14 +46,15 @@ public class ProfileController : ControllerBase
                 }
             }
 
-            Console.WriteLine($"[ProfileController] update-profile targetUserId={targetUserId} avatarRecibido={(dto.Avatar != null ? $"{dto.Avatar.FileName} ({dto.Avatar.Length} bytes)" : "null")}");
+            _logger.LogDebug("update-profile targetUserId={TargetUserId} avatarRecibido={Avatar}",
+                targetUserId, dto.Avatar != null ? $"{dto.Avatar.FileName} ({dto.Avatar.Length} bytes)" : "null");
 
             string? avatarUrl = null;
 
             if (dto.Avatar != null)
             {
                 avatarUrl = await _storageService.UploadAvatarAsync(dto.Avatar, targetUserId);
-                Console.WriteLine($"[ProfileController] avatarUrl guardado para targetUserId={targetUserId}: {avatarUrl}");
+                _logger.LogDebug("avatarUrl guardado para targetUserId={TargetUserId}: {AvatarUrl}", targetUserId, avatarUrl);
             }
 
             return Ok(new

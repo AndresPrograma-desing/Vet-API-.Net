@@ -62,7 +62,7 @@ using (var scope = app.Services.CreateScope())
 
 app.Use(async (context, next) =>
 {
-    Console.WriteLine($"[req] {context.Request.Method} {context.Request.Path}");
+    app.Logger.LogDebug("{Method} {Path}", context.Request.Method, context.Request.Path);
     await next();
 });
 
