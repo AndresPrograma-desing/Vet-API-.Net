@@ -210,7 +210,7 @@ public class CitasController : ControllerBase
     }
 
     [HttpGet(Endpoints.Citas.PortalByCliente)]
-    [AllowAnonymous]
+    [Authorize(Roles = $"{Roles.Admin},{Roles.Doctor},{Roles.Secretaria}")]
     public async Task<ActionResult<List<PortalCitaDTO>>> GetCitasByCliente([FromRoute] int clienteId)
     {
         try

@@ -22,6 +22,7 @@ public class NowGrodController : ControllerBase
     }
 
     [HttpPost(Endpoints.NowGrod.Consultar)]
+    [AllowAnonymous]
     public async Task<ActionResult<GroqChatResponseDTO>> Consultar([FromBody] GroqChatRequestDTO dto)
     {
         try

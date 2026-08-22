@@ -174,7 +174,17 @@ public class UserService : IUserService
         return user;
     }
 
-    public async Task<Usuario?> DisableUserAsync(int id) => await UpdateUserStatusAsync(id, false);
+    public async Task<Usuario?> DisableUserAsync(int id)
+    {
+        var user = await _userRepository.GetByIdAsync(id);
+        if (user == null) return null;
+        if (string.Equals(user.Rol, Roles.Admin, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(ResponseMessagesUsers.CannotDeleteAdmin);
+        }
+        return await UpdateUserStatusAsync(id, false);
+    }
+
     public async Task<Usuario?> EnableUserAsync(int id) => await UpdateUserStatusAsync(id, true);
 
     public async Task<Usuario?> DeleteUserAsync(int id)
@@ -182,7 +192,7 @@ public class UserService : IUserService
         var user = await _userRepository.GetByIdAsync(id);
         if (user == null) return null;
 
-        if (string.Equals(user.Rol, "admin", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(user.Rol, Roles.Admin, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException(ResponseMessagesUsers.CannotDeleteAdmin);
         }
