@@ -29,6 +29,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost(Endpoints.Auth.Login)]
+    [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         try
@@ -152,6 +153,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost(Endpoints.Auth.TempToken)]
+    [AllowAnonymous]
     public IActionResult GetTempToken([FromBody] TempTokenRequest request, [FromServices] Microsoft.AspNetCore.Hosting.IWebHostEnvironment env)
     {
         if (!env.IsDevelopment())
