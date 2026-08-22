@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using vet_api_Net.Constants;
 using vet_api_Net.DTOs;
 using vet_api_Net.Infrastructure.Configuration;
@@ -30,6 +31,7 @@ public class AuthController : ControllerBase
 
     [HttpPost(Endpoints.Auth.Login)]
     [AllowAnonymous]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         try
