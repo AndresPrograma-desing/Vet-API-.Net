@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.DTOs;
 using vet_api_Net.Constants;
@@ -12,6 +13,7 @@ namespace vet_api_Net.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [AllowAnonymous]
+[EnableRateLimiting("auth")]
 public class PasswordRecoveryController : ControllerBase
 {
     private readonly IPasswordRecoveryService _passwordRecoveryService;

@@ -77,6 +77,8 @@ if (app.Environment.IsDevelopment())
 app.UseCors("HappyPetsPolicy");
 app.UseStaticFiles();
 
+app.UseRateLimiter();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

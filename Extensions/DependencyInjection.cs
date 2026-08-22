@@ -4,8 +4,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -194,13 +196,48 @@ public static class DependencyInjection
                 };
             });
 
-        //  Autorización: por defecto se exige usuario autenticado en toda la API,
-        //  salvo endpoints marcados explícitamente con [AllowAnonymous]
         services.AddAuthorization(options =>
         {
             options.FallbackPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .Build();
+        });
+
+        var rateLimitingOptions = configuration.GetSection(RateLimitingOptions.SectionName).Get<RateLimitingOptions>()
+            ?? new RateLimitingOptions();
+
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+            {
+                var path = httpContext.Request.Path.Value ?? string.Empty;
+                if (path.StartsWith("/health", StringComparison.OrdinalIgnoreCase) ||
+                    path.StartsWith("/hubs/", StringComparison.OrdinalIgnoreCase))
+                {
+                    return RateLimitPartition.GetNoLimiter("exempt");
+                }
+
+                var partitionKey = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = rateLimitingOptions.GlobalPermitLimit,
+                    Window = TimeSpan.FromSeconds(rateLimitingOptions.GlobalWindowSeconds),
+                    QueueLimit = 0
+                });
+            });
+
+            options.AddPolicy("auth", httpContext =>
+            {
+                var partitionKey = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = rateLimitingOptions.AuthPermitLimit,
+                    Window = TimeSpan.FromSeconds(rateLimitingOptions.AuthWindowSeconds),
+                    QueueLimit = 0
+                });
+            });
         });
 
         // (El chequeo de DB y la cadena de conexión se han movido arriba de CORS)
@@ -361,6 +398,7 @@ public static class DependencyInjection
         services.Configure<TokenTemporalOptions>(configuration.GetSection(TokenTemporalOptions.SectionName));
         services.Configure<TemplatesHTML>(configuration.GetSection(TemplatesHTML.SectionName));
         services.Configure<SecurityOptions>(configuration.GetSection(SecurityOptions.SectionName));
+        services.Configure<RateLimitingOptions>(configuration.GetSection(RateLimitingOptions.SectionName));
 
         return services;
     }
