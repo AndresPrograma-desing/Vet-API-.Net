@@ -1,8 +1,8 @@
 using System;
 
 /*
- describe: 
- - Este archivo es para configurar los mensajes de respuesta del sistema, 
+ describe:
+ - Este archivo es para configurar los mensajes de respuesta del sistema,
    Organiza los strings de las respuestas en clases para su facil orden y escalabilidad
 */
 
@@ -21,6 +21,119 @@ namespace vet_api_Net.Constants
         public const string Admin = "admin";
         public const string Secretaria = "secretaria";
         public const string Doctor = "doctor";
+    }
+    public static class ResponseMessagesDtos
+    {
+        public static class Cliente
+        {
+            public const string NombreRequired = "El nombre es requerido.";
+            public const string NombreMaxLength = "El nombre no puede exceder los 100 caracteres.";
+            public const string ApellidoRequired = "El apellido es requerido.";
+            public const string ApellidoMaxLength = "El apellido no puede exceder los 100 caracteres.";
+            public const string EmailRequired = "El correo electrónico es requerido.";
+            public const string InvalidEmailFormat = "El correo electrónico no tiene un formato válido.";
+            public const string TelefonoMaxLength = "El teléfono no puede exceder los 20 caracteres.";
+            public const string DireccionMaxLength = "La dirección no puede exceder los 300 caracteres.";
+            public const string IdentificacionMaxLength = "La identificación no puede exceder los 20 caracteres.";
+            public const string NotaMaxLength = "La nota no puede exceder los 500 caracteres.";
+        }
+        public static class Mascota
+        {
+            public const string NombreRequired = "El nombre de la mascota es requerido.";
+            public const string NombreMaxLength = "El nombre no puede exceder los 100 caracteres.";
+            public const string EspecieRequired = "La especie es requerida.";
+            public const string EspecieMaxLength = "La especie no puede exceder los 50 caracteres.";
+            public const string RazaMaxLength = "La raza no puede exceder los 50 caracteres.";
+            public const string ColorMaxLength = "El color no puede exceder los 50 caracteres.";
+            public const string SexoRequired = "El sexo es requerido.";
+            public const string SexoMaxLength = "El sexo no puede exceder los 20 caracteres.";
+            public const string FechaNacimientoMaxLength = "La fecha de nacimiento no puede exceder los 20 caracteres.";
+            public const string PesoNoNegativo = "El peso no puede ser negativo.";
+            public const string IdentificacionMaxLength = "La identificación de la mascota no puede exceder los 50 caracteres.";
+            public const string AlergiasMaxLength = "Las alergias no pueden exceder los 500 caracteres.";
+            public const string CondicionesMedicasMaxLength = "Las condiciones médicas no pueden exceder los 500 caracteres.";
+        }
+        public static class Producto
+        {
+            public const string CodigoRequired = "El código del producto es requerido.";
+            public const string CodigoMaxLength = "El código no puede exceder los 50 caracteres.";
+            public const string NombreMaxLength = "El nombre no puede exceder los 200 caracteres.";
+            public const string DescripcionMaxLength = "La descripción no puede exceder los 500 caracteres.";
+            public const string CategoriaIdInvalid = "La categoria_id debe ser un identificador válido.";
+            public const string TipoRequired = "El tipo de producto es requerido.";
+            public const string TipoMaxLength = "El tipo no puede exceder los 50 caracteres.";
+            public const string StockNoNegativo = "El stock no puede ser negativo.";
+            public const string StockMinimoNoNegativo = "El stock mínimo no puede ser negativo.";
+            public const string UnidadMedidaMaxLength = "La unidad de medida no puede exceder los 50 caracteres.";
+            public const string ProveedorMaxLength = "El proveedor no puede exceder los 200 caracteres.";
+        }
+        public static class Consulta
+        {
+            public const string CitaIdInvalid = "El cita_id debe ser un identificador válido.";
+            public const string MascotaIdInvalid = "El mascota_id debe ser un identificador válido.";
+            public const string DoctorIdInvalid = "El doctor_id debe ser un identificador válido.";
+            public const string PesoActualNoNegativo = "El peso actual no puede ser negativo.";
+            public const string SintomasRequired = "Los síntomas son requeridos.";
+            public const string SintomasMaxLength = "Los síntomas no pueden exceder los 1000 caracteres.";
+            public const string DiagnosticoMaxLength = "El diagnóstico no puede exceder los 1000 caracteres.";
+            public const string TratamientoMaxLength = "El tratamiento no puede exceder los 1000 caracteres.";
+            public const string RecetaMaxLength = "La receta no puede exceder los 1000 caracteres.";
+            public const string ObservacionesMaxLength = "Las observaciones no pueden exceder los 1000 caracteres.";
+            public const string ConsultaPriceNoNegativo = "El precio de la consulta no puede ser negativo.";
+        }
+        public static class ConsultaProducto
+        {
+            public const string ProductoIdInvalid = "El producto_id debe ser un identificador válido.";
+            public const string CantidadPositiva = "La cantidad debe ser mayor a cero.";
+            public const string PrecioUnitarioNoNegativo = "El precio unitario no puede ser negativo.";
+            public const string DosisMaxLength = "La dosis no puede exceder los 100 caracteres.";
+            public const string ViaAdministracionMaxLength = "La vía de administración no puede exceder los 100 caracteres.";
+            public const string FrecuenciaMaxLength = "La frecuencia no puede exceder los 100 caracteres.";
+            public const string DuracionMaxLength = "La duración no puede exceder los 100 caracteres.";
+            public const string InstruccionesMaxLength = "Las instrucciones no pueden exceder los 500 caracteres.";
+            public const string AplicadoPorInvalid = "El aplicado_por debe ser un identificador válido.";
+        }
+        public static class Usuario
+        {
+            public const string InvalidEmailFormat = "El correo electrónico no tiene un formato válido.";
+            public const string RolRequired = "El rol es requerido.";
+            public const string RolMaxLength = "El rol no puede exceder los 20 caracteres.";
+            public const string TelefonoMaxLength = "El teléfono no puede exceder los 20 caracteres.";
+            public const string NombreMaxLength = "El nombre no puede exceder los 100 caracteres.";
+            public const string ApellidoMaxLength = "El apellido no puede exceder los 100 caracteres.";
+        }
+        public static class Cita
+        {
+            public const string SecretariaIdInvalid = "secretaria_id inválido";
+            public const string RequiredMotivo = "El motivo de la cita es requerido.";
+            public const string MotivoMaxLength = "El motivo no puede exceder los 500 caracteres.";
+            public const string TipoCitaMaxLength = "El tipo de cita no puede exceder los 50 caracteres.";
+            public const string EstadoMaxLength = "El estado no puede exceder los 50 caracteres.";
+            public const string NotasMaxLength = "Las notas no pueden exceder los 1000 caracteres.";
+            public const string MetodoPagoMaxLength = "El método de pago no puede exceder los 50 caracteres.";
+            public const string EstadoRequired = "El estado es requerido.";
+        }
+        public static class Factura
+        {
+            public const string NumeroFacturaRequired = "El número de factura es requerido.";
+            public const string NumeroFacturaMaxLength = "El número de factura no puede exceder los 50 caracteres.";
+            public const string ClienteIdInvalid = "El cliente_id debe ser un identificador válido.";
+            public const string MascotaIdInvalid = "El mascota_id debe ser un identificador válido.";
+            public const string DoctorIdInvalid = "El doctor_id debe ser un identificador válido.";
+            public const string ProductoIdInvalid = "El producto_id debe ser un identificador válido.";
+            public const string ItemsRequired = "La factura debe tener al menos un ítem.";
+            public const string MontoNoNegativo = "El monto no puede ser negativo.";
+            public const string CantidadPositiva = "La cantidad debe ser mayor a cero.";
+            public const string MetodoPagoRequired = "El método de pago es requerido.";
+            public const string MetodoPagoMaxLength = "El método de pago no puede exceder los 50 caracteres.";
+            public const string EstadoPagoMaxLength = "El estado de pago no puede exceder los 50 caracteres.";
+            public const string NotasMaxLength = "Las notas no pueden exceder los 1000 caracteres.";
+            public const string CodigoRequired = "El código del producto es requerido.";
+            public const string CodigoMaxLength = "El código no puede exceder los 50 caracteres.";
+            public const string ItemNombreRequired = "El nombre del producto es requerido.";
+            public const string ItemNombreMaxLength = "El nombre no puede exceder los 200 caracteres.";
+            public const string ItemDescripcionMaxLength = "La descripción no puede exceder los 500 caracteres.";
+        }
     }
     public static class ResponseMessagesLogin
     {
@@ -587,7 +700,7 @@ namespace vet_api_Net.Constants
         public static readonly string[] AllowedContentTypes = { "image/jpeg", "image/png", "image/webp", "image/gif" };
         public const long MaxFileSizeBytes = 5 * 1024 * 1024;
         public const string SaveAvatarError = "No se pudo guardar el avatar: no existe el usuario con id {0}";
-        // public const string 
+        // public const string
     }
     public static class ResponseMessagesCalendar
     {
