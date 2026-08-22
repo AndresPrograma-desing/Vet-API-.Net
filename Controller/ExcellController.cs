@@ -46,9 +46,9 @@ namespace vet_api_Net.Controllers
             {
                 return BadRequest(new { error = ex.Message });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, new { error = ex.Message });
+                return StatusCode(500, new { error = ResponseErrors.InternalServerError });
             }
         }
 
@@ -64,9 +64,9 @@ namespace vet_api_Net.Controllers
                 
                 return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Citas_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, new { error = ex.Message });
+                return StatusCode(500, new { error = ResponseErrors.InternalServerError });
             }
         }
 
@@ -82,9 +82,9 @@ namespace vet_api_Net.Controllers
                 
                 return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Clientes_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, new { error = ex.Message });
+                return StatusCode(500, new { error = ResponseErrors.InternalServerError });
             }
         }
     }

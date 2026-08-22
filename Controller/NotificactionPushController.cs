@@ -53,9 +53,9 @@ public class NotificactionPushController : ControllerBase
 
             return Ok(new { message = ResponseMessagesNotificationPush.Success });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = ResponseMessagesNotificationPush.CriticalFailure, details = ex.Message });
+            return StatusCode(500, new { message = ResponseMessagesNotificationPush.CriticalFailure });
         }
     }
 }

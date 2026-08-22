@@ -26,9 +26,9 @@ public class DashboardController : ControllerBase
             var stats = await _dashboardService.GetDashboardStatsAsync(startDate, endDate, useUsd);
             return Ok(stats);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = ResponseMessagesDashboard.ErrorRetrievingStats, error = ex.Message });
+            return StatusCode(500, new { message = ResponseMessagesDashboard.ErrorRetrievingStats });
         }
     }
 }

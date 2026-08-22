@@ -41,9 +41,9 @@ public class PasswordRecoveryController : ControllerBase
 
             return Ok(new { success = true, message = ResponseMessagesPasswordRecovery.CodeSentSuccess });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { success = false, error = ex.Message });
+            return StatusCode(500, new { success = false, error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -65,9 +65,9 @@ public class PasswordRecoveryController : ControllerBase
 
             return Ok(new { success = true, message = ResponseMessagesPasswordRecovery.CodeVerifiedSuccess });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { success = false, error = ex.Message });
+            return StatusCode(500, new { success = false, error = ResponseErrors.InternalServerError });
         }
     }
 }

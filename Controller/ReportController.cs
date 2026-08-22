@@ -131,9 +131,9 @@ namespace vet_api_Net.Controller
 				var url = $"{baseUrl}/Reports/{Uri.EscapeDataString(fileName)}";
 				return Ok(new { file = fileName, url });
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
-				return StatusCode(500, new { error = ex.Message });
+				return StatusCode(500, new { error = ResponseErrors.InternalServerError });
 			}
 		}
 

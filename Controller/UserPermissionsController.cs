@@ -30,9 +30,9 @@ public class UserPermissionsController : ControllerBase
             var permissions = await _userPermissionService.GetPermissionsAsync(userId);
             return Ok(new UserPermissionsResponseDTO { UserId = userId, Permissions = permissions });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ResponseMessagesUserPermissions.ErrorGettingPermissions, details = ex.Message });
+            return StatusCode(500, new { error = ResponseMessagesUserPermissions.ErrorGettingPermissions });
         }
     }
 
@@ -53,9 +53,9 @@ public class UserPermissionsController : ControllerBase
         {
             return NotFound(new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ResponseMessagesUserPermissions.ErrorUpdatingPermissions, details = ex.Message });
+            return StatusCode(500, new { error = ResponseMessagesUserPermissions.ErrorUpdatingPermissions });
         }
     }
 }

@@ -59,13 +59,12 @@ public class EmailsController : ControllerBase
         {
             return BadRequest(new { success = false, message = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new 
-            { 
-                success = false, 
-                message = ResponseMessagesEmailsController.DispatchCriticalFailure, 
-                details = ex.Message 
+            return StatusCode(500, new
+            {
+                success = false,
+                message = ResponseMessagesEmailsController.DispatchCriticalFailure
             });
         }
     }
@@ -95,9 +94,9 @@ public class EmailsController : ControllerBase
 
             return StatusCode(500, new { success = false, message = ResponseMessagesEmailsController.TestEmailFailure });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { success = false, message = ResponseErrors.InternalServerError, details = ex.Message });
+            return StatusCode(500, new { success = false, message = ResponseErrors.InternalServerError });
         }
     }
 
@@ -109,9 +108,9 @@ public class EmailsController : ControllerBase
             var templates = await _emailService.GetAllEmailTemplatesAsync();
             return Ok(new { success = true, data = templates });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { success = false, message = ResponseErrors.InternalServerError, details = ex.Message });
+            return StatusCode(500, new { success = false, message = ResponseErrors.InternalServerError });
         }
     }
 
@@ -127,9 +126,9 @@ public class EmailsController : ControllerBase
             }
             return Ok(new { success = true, data = template });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { success = false, message = ResponseErrors.InternalServerError, details = ex.Message });
+            return StatusCode(500, new { success = false, message = ResponseErrors.InternalServerError });
         }
     }
 
@@ -152,9 +151,9 @@ public class EmailsController : ControllerBase
 
             return Ok(new { success = true, message = ResponseMessagesEmailsController.UpdateSuccess, data = updatedTemplate });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { success = false, message = ResponseMessagesEmailsController.UpdateFailure, details = ex.Message });
+            return StatusCode(500, new { success = false, message = ResponseMessagesEmailsController.UpdateFailure });
         }
     }
 
@@ -166,9 +165,9 @@ public class EmailsController : ControllerBase
             var data = await _emailService.GetResendConfigAsync();
             return Ok(new { success = true, data });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { success = false, message = ResponseErrors.InternalServerError, details = ex.Message });
+            return StatusCode(500, new { success = false, message = ResponseErrors.InternalServerError });
         }
     }
 
@@ -189,9 +188,9 @@ public class EmailsController : ControllerBase
         {
             return BadRequest(new { success = false, message = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { success = false, message = ResponseErrors.InternalServerError, details = ex.Message });
+            return StatusCode(500, new { success = false, message = ResponseErrors.InternalServerError });
         }
     }
 }

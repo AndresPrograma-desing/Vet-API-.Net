@@ -33,9 +33,9 @@ public class LogsController : ControllerBase
             var result = await _logService.GetLogsAsync(pageNumber, pageSize);
             return Ok(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ResponseMessagesLogs.ErrorLoadingLogs, details = ex.Message });
+            return StatusCode(500, new { error = ResponseMessagesLogs.ErrorLoadingLogs });
         }
     }
 }
