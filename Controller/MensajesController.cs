@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Services;
 using DTOs;
 using vet_api_Net.Routes;
@@ -24,9 +25,9 @@ public class MensajesController : ControllerBase
             var msg = await _messagingService.SendMessageAsync(dto);
             return Ok(msg);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -38,9 +39,9 @@ public class MensajesController : ControllerBase
             var msgs = await _messagingService.GetConversationAsync(userId, otherId);
             return Ok(msgs);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -52,9 +53,9 @@ public class MensajesController : ControllerBase
             var msgs = await _messagingService.GetUserMessagesAsync(userId);
             return Ok(msgs);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -70,9 +71,9 @@ public class MensajesController : ControllerBase
         {
             return NotFound();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 }

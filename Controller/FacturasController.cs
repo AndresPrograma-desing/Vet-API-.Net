@@ -69,9 +69,9 @@ public class FacturasController : ControllerBase
 
             return Ok(dto);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -114,9 +114,9 @@ public class FacturasController : ControllerBase
 
             return Ok(new { file = fileName, url });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -146,9 +146,9 @@ public class FacturasController : ControllerBase
 
             return Ok(files);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -167,9 +167,9 @@ public class FacturasController : ControllerBase
             var contentType = "application/pdf";
             return PhysicalFile(filePath, contentType, safeName);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -183,9 +183,9 @@ public class FacturasController : ControllerBase
             if (dto == null) return NotFound(new { message = ResponseMessagesFacturaController.FacturaNotFound });
             return Ok(dto);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -201,9 +201,9 @@ public class FacturasController : ControllerBase
             }
             return Ok(facturas);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -215,9 +215,9 @@ public class FacturasController : ControllerBase
             var settings = await _invoiceService.GetFacturaSettingsAsync();
             return Ok(settings);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 

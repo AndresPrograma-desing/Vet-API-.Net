@@ -33,9 +33,9 @@ public class UsersController : ControllerBase
             users.ForEach(u => u.Password = "[PROTECTED]");
             return Ok(users);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -56,9 +56,9 @@ public class UsersController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -72,9 +72,9 @@ public class UsersController : ControllerBase
             secretarias.ForEach(u => u.Password = "[PROTECTED]");
             return Ok(secretarias);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -127,9 +127,9 @@ public class UsersController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -166,9 +166,9 @@ public class UsersController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -187,9 +187,9 @@ public class UsersController : ControllerBase
             var html = await _userService.GetTemplatePasswordResetPage(ResponseMessagesUsers.PasswordResetTicketAccepted);
             return Content(html ?? string.Empty, "text/html");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -207,9 +207,9 @@ public class UsersController : ControllerBase
 
             return Ok(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -222,9 +222,9 @@ public class UsersController : ControllerBase
             var result = await _userService.GetPendingPasswordResetsAsync();
             return Ok(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -242,9 +242,9 @@ public class UsersController : ControllerBase
 
             return Ok(new { message = ResponseMessagesUsers.PasswordAssignedSuccess });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -268,9 +268,9 @@ public class UsersController : ControllerBase
 
             return Ok(new { message = ResponseMessagesUsers.UpdateNameUser });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -283,9 +283,9 @@ public class UsersController : ControllerBase
             var result = await _userService.GetRolesAsync();
             return Ok(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 }

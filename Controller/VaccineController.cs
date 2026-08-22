@@ -25,10 +25,10 @@ public class VaccineController : ControllerBase
 
     [HttpGet]
     public async Task<IActionResult> GetVaccines(
-        [FromQuery] string? species, 
-        [FromQuery] bool? active, 
-        [FromQuery] string? searchTerm, 
-        [FromQuery] int pageNumber = 1, 
+        [FromQuery] string? species,
+        [FromQuery] bool? active,
+        [FromQuery] string? searchTerm,
+        [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
         try
@@ -36,9 +36,9 @@ public class VaccineController : ControllerBase
             var result = await _vaccineService.GetPagedAsync(pageNumber, pageSize, species, active, searchTerm);
             return Ok(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -51,9 +51,9 @@ public class VaccineController : ControllerBase
             if (vaccine == null) return NotFound(new { message = ResponseMessagesVaccination.VaccineNotFound });
             return Ok(vaccine);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -69,9 +69,9 @@ public class VaccineController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -91,9 +91,9 @@ public class VaccineController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -109,9 +109,9 @@ public class VaccineController : ControllerBase
         {
             return NotFound(new { message = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -131,9 +131,9 @@ public class VaccineController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -149,9 +149,9 @@ public class VaccineController : ControllerBase
         {
             return NotFound(new { message = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -163,9 +163,9 @@ public class VaccineController : ControllerBase
             var result = await _vaccineService.GetBatchesPagedAsync(id, pageNumber, pageSize, active, searchTerm);
             return Ok(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -185,9 +185,9 @@ public class VaccineController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 }

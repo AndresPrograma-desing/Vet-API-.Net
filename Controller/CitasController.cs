@@ -62,9 +62,9 @@ public class CitasController : ControllerBase
             }
             return Ok(deleteCita);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseMessagesCitas.ErrorInterno });
         }
     }
 
@@ -84,9 +84,9 @@ public class CitasController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseMessagesCitas.ErrorInterno });
         }
     }
 
@@ -98,9 +98,9 @@ public class CitasController : ControllerBase
             var status = await _citasRequestService.StatusCitaRequestAsync(id);
             return Ok(status);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseMessagesCitas.ErrorInterno });
         }
     }
 
@@ -113,9 +113,9 @@ public class CitasController : ControllerBase
             var status = await _citasRequestService.StatusCitaRequestAsync(id);
             return Ok(status);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseMessagesCitas.ErrorInterno });
         }
     }
     [HttpPatch(Endpoints.Citas.Status)]
@@ -131,9 +131,9 @@ public class CitasController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseMessagesCitas.ErrorInterno });
         }
     }
     //    [HttpGet("Unassigned")]
@@ -176,9 +176,9 @@ public class CitasController : ControllerBase
         {
             return StatusCode(403, new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseMessagesCitas.ErrorInterno });
         }
     }
     [HttpGet(Endpoints.Citas.Statuses)]
@@ -189,9 +189,9 @@ public class CitasController : ControllerBase
             var statuses = await _citasRequestService.GetCitaStatusesAsync();
             return Ok(statuses);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseMessagesCitas.ErrorInterno });
         }
     }
 
@@ -203,9 +203,9 @@ public class CitasController : ControllerBase
             var types = await _citasRequestService.GetCitaTypesAsync();
             return Ok(types);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseMessagesCitas.ErrorInterno });
         }
     }
 
@@ -218,9 +218,9 @@ public class CitasController : ControllerBase
             var citas = await _citasRequestService.GetCitasByClienteAsync(clienteId);
             return Ok(citas);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseMessagesCitas.ErrorInterno });
         }
     }
 }

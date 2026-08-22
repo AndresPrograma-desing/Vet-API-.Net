@@ -38,9 +38,9 @@ public class CalendarController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
     [HttpGet(Endpoints.Calendar.CheckAvailability)]
@@ -61,9 +61,9 @@ public class CalendarController : ControllerBase
             var result = await _calendarService.CheckDoctorAvailabilityAsync(doctorId, date, requestedTime, durationMinutes);
             return Ok(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 }

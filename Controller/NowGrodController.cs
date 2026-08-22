@@ -46,9 +46,9 @@ public class NowGrodController : ControllerBase
         {
             return StatusCode(503, new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -65,9 +65,9 @@ public class NowGrodController : ControllerBase
         {
             return StatusCode(503, new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 }

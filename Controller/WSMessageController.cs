@@ -55,13 +55,12 @@ public class WSMessageController : ControllerBase
         {
             return BadRequest(new { success = false, message = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new 
-            { 
-                success = false, 
-                message = ResponseMessagesWSMessageController.CriticalFailure, 
-                details = ex.Message 
+            return StatusCode(500, new
+            {
+                success = false,
+                message = ResponseMessagesWSMessageController.CriticalFailure
             });
         }
     }
@@ -88,13 +87,12 @@ public class WSMessageController : ControllerBase
                 message = ResponseMessagesWSMessageController.SessionInitFailure
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new 
-            { 
-                success = false, 
-                message = ResponseMessagesWSMessageController.SessionInitCriticalFailure, 
-                details = ex.Message 
+            return StatusCode(500, new
+            {
+                success = false,
+                message = ResponseMessagesWSMessageController.SessionInitCriticalFailure
             });
         }
     }
@@ -121,13 +119,12 @@ public class WSMessageController : ControllerBase
                 message = ResponseMessagesWSMessageController.SessionStatusNotFound
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new 
-            { 
-                success = false, 
-                message = ResponseMessagesWSMessageController.SessionStatusCriticalFailure, 
-                details = ex.Message 
+            return StatusCode(500, new
+            {
+                success = false,
+                message = ResponseMessagesWSMessageController.SessionStatusCriticalFailure
             });
         }
     }
