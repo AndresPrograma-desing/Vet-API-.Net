@@ -33,13 +33,14 @@ namespace vet_api_Net.Constants
         public const int AlertWindowDays = 30; // Ventana amarilla: próxima a vencer (0-30 días)
         public const int ReminderSevenDays = 7;
         public const int ReminderThreeDays = 3;
+        public static readonly TimeSpan DayBeforeReminderTime = new TimeSpan(17, 0, 0);
         public const string StatusApplied = "Applied";
         public const string StatusPostponed = "Postponed";
         public const string StageInitial = "Initial";
         public const string StageBooster = "Booster";
-        public const string TrafficLightGreen = "Green";
-        public const string TrafficLightYellow = "Yellow";
-        public const string TrafficLightRed = "Red";
+        public const string TrafficLightGreen = "#22C55E";
+        public const string TrafficLightYellow = "#EAB308";
+        public const string TrafficLightRed = "#EF4444";
         public const string FrequencyDays = "days";
         public const string FrequencyMonths = "months";
         public const string FrequencyYears = "years";

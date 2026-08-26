@@ -27,6 +27,7 @@ public class UserPetsService : IUserPetsService
 
         var mascotas = await _context.Mascotas
             .Include(m => m.Cliente)
+            .Include(m => m.Especie)
             .Where(m => m.Cliente != null && m.Cliente.Nombre.ToLower() == lower)
             .ToListAsync();
 
@@ -35,7 +36,7 @@ public class UserPetsService : IUserPetsService
             Id = m.Id,
             ClienteId = m.ClienteId,
             Nombre = m.Nombre,
-            Especie = m.Especie,
+            Especie = m.Especie.Nombre,
             Raza = m.Raza,
             Sexo = m.Sexo,
             FechaNacimiento = m.FechaNacimiento.HasValue ? m.FechaNacimiento.Value.ToString("yyyy-MM-dd") : null,

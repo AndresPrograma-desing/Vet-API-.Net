@@ -742,7 +742,6 @@ namespace vet_api_Net.Constants
         public const string PetVaccinationNotFound = "Registro de vacunación no encontrado.";
         public const string PostponementReasonRequired = "El motivo de la postergación es requerido.";
         public const string AlreadyPostponed = "Esta vacunación ya se encuentra postergada.";
-        public const string VaccineNotLinkedToProduct = "La vacuna no está vinculada a un producto facturable. Configure el producto antes de enviar a factura.";
         public const string NoConsultaLinked = "El registro de vacunación no está asociado a una consulta.";
         public const string FacturaNotFoundForConsulta = "No existe una factura generada para la consulta de esta vacunación.";
         public const string AlreadySentToInvoice = "Esta vacunación ya fue enviada a una factura.";
@@ -752,5 +751,16 @@ namespace vet_api_Net.Constants
         public static string PendingReminderNotificationTitle(string petName) => $"Refuerzo próximo: {petName}";
         public static string PendingReminderNotificationMessage(string petName, string vaccineName, string dueDate) =>
             $"La mascota {petName} tiene el refuerzo de {vaccineName} programado para el {dueDate}. Da seguimiento telefónico al cliente.";
+        public static string DayBeforeReminderEmailSubject(string systemName) => $"Recordatorio de vacunación mañana - {systemName}";
+        public static string DayBeforeReminderNotificationTitle(string petName) => $"Vacuna mañana: {petName}";
+        public static string DayBeforeReminderNotificationMessage(string petName, string vaccineName, string dueDate) =>
+            $"La mascota {petName} tiene programada la vacuna {vaccineName} para mañana {dueDate}. Confirma la asistencia con el cliente.";
+    }
+    public static class ResponseMessagesEspecie
+    {
+        public const string EspecieNombreRequired = "El nombre de la especie es requerido.";
+        public const string EspecieMaxLength = "El nombre de la especie no puede exceder los 50 caracteres.";
+        public const string EspecieAlreadyExists = "Ya existe una especie con ese nombre.";
+        public const string EspecieNotFound = "Especie no encontrada.";
     }
 }

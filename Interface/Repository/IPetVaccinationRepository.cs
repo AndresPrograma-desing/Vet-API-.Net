@@ -12,7 +12,7 @@ public interface IPetVaccinationRepository
     Task<Vaccine?> GetVaccineByIdAsync(int id);
     Task<VaccineBatch?> GetBatchByIdAsync(int id);
     Task<List<VaccineSchemeStage>> GetSchemeStagesByVaccineIdAsync(int vaccineId);
-    Task<List<Vaccine>> GetActiveVaccinesBySpeciesAsync(string species);
+    Task<List<Vaccine>> GetActiveVaccinesByEspecieIdAsync(int especieId);
     Task<int> CountAppliedDosesAsync(int mascotaId, int vaccineId);
     Task<PetVaccination?> GetLastApplicationAsync(int mascotaId, int vaccineId);
 
@@ -25,6 +25,7 @@ public interface IPetVaccinationRepository
     Task<List<PetVaccination>> GetHistoryByMascotaIdAsync(int mascotaId, string? status = null);
     Task<(List<PetVaccination> Items, int TotalCount)> GetPendingThisWeekAsync(int pageNumber, int pageSize, string? searchTerm = null);
     Task<List<PetVaccination>> GetDueForReminderAsync(DateOnly sevenDayTarget, DateOnly threeDayTarget);
+    Task<List<PetVaccination>> GetDueForDayBeforeReminderAsync(DateOnly dayBeforeTarget);
 
     Task<Factura?> GetFacturaByConsultaIdAsync(int consultaId);
     void AddDetalleFactura(DetallesFactura detalle);

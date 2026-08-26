@@ -12,8 +12,10 @@ public record FacturationItemDTO
     public int? ProductosConsultasId { get; init; }
 
     [JsonPropertyName("producto_id")]
-    [Range(1, int.MaxValue, ErrorMessage = ResponseMessagesDtos.Factura.ProductoIdInvalid)]
-    public int ProductoId { get; init; }
+    public int? ProductoId { get; init; }
+
+    [JsonPropertyName("vaccine_id")]
+    public int? VaccineId { get; init; }
 
     [JsonPropertyName("codigo")]
     [Required(ErrorMessage = ResponseMessagesDtos.Factura.CodigoRequired)]

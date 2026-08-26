@@ -41,6 +41,7 @@ public class CitasRepository : ICitasRepository
     {
         var query = _context.Citas
             .Include(c => c.Mascota).ThenInclude(m => m.Cliente)
+            .Include(c => c.Mascota).ThenInclude(m => m.Especie)
             .Include(c => c.Doctor)
             .Include(c => c.Secretaria)
             .Include(c => c.MetodoPago)
@@ -71,6 +72,7 @@ public class CitasRepository : ICitasRepository
     {
         return await _context.Citas
             .Include(c => c.Mascota).ThenInclude(m => m.Cliente)
+            .Include(c => c.Mascota).ThenInclude(m => m.Especie)
             .Include(c => c.Doctor)
             .Include(c => c.Secretaria)
             .Include(c => c.MetodoPago)
@@ -86,6 +88,7 @@ public class CitasRepository : ICitasRepository
     {
         return await _context.Citas
             .Include(c => c.Mascota).ThenInclude(m => m.Cliente)
+            .Include(c => c.Mascota).ThenInclude(m => m.Especie)
             .Include(c => c.Doctor)
             .Include(c => c.Secretaria)
             .Include(c => c.MetodoPago)
@@ -97,6 +100,7 @@ public class CitasRepository : ICitasRepository
     {
         return await _context.Citas
             .Include(c => c.Mascota).ThenInclude(m => m.Cliente)
+            .Include(c => c.Mascota).ThenInclude(m => m.Especie)
             .Where(c => c.FechaCita.Date == fecha.Date)
             .ToListAsync();
     }

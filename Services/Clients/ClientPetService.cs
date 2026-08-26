@@ -7,16 +7,19 @@ using vet_api_Net.Models;
 using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Repositories.Clients;
 using vet_api_Net.Interfaze.Services.Clients;
+using vet_api_Net.Interfaze.Services;
 
 namespace vet_api_Net.Services;
 
 public class ClientPetService : IClientPetService
 {
     private readonly IClientPetRepository _repository;
+    private readonly IEspecieService _especieService;
 
-    public ClientPetService(IClientPetRepository repository)
+    public ClientPetService(IClientPetRepository repository, IEspecieService especieService)
     {
         _repository = repository;
+        _especieService = especieService;
     }
 
     public async Task<CreateClientWithPetResponseDTO> CreateClientWithPetAsync(CreateClientWithPetDTO dto)
@@ -61,11 +64,13 @@ public class ClientPetService : IClientPetService
             birthDate = parsedDate;
         }
 
+        var especie = await _especieService.GetOrCreateByNombreAsync(petDto.Especie);
+
         var pet = new Mascota
         {
             ClienteId = client.Id,
             Nombre = petDto.Nombre,
-            Especie = petDto.Especie,
+            EspecieId = especie.Id,
             Raza = petDto.Raza,
             Color = petDto.Color,
             Sexo = petDto.Sexo,
@@ -119,11 +124,13 @@ public async Task<CreatePetForExistingClientResponseDTO> CreatePetForExistingCli
         birthDate = parsedDate;
     }
 
+    var especie = await _especieService.GetOrCreateByNombreAsync(dto.Especie);
+
     var pet = new Mascota
     {
         ClienteId = dto.ClienteId,
         Nombre = dto.Nombre,
-        Especie = dto.Especie,
+        EspecieId = especie.Id,
         Raza = dto.Raza,
         Color = dto.Color,
         Sexo = dto.Sexo!,

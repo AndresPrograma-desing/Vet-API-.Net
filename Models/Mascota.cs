@@ -11,7 +11,7 @@ public partial class Mascota
 
     public string Nombre { get; set; } = null!;
 
-    public string Especie { get; set; } = null!;
+    public int EspecieId { get; set; }
 
     public string? Raza { get; set; }
 
@@ -38,6 +38,8 @@ public partial class Mascota
     public virtual ICollection<Cita> Cita { get; set; } = new List<Cita>();
 
     public virtual Cliente Cliente { get; set; } = null!;
+
+    public virtual Especie Especie { get; set; } = null!;
 
     public virtual ICollection<Consulta> Consulta { get; set; } = new List<Consulta>();
 

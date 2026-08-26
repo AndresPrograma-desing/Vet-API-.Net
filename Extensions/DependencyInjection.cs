@@ -316,6 +316,7 @@ public static class DependencyInjection
         services.AddScoped<ILogsSistemaRepository, LogsSistemaRepository>();
         services.AddScoped<IUserPermissionRepository, UserPermissionRepository>();
         services.AddScoped<IVaccineRepository, VaccineRepository>();
+        services.AddScoped<IEspecieRepository, EspecieRepository>();
         services.AddScoped<IPetVaccinationRepository, PetVaccinationRepository>();
         services.AddScoped<IWorkerConfigRepository, WorkerConfigRepository>();
 
@@ -353,6 +354,7 @@ public static class DependencyInjection
         services.AddScoped<ICalendarService, CalendarService>();
         services.AddScoped<ISystemLogService, SystemLogService>();
         services.AddScoped<IVaccineService, VaccineService>();
+        services.AddScoped<IEspecieService, EspecieService>();
         services.AddScoped<IPetVaccinationService, PetVaccinationService>();
         services.AddScoped<IWorkerConfigService, WorkerConfigService>();
         services.AddHttpClient<IEmailSenderService, vet_api_Net.HttpServices.ResendEmailService>()

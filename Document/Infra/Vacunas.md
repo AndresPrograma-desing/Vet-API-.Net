@@ -30,18 +30,20 @@ El módulo se divide conceptualmente en dos partes independientes que comparten 
 Vaccine (catálogo maestro)
  ├──< VaccineSchemeStage   (esquema de dosis iniciales: 1ra, 2da, 3ra dosis...)
  ├──< VaccineBatch          (lotes físicos comprados, con stock y vencimiento)
- ├──> Producto               (opcional: vínculo con inventario/facturación)
  └──< PetVaccination         (aplicaciones reales a mascotas)
                                ├──> Mascota
                                ├──> VaccineBatch (lote usado)
                                ├──> Consulta (opcional)
                                ├──> Usuario (doctor, opcional)
-                               └──> DetallesFactura (opcional, una vez facturada)
+                               └──> DetallesFactura (opcional, una vez facturada, vía VaccineId)
 ```
+
+`Vaccine` no tiene vínculo con `Producto` (inventario) — su precio y stock se manejan enteramente con `Price` y `VaccineBatch.QuantityInStock`. Al facturar (`SendToInvoiceAsync`), la línea de factura (`DetallesFactura`) referencia la vacuna directamente vía `VaccineId` (FK opcional, `ON DELETE SET NULL`), sin pasar por ningún `Producto`.
 
 | Entidad | Campos clave | Notas |
 |---|---|---|
-| `Vaccine` | `Species`, `MinimumAgeWeeks`, `BoosterFrequencyValue/Unit`, `Price`, `ProductoId?`, `Active` | `BoosterFrequencyUnit` debe ser `"days"`, `"months"` o `"years"`. |
+| `Vaccine` | `EspecieId`, `MinimumAgeWeeks`, `BoosterFrequencyValue/Unit`, `Price`, `Active` | `BoosterFrequencyUnit` debe ser `"days"`, `"months"` o `"years"`. `EspecieId` apunta al catálogo compartido `Especie` (ver más abajo), también usado por `Mascota`. |
+| `Especie` | `Nombre` (único) | Catálogo compartido entre `Vaccine` y `Mascota`. Se administra con find-or-create: si al crear/editar una vacuna o una mascota se escribe un nombre que no existe, se crea automáticamente. `GET/POST /Vaccine/species` expone el listado y la creación explícita. |
 | `VaccineSchemeStage` | `VaccineId`, `StageType` (`"Initial"` o `"Booster"`), `DoseNumber`, `IntervalDaysFromPrevious` | Define el esquema de dosis **iniciales** (ej. cachorro: dosis 1, 2 y 3). Las etapas `"Booster"` existen en el modelo pero **no se usan** en ningún cálculo actual (ver sección 3.2). |
 | `VaccineBatch` | `VaccineId`, `BatchNumber`, `ExpirationDate`, `QuantityInStock`, `Active` | `IsExpired` es un campo **calculado** al leer (`ExpirationDate <= hoy`), no se guarda en la base de datos. |
 | `PetVaccination` | `MascotaId`, `VaccineId`, `VaccineBatchId?`, `ApplicationDate`, `NextDoseDate?`, `Status`, `PostponementReason?`, `DetalleFacturaId?`, `ReminderSevenSentAt?`, `ReminderThreeSentAt?` | `Status` es un string libre: `"Applied"`, `"Postponed"` (ver sección 3.2 para las transiciones reales que implementa el código). |
@@ -61,10 +63,12 @@ Vaccine (catálogo maestro)
 | DELETE | `/Vaccine/{id}` | **Elimina físicamente la fila** (`_context.Vaccines.Remove(...)`). |
 | POST/DELETE | `/Vaccine/{id}/scheme-stages...` | Administra el esquema de dosis iniciales. |
 | GET/POST | `/Vaccine/{id}/batches` | Lista/crea lotes de esa vacuna. |
+| GET | `/Vaccine/species` | Lista el catálogo compartido de especies (`Especie`), para poblar el selector del frontend. |
+| POST | `/Vaccine/species` | Crea una especie nueva explícitamente. Rechaza duplicados (case-insensitive) con `EspecieAlreadyExists`. |
 
 **⚠️ Punto importante:** `DELETE /Vaccine/{id}` es un **hard delete**, no una desactivación. El campo `Active` solo se usa como filtro de catálogo (para no ofrecer vacunas "descontinuadas" al registrar una dosis) — para retirar una vacuna sin romper el historial de aplicaciones existentes, se debe usar `PUT` con `active: false` en vez de `DELETE`.
 
-**Validaciones al crear/editar (`ValidateVaccineInput`):** `Name`/`Species` obligatorios, `MinimumAgeWeeks >= 0`, `BoosterFrequencyValue > 0`, `BoosterFrequencyUnit` ∈ {`days`, `months`, `years`}.
+**Validaciones al crear/editar (`ValidateVaccineInput`):** `Name`/`Species` obligatorios, `MinimumAgeWeeks >= 0`, `BoosterFrequencyValue > 0`, `BoosterFrequencyUnit` ∈ {`days`, `months`, `years`}. `Species` sigue siendo un string libre en el DTO (`species`/`especie`) — el service resuelve/crea la fila correspondiente en el catálogo `Especie` (find-or-create case-insensitive) antes de guardar la vacuna.
 
 **Validación al crear un lote (`AddBatchAsync`):** `ExpirationDate` debe ser **estrictamente futura** respecto a hoy. No se valida `QuantityInStock` al crear (puede quedar en 0). Todo lote nuevo se crea con `Active = true` sin importar lo enviado en el DTO.
 
@@ -72,7 +76,7 @@ Vaccine (catálogo maestro)
 
 #### a) Semáforo de estado — `GET /mascota/{id}/status`
 
-Para cada vacuna activa cuya `Species` coincide con la especie de la mascota, se busca la **última dosis aplicada** (`Status == "Applied"`, más reciente por `ApplicationDate`) y se calcula:
+Para cada vacuna activa cuyo `EspecieId` coincide con el `EspecieId` de la mascota (FK real sobre el catálogo compartido `Especie` — antes de este catálogo era una comparación de strings case-insensitive entre `Vaccine.Species` y `Mascota.Especie`, que fallaba silenciosamente si los datos usaban vocabularios distintos, ej. "perro" vs "canino"; ver sección 6), se busca la **última dosis aplicada** (`Status == "Applied"`, más reciente por `ApplicationDate`) y se calcula:
 
 ```
 ¿Nunca se aplicó esa vacuna a esta mascota?
@@ -129,9 +133,9 @@ El umbral de 30 días es la constante `VaccinationVariables.AlertWindowDays`.
 #### d) Enviar a factura — `POST /{id}/send-to-invoice`
 
 - Si `DetalleFacturaId` ya tiene valor → error (`AlreadySentToInvoice`). Este campo es justamente el guardián contra doble facturación.
-- Requiere que la vacuna tenga `ProductoId` vinculado (si no, error `VaccineNotLinkedToProduct`) y que el registro tenga `ConsultaId` (si no, error `NoConsultaLinked`).
+- Requiere que el registro tenga `ConsultaId` (si no, error `NoConsultaLinked`). Ya no requiere ningún vínculo con `Producto` — cualquier vacuna del catálogo puede facturarse directamente.
 - **No crea una factura nueva**: busca una `Factura` ya existente asociada a esa `ConsultaId`. Si no existe, lanza `FacturaNotFoundForConsulta` (la vacuna solo puede facturarse si la consulta ya fue facturada previamente).
-- Crea un `DetallesFactura` (cantidad 1, precio = `Vaccine.Price`), suma el monto al `Subtotal`/`Total` de la `Factura`, y guarda el `DetalleFacturaId` en el `PetVaccination`.
+- Crea un `DetallesFactura` (cantidad 1, precio = `Vaccine.Price`, `VaccineId` apuntando a la vacuna aplicada), suma el monto al `Subtotal`/`Total` de la `Factura`, y guarda el `DetalleFacturaId` en el `PetVaccination`.
 
 #### e) Pendientes de la semana — `GET /pending-this-week`
 
@@ -241,3 +245,5 @@ POST /PetVaccination/register  { mascota_id, vaccine_id, vaccine_batch_id, ... }
 4. **`SendToInvoiceAsync` no crea facturas**, solo agrega un ítem a una factura de consulta ya existente. Si se quiere facturar una vacuna aplicada fuera de una consulta con factura, el endpoint actual no lo permite.
 5. **Los recordatorios por email/push son de fecha exacta** (7 y 3 días antes), sin ventana de recuperación — si el worker no corre exactamente ese día, ese aviso puntual no se reintenta.
 6. **Las etapas de tipo `"Booster"` en `VaccineSchemeStage` no afectan ningún cálculo hoy** — solo las etapas `"Initial"` se usan para determinar la próxima dosis durante el esquema inicial; después de eso siempre se usa la frecuencia de refuerzo general de la vacuna.
+7. **`DetallesFactura.VaccineId` usa `ON DELETE SET NULL`.** Si se borra una `Vaccine` que ya fue facturada, la línea histórica en `DetallesFactura` no se borra ni se bloquea el borrado: simplemente queda con `VaccineId = NULL`, perdiendo la referencia directa a la vacuna (el nombre queda preservado en `Descripcion`, que se copia al momento de facturar).
+8. **Bug de matching especie corregido.** Antes de introducir el catálogo `Especie`, `Vaccine.Species` y `Mascota.Especie` eran strings independientes; los datos de ejemplo usaban vocabularios distintos ("perro"/"gato" en mascotas vs "canino"/"felino" en vacunas), por lo que el semáforo de estado (`GET /mascota/{id}/status`) nunca encontraba coincidencias para las mascotas sembradas. Ahora ambos apuntan al mismo `EspecieId`, así que el cruce funciona con datos reales.

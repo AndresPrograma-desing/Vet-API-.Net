@@ -154,6 +154,8 @@ namespace vet_api_Net.Routes
             public const string CreateBatch = "{id}/batches";
             public const string SchemeStages = "{id}/scheme-stages";
             public const string DeleteSchemeStage = "{id}/scheme-stages/{stageId}";
+            public const string GetSpecies = "species";
+            public const string CreateSpecies = "species";
         }
         public static class PetVaccination
         {

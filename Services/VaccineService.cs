@@ -14,10 +14,12 @@ namespace vet_api_Net.Services;
 public class VaccineService : IVaccineService
 {
     private readonly IVaccineRepository _repository;
+    private readonly IEspecieService _especieService;
 
-    public VaccineService(IVaccineRepository repository)
+    public VaccineService(IVaccineRepository repository, IEspecieService especieService)
     {
         _repository = repository;
+        _especieService = especieService;
     }
 
     public async Task<VaccineListResponseDTO> GetPagedAsync(int pageNumber = 1, int pageSize = 10, string? species = null, bool? active = null, string? searchTerm = null)
@@ -42,16 +44,17 @@ public class VaccineService : IVaccineService
         ArgumentNullException.ThrowIfNull(dto);
         ValidateVaccineInput(dto);
 
+        var especie = await _especieService.GetOrCreateByNombreAsync(dto.Species.Trim());
+
         var vaccine = new Vaccine
         {
             Name = dto.Name.Trim(),
-            Species = dto.Species.Trim(),
+            EspecieId = especie.Id,
             MinimumAgeWeeks = dto.MinimumAgeWeeks,
             BoosterFrequencyValue = dto.BoosterFrequencyValue,
             BoosterFrequencyUnit = dto.BoosterFrequencyUnit,
             Description = dto.Description,
             Price = dto.Price,
-            ProductoId = dto.ProductoId,
             Active = dto.Active,
             CreatedAt = DateTime.Now
         };
@@ -70,14 +73,15 @@ public class VaccineService : IVaccineService
         var vaccine = await _repository.GetByIdWithStagesAsync(id)
             ?? throw new KeyNotFoundException(ResponseMessagesVaccination.VaccineNotFound);
 
+        var especie = await _especieService.GetOrCreateByNombreAsync(dto.Species.Trim());
+
         vaccine.Name = dto.Name.Trim();
-        vaccine.Species = dto.Species.Trim();
+        vaccine.EspecieId = especie.Id;
         vaccine.MinimumAgeWeeks = dto.MinimumAgeWeeks;
         vaccine.BoosterFrequencyValue = dto.BoosterFrequencyValue;
         vaccine.BoosterFrequencyUnit = dto.BoosterFrequencyUnit;
         vaccine.Description = dto.Description;
         vaccine.Price = dto.Price;
-        vaccine.ProductoId = dto.ProductoId;
         vaccine.Active = dto.Active;
 
         _repository.UpdateVaccine(vaccine);
@@ -210,13 +214,12 @@ public class VaccineService : IVaccineService
     {
         Id = vaccine.Id,
         Name = vaccine.Name,
-        Species = vaccine.Species,
+        Species = vaccine.Especie.Nombre,
         MinimumAgeWeeks = vaccine.MinimumAgeWeeks,
         BoosterFrequencyValue = vaccine.BoosterFrequencyValue,
         BoosterFrequencyUnit = vaccine.BoosterFrequencyUnit,
         Description = vaccine.Description,
         Price = vaccine.Price,
-        ProductoId = vaccine.ProductoId,
         Active = vaccine.Active,
         CreatedAt = vaccine.CreatedAt,
         SchemeStages = vaccine.SchemeStages?.Select(s => new VaccineSchemeStageDTO

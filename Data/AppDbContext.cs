@@ -32,6 +32,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Cliente> Clientes { get; set; }
 
+    public virtual DbSet<Especie> Especies { get; set; }
+
     public virtual DbSet<Consulta> Consultas { get; set; }
 
     public virtual DbSet<ConsultasProducto> ConsultasProductos { get; set; }
@@ -561,6 +563,8 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => e.ProductoId, "producto_id");
 
+            entity.HasIndex(e => e.VaccineId, "idx_detalles_factura_vaccine");
+
             entity.HasIndex(e => e.ProductosConsultasId, "productos_consultas_id");
 
             entity.Property(e => e.Id)
@@ -585,6 +589,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.ProductoId)
 
                 .HasColumnName("producto_id");
+            entity.Property(e => e.VaccineId)
+
+                .HasColumnName("vaccine_id");
             entity.Property(e => e.ProductosConsultasId)
 
                 .HasColumnName("productos_consultas_id");
@@ -598,7 +605,13 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.Producto).WithMany(p => p.DetallesFacturas)
                 .HasForeignKey(d => d.ProductoId)
+                .IsRequired(false)
                 .HasConstraintName("detalles_factura_ibfk_2");
+
+            entity.HasOne(d => d.Vaccine).WithMany()
+                .HasForeignKey(d => d.VaccineId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("detalles_factura_ibfk_4");
 
             entity.HasOne(d => d.ProductosConsultas).WithMany(p => p.DetallesFacturas)
                 .HasForeignKey(d => d.ProductosConsultasId)
@@ -809,8 +822,6 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => e.IdenteficacionMascota, "identeficacion_mascota").IsUnique();
 
-            entity.HasIndex(e => new { e.Nombre, e.Especie, e.Raza }, "idx_Busqueda_mascotas");
-
             entity.HasIndex(e => e.ClienteId, "idx_cliente_id");
 
             entity.HasIndex(e => e.Nombre, "idx_nombre_mascota");
@@ -839,9 +850,9 @@ public partial class AppDbContext : DbContext
 
 
                 .HasColumnName("creado");
-            entity.Property(e => e.Especie)
+            entity.Property(e => e.EspecieId)
 
-                .HasColumnName("especie");
+                .HasColumnName("especie_id");
             entity.Property(e => e.Esterilizado)
 
                 .HasColumnName("esterilizado");
@@ -865,6 +876,11 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Cliente).WithMany(p => p.Mascota)
                 .HasForeignKey(d => d.ClienteId)
                 .HasConstraintName("mascotas_ibfk_1");
+
+            entity.HasOne(d => d.Especie).WithMany(p => p.Mascotas)
+                .HasForeignKey(d => d.EspecieId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("mascotas_ibfk_2");
         });
 
         modelBuilder.Entity<HistoriaClinica>(entity =>
@@ -1075,24 +1091,33 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("vaccines");
 
-            entity.HasIndex(e => e.ProductoId, "idx_vaccine_producto");
-
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Name).HasMaxLength(150).HasColumnName("name");
-            entity.Property(e => e.Species).HasMaxLength(50).HasColumnName("species");
+            entity.Property(e => e.EspecieId).HasColumnName("especie_id");
             entity.Property(e => e.MinimumAgeWeeks).HasColumnName("minimum_age_weeks");
             entity.Property(e => e.BoosterFrequencyValue).HasColumnName("booster_frequency_value");
             entity.Property(e => e.BoosterFrequencyUnit).HasMaxLength(20).HasColumnName("booster_frequency_unit");
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.Price).HasPrecision(10, 2).HasColumnName("price");
-            entity.Property(e => e.ProductoId).HasColumnName("producto_id");
             entity.Property(e => e.Active).HasColumnName("active");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
-            entity.HasOne(d => d.Producto).WithMany(p => p.Vaccines)
-                .HasForeignKey(d => d.ProductoId)
-                .OnDelete(DeleteBehavior.SetNull)
+            entity.HasOne(d => d.Especie).WithMany(p => p.Vaccines)
+                .HasForeignKey(d => d.EspecieId)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("vaccines_ibfk_1");
+        });
+
+        modelBuilder.Entity<Especie>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("especies");
+
+            entity.HasIndex(e => e.Nombre, "idx_especies_nombre").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Nombre).HasMaxLength(50).HasColumnName("nombre");
         });
 
         modelBuilder.Entity<VaccineSchemeStage>(entity =>
@@ -1177,6 +1202,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.DetalleFacturaId).HasColumnName("detalle_factura_id");
             entity.Property(e => e.ReminderSevenSentAt).HasColumnName("reminder_seven_sent_at");
             entity.Property(e => e.ReminderThreeSentAt).HasColumnName("reminder_three_sent_at");
+            entity.Property(e => e.ReminderDayBeforeSentAt).HasColumnName("reminder_day_before_sent_at");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
             entity.HasOne(d => d.Mascota).WithMany(p => p.PetVaccinations)
