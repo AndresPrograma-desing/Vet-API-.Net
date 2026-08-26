@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using vet_api_Net.Data;
@@ -11,9 +12,11 @@ using vet_api_Net.Data;
 namespace vet_api_Net.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260823181953_AddEspecieCatalog")]
+    partial class AddEspecieCatalog
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1172,10 +1175,6 @@ namespace vet_api_Net.Migrations
                     b.Property<string>("PostponementReason")
                         .HasColumnType("text")
                         .HasColumnName("postponement_reason");
-
-                    b.Property<DateTime?>("ReminderDayBeforeSentAt")
-                        .HasColumnType("timestamp without time zone")
-                        .HasColumnName("reminder_day_before_sent_at");
 
                     b.Property<DateTime?>("ReminderSevenSentAt")
                         .HasColumnType("timestamp without time zone")

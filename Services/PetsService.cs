@@ -6,22 +6,26 @@ using Microsoft.EntityFrameworkCore;
 using vet_api_Net.Data;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Constants;
+using vet_api_Net.Models;
 
 namespace vet_api_Net.Services;
 
 public class PetsService : IPetsService
 {
     private readonly AppDbContext _context;
+    private readonly IEspecieService _especieService;
 
-    public PetsService(AppDbContext context)
+    public PetsService(AppDbContext context, IEspecieService especieService)
     {
         _context = context;
+        _especieService = especieService;
     }
 
     public async Task<List<MascotaResumenDTO>> GetAllMascotasAsync()
     {
         var mascotas = await _context.Mascotas
             .Include(m => m.Cliente)
+            .Include(m => m.Especie)
             .ToListAsync();
 
         if (mascotas == null || !mascotas.Any()) return new List<MascotaResumenDTO>();
@@ -31,7 +35,7 @@ public class PetsService : IPetsService
             Id = mascota.Id,
             ClienteId = mascota.ClienteId,
             Nombre = mascota.Nombre,
-            Especie = mascota.Especie,
+            Especie = mascota.Especie.Nombre,
             Raza = mascota.Raza,
             Sexo = mascota.Sexo,
             FechaNacimiento = mascota.FechaNacimiento.HasValue ? mascota.FechaNacimiento.Value.ToString("yyyy-MM-dd") : null,
@@ -57,6 +61,7 @@ public class PetsService : IPetsService
     {
         var mascota = await _context.Mascotas
             .Include(m => m.Cliente)
+            .Include(m => m.Especie)
             .FirstOrDefaultAsync(m => m.Id == id);
 
         if (mascota == null) return null;
@@ -66,7 +71,7 @@ public class PetsService : IPetsService
             Id = mascota.Id,
             ClienteId = mascota.ClienteId,
             Nombre = mascota.Nombre,
-            Especie = mascota.Especie,
+            Especie = mascota.Especie.Nombre,
             Raza = mascota.Raza,
             Sexo = mascota.Sexo,
             FechaNacimiento = mascota.FechaNacimiento.HasValue ? mascota.FechaNacimiento.Value.ToString("yyyy-MM-dd") : null,
@@ -92,12 +97,16 @@ public class PetsService : IPetsService
     {
         var pet = await _context.Mascotas
             .Include(m => m.Cliente)
+            .Include(m => m.Especie)
             .FirstOrDefaultAsync(m => m.Id == id);
 
         if (pet == null) return null;
 
+        var especie = await _especieService.GetOrCreateByNombreAsync(dto.Especie);
+
         pet.Nombre = dto.Nombre;
-        pet.Especie = dto.Especie;
+        pet.EspecieId = especie.Id;
+        pet.Especie = especie;
         pet.Raza = dto.Raza;
         pet.Color = dto.Color;
         pet.Sexo = dto.Sexo;
@@ -126,7 +135,7 @@ public class PetsService : IPetsService
             Id = pet.Id,
             ClienteId = pet.ClienteId,
             Nombre = pet.Nombre,
-            Especie = pet.Especie,
+            Especie = pet.Especie.Nombre,
             Raza = pet.Raza,
             Sexo = pet.Sexo,
             FechaNacimiento = pet.FechaNacimiento.HasValue ? pet.FechaNacimiento.Value.ToString("yyyy-MM-dd") : null,

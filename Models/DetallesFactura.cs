@@ -9,7 +9,9 @@ public partial class DetallesFactura
 
     public int FacturaId { get; set; }
 
-    public int ProductoId { get; set; }
+    public int? ProductoId { get; set; }
+
+    public int? VaccineId { get; set; }
 
     public int? ProductosConsultasId { get; set; }
 
@@ -25,7 +27,9 @@ public partial class DetallesFactura
 
     public virtual Factura Factura { get; set; } = null!;
 
-    public virtual Producto Producto { get; set; } = null!;
+    public virtual Producto? Producto { get; set; }
+
+    public virtual Vaccine? Vaccine { get; set; }
 
     public virtual ConsultasProducto? ProductosConsultas { get; set; }
 }

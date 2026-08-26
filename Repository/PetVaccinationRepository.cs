@@ -21,7 +21,7 @@ public class PetVaccinationRepository : IPetVaccinationRepository
     }
 
     public async Task<Mascota?> GetMascotaByIdAsync(int id)
-        => await _context.Mascotas.Include(m => m.Cliente).FirstOrDefaultAsync(m => m.Id == id);
+        => await _context.Mascotas.Include(m => m.Cliente).Include(m => m.Especie).FirstOrDefaultAsync(m => m.Id == id);
 
     public async Task<Usuario?> GetDoctorByIdAsync(int id)
         => await _context.Usuarios.FindAsync(id);
@@ -38,9 +38,9 @@ public class PetVaccinationRepository : IPetVaccinationRepository
             .OrderBy(s => s.DoseNumber)
             .ToListAsync();
 
-    public async Task<List<Vaccine>> GetActiveVaccinesBySpeciesAsync(string species)
+    public async Task<List<Vaccine>> GetActiveVaccinesByEspecieIdAsync(int especieId)
         => await _context.Vaccines
-            .Where(v => v.Active && v.Species.ToLower() == species.ToLower())
+            .Where(v => v.Active && v.EspecieId == especieId)
             .ToListAsync();
 
     public async Task<int> CountAppliedDosesAsync(int mascotaId, int vaccineId)
@@ -116,6 +116,13 @@ public class PetVaccinationRepository : IPetVaccinationRepository
             .Where(v => v.Status == "Applied" && v.NextDoseDate != null &&
                 ((v.NextDoseDate == sevenDayTarget && v.ReminderSevenSentAt == null) ||
                  (v.NextDoseDate == threeDayTarget && v.ReminderThreeSentAt == null)))
+            .Include(v => v.Vaccine)
+            .Include(v => v.Mascota).ThenInclude(m => m.Cliente)
+            .ToListAsync();
+
+    public async Task<List<PetVaccination>> GetDueForDayBeforeReminderAsync(DateOnly dayBeforeTarget)
+        => await _context.PetVaccinations
+            .Where(v => v.Status == "Applied" && v.NextDoseDate == dayBeforeTarget && v.ReminderDayBeforeSentAt == null)
             .Include(v => v.Vaccine)
             .Include(v => v.Mascota).ThenInclude(m => m.Cliente)
             .ToListAsync();

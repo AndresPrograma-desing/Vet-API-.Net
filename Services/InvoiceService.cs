@@ -72,8 +72,9 @@ public class InvoiceService : IInvoiceService
                 {
                     ProductosConsultasId = d.ProductosConsultasId,
                     ProductoId = d.ProductoId,
+                    VaccineId = d.VaccineId,
                     Codigo = d.Producto?.Codigo ?? string.Empty,
-                    Nombre = d.Producto?.Nombre ?? string.Empty,
+                    Nombre = d.Producto?.Nombre ?? d.Vaccine?.Name ?? string.Empty,
                     Descripcion = d.Descripcion ?? d.Producto?.Descripcion,
                     PrecioUnitario = unitPrice,
                     Cantidad = d.Cantidad,

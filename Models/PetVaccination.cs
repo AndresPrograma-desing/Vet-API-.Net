@@ -20,6 +20,7 @@ public partial class PetVaccination
     public int? DetalleFacturaId { get; set; }
     public DateTime? ReminderSevenSentAt { get; set; }
     public DateTime? ReminderThreeSentAt { get; set; }
+    public DateTime? ReminderDayBeforeSentAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public virtual Mascota Mascota { get; set; } = null!;

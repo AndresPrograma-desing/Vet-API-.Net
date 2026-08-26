@@ -90,7 +90,7 @@ public class HistoriaClinicaAnalizadorUtilities : IHistoriaClinicaAnalizadorUtil
             mascota = new
             {
                 nombre = mascota.Nombre,
-                especie = mascota.Especie,
+                especie = mascota.Especie.Nombre,
                 raza = mascota.Raza,
                 sexo = mascota.Sexo,
                 esterilizado = mascota.Esterilizado,

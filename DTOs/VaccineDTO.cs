@@ -30,9 +30,6 @@ public record VaccineDTO
     [JsonPropertyName("price")]
     public decimal Price { get; set; }
 
-    [JsonPropertyName("producto_id")]
-    public int? ProductoId { get; set; }
-
     [JsonPropertyName("active")]
     public bool Active { get; set; }
 
@@ -65,9 +62,6 @@ public record VaccineCreateDTO
 
     [JsonPropertyName("price")]
     public decimal Price { get; set; }
-
-    [JsonPropertyName("producto_id")]
-    public int? ProductoId { get; set; }
 
     [JsonPropertyName("active")]
     public bool Active { get; set; } = true;

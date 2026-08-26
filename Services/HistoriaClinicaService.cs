@@ -171,7 +171,7 @@ public class HistoriaClinicaService : IHistoriaClinicaService
             Mascota = new HistoriaClinicaMascotaDTO
             {
                 Nombre = mascota.Nombre,
-                Especie = mascota.Especie,
+                Especie = mascota.Especie.Nombre,
                 Raza = mascota.Raza,
                 Sexo = mascota.Sexo,
                 FechaNacimiento = mascota.FechaNacimiento,

@@ -17,10 +17,44 @@ namespace vet_api_Net.Controllers;
 public class VaccineController : ControllerBase
 {
     private readonly IVaccineService _vaccineService;
+    private readonly IEspecieService _especieService;
 
-    public VaccineController(IVaccineService vaccineService)
+    public VaccineController(IVaccineService vaccineService, IEspecieService especieService)
     {
         _vaccineService = vaccineService;
+        _especieService = especieService;
+    }
+
+    [HttpGet(Endpoints.Vaccine.GetSpecies)]
+    public async Task<IActionResult> GetSpecies()
+    {
+        try
+        {
+            var result = await _especieService.GetAllAsync();
+            return Ok(result);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
+        }
+    }
+
+    [HttpPost(Endpoints.Vaccine.CreateSpecies)]
+    public async Task<IActionResult> CreateSpecies([FromBody] EspecieCreateDTO dto)
+    {
+        try
+        {
+            var result = await _especieService.CreateAsync(dto);
+            return StatusCode(201, result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
+        }
     }
 
     [HttpGet]
