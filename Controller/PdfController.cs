@@ -67,9 +67,9 @@ public class PdfController : ControllerBase
 
             return File(fileBytes, "application/pdf", fileName);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -88,9 +88,9 @@ public class PdfController : ControllerBase
 
             return File(fileBytes, "application/pdf", fileName);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -109,9 +109,9 @@ public class PdfController : ControllerBase
 
             return File(fileBytes, "application/pdf", fileName);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 }

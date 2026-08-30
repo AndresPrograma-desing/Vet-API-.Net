@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Services;
 using DTOs;
 
@@ -68,12 +69,12 @@ public class ProfileController : ControllerBase
                 }
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return StatusCode(500, new
             {
                 success = false,
-                message = ex.Message
+                message = ResponseMessagesProfileController.ErrorUpdatingProfile
             });
         }
     }
@@ -96,12 +97,12 @@ public class ProfileController : ControllerBase
                 }
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return StatusCode(500, new
             {
                 success = false,
-                message = ex.Message
+                message = ResponseErrors.InternalServerError
             });
         }
     }

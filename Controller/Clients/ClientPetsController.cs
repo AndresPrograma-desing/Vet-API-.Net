@@ -36,9 +36,9 @@ public class ClientPetController : ControllerBase
         {
             return Conflict(new { message = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = ResponseMessagesClientPetController.InternalErrorCP, details = ex.Message });
+            return StatusCode(500, new { message = ResponseMessagesClientPetController.InternalErrorCP });
         }
     }
 
@@ -73,9 +73,9 @@ public async Task<IActionResult> CreatePetForExistingClient([FromBody] CreatePet
             var result = await _clientPetService.GetClientsWithPetsLookupAsync(searchTerm);
             return Ok(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = "Error interno del servidor", error = ex.Message });
+            return StatusCode(500, new { message = ResponseMessagesClientPetController.InternalErrorCP });
         }
     }
 }

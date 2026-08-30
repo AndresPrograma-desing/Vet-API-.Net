@@ -60,7 +60,7 @@ public class ClientService : IClientService
             {
                 Id = m.Id,
                 Nombre = m.Nombre,
-                Especie = m.Especie,
+                Especie = m.Especie.Nombre,
                 Raza = m.Raza,
                 Color = m.Color,
                 Sexo = m.Sexo,
@@ -148,7 +148,7 @@ public class ClientService : IClientService
             Id = m.Id,
             ClienteId = m.ClienteId,
             Nombre = m.Nombre,
-            Especie = m.Especie,
+            Especie = m.Especie.Nombre,
             Raza = m.Raza,
             Color = m.Color,
             Sexo = m.Sexo,

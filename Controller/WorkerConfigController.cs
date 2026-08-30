@@ -35,9 +35,9 @@ public class WorkerConfigController : ControllerBase
             if (config == null) return NotFound(new { message = ResponseMessagesWorkerConfig.WorkerConfigNotFound });
             return Ok(config);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -53,9 +53,9 @@ public class WorkerConfigController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DTOs;
+using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Interfaze.Utilities;
@@ -24,31 +25,43 @@ public class DashboardService : IDashboardService
         _apiSettings = apiSettingsOptions.Value;
     }
 
-    public async Task<DashboardStatsDTO> GetDashboardStatsAsync(DateTime? startDate, DateTime? endDate, bool useUsd)
+    private static readonly HashSet<string> AllowedGroupBy = new(StringComparer.OrdinalIgnoreCase)
     {
+        ResponseMessagesDashboard.GroupBy.Day,
+        ResponseMessagesDashboard.GroupBy.Week,
+        ResponseMessagesDashboard.GroupBy.Month,
+        ResponseMessagesDashboard.GroupBy.Year
+    };
+
+    public async Task<DashboardStatsDTO> GetDashboardStatsAsync(DateTime? startDate, DateTime? endDate, string groupBy, string? status)
+    {
+        if (!AllowedGroupBy.Contains(groupBy))
+        {
+            throw new ArgumentException(ResponseMessagesDashboard.InvalidGroupBy(groupBy));
+        }
+
         var totalGanancias = await _repository.GetTotalGananciasAsync(startDate, endDate);
         var totalPerdidas = await _repository.GetTotalPerdidasAsync(startDate, endDate);
         var totalFacturas = await _repository.GetTotalFacturasCountAsync(startDate, endDate);
-        var totalCitas = await _repository.GetTotalCitasAsync(startDate, endDate);
+        var totalCitas = await _repository.GetTotalCitasAsync(startDate, endDate, status);
         var totalMascotas = await _repository.GetTotalMascotasAsync(startDate, endDate);
         var totalClientes = await _repository.GetTotalClientesAsync(startDate, endDate);
         var totalProductos = await _repository.GetTotalProductosAsync(startDate, endDate);
 
-        var citasPorEstado = await _repository.GetCitasPorEstadoAsync(startDate, endDate);
-        var ultimasCitasRaw = await _repository.GetUltimasCitasAsync(5);
+        var citasPorEstado = await _repository.GetCitasPorEstadoAsync(startDate, endDate, status);
+        var ultimasCitasRaw = await _repository.GetUltimasCitasAsync(5, status);
         var productosBajoStockRaw = await _repository.GetProductosBajoStockAsync(5);
         var alertasRecientesRaw = await _repository.GetAlertasRecientesAsync(5);
-        var gananciasMensuales = await _repository.GetGananciasMensualesAsync(6);
+        var gananciasMensuales = await _repository.GetGroupedEarningsAsync(startDate, endDate, groupBy);
 
-        if (useUsd)
+
+        var money = await _currencyService.GetActiveMoneyTypeAsync();
+        totalGanancias = _currencyService.ConvertPrice(totalGanancias, money);
+        totalPerdidas = _currencyService.ConvertPrice(totalPerdidas, money);
+
+        foreach (var item in gananciasMensuales)
         {
-            totalGanancias = await _currencyService.ConvertToUsdAsync(totalGanancias);
-            totalPerdidas = await _currencyService.ConvertToUsdAsync(totalPerdidas);
-            
-            foreach (var item in gananciasMensuales)
-            {
-                item.Ganancia = await _currencyService.ConvertToUsdAsync(item.Ganancia);
-            }
+            item.Ganancia = _currencyService.ConvertPrice(item.Ganancia, money);
         }
 
         var ultimasCitas = ultimasCitasRaw.Select(c => new DashboardCitaDTO
@@ -75,7 +88,7 @@ public class DashboardService : IDashboardService
             Nombre = p.Nombre,
             Stock = p.Stock ?? 0,
             StockMinimo = p.StockMinimo ?? 0,
-            PrecioVenta = p.PrecioVenta
+            PrecioVenta = _currencyService.ConvertPrice(p.PrecioVenta, money)
         }).ToList();
 
         var alertasRecientes = alertasRecientesRaw.Select(a => new DashboardAlertDTO
@@ -101,7 +114,8 @@ public class DashboardService : IDashboardService
             UltimasCitas = ultimasCitas,
             ProductosBajoStock = productosBajoStock,
             AlertasRecientes = alertasRecientes,
-            GananciasMensuales = gananciasMensuales
+            GananciasMensuales = gananciasMensuales,
+            MoneyType = money.TypeMoney ?? _apiSettings.USD ?? string.Empty
         };
     }
 }

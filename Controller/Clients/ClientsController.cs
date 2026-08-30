@@ -31,9 +31,9 @@ public class ClientsController : ControllerBase
 
             return Ok(client);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = "Error Proviniente del el Controller de Clientes", details = ex.Message });
+            return StatusCode(500, new { message = ResponseMessagesClient.ErrorGettingClient });
         }
     }
 

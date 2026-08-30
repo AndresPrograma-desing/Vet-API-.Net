@@ -42,7 +42,7 @@ public class HistoriaClinicaRepository : IHistoriaClinicaRepository
         => await _context.SaveChangesAsync() > 0;
 
     public async Task<Mascota?> GetMascotaWithDetailsAsync(int mascotaId)
-        => await _context.Mascotas.FindAsync(mascotaId);
+        => await _context.Mascotas.Include(m => m.Especie).FirstOrDefaultAsync(m => m.Id == mascotaId);
 
     public async Task<List<Consulta>> GetConsultasByMascotaIdAsync(int mascotaId)
         => await _context.Consultas

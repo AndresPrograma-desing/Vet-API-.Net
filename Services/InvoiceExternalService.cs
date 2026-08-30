@@ -67,7 +67,7 @@ public class InvoiceExternalService : IInvoiceExternalService
             Mensaje = finalMessage, 
             Url = !string.IsNullOrWhiteSpace(factura.UrlDocx)
                 ? factura.UrlDocx
-                : $"https://g27frlv5-5168.use2.devtunnels.ms/facturas/{factura.NumeroFactura}.pdf"
+                : $"http://localhost:5168/facturas/{factura.NumeroFactura}.pdf"
         };
 
         bool dispatchResult = await _wsMessageService.EnviarComprobanteAsync(payload);

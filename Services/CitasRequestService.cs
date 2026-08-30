@@ -130,7 +130,7 @@ public class CitasRequestService : ICitasRequestService
                     Id = cita.Mascota.Id,
                     ClienteId = cita.Mascota.ClienteId,
                     Nombre = cita.Mascota.Nombre,
-                    Especie = cita.Mascota.Especie,
+                    Especie = cita.Mascota.Especie.Nombre,
                     Raza = cita.Mascota.Raza,
                     Sexo = cita.Mascota.Sexo,
                     FechaNacimiento = cita.Mascota.FechaNacimiento?.ToString(_apiSettings.DateFormat),

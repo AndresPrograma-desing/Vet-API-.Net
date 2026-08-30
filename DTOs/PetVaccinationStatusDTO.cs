@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using vet_api_Net.Constants;
 
 namespace DTOs;
 
@@ -19,7 +20,7 @@ public record PetVaccinationStatusDTO
     public DateOnly? NextDoseDate { get; set; }
 
     [JsonPropertyName("traffic_light")]
-    public string TrafficLight { get; set; } = "Red";
+    public string TrafficLight { get; set; } = VaccinationVariables.TrafficLightRed;
 }
 
 public record PetVaccinationStatusResponseDTO

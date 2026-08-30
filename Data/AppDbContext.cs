@@ -32,6 +32,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Cliente> Clientes { get; set; }
 
+    public virtual DbSet<Especie> Especies { get; set; }
+
     public virtual DbSet<Consulta> Consultas { get; set; }
 
     public virtual DbSet<ConsultasProducto> ConsultasProductos { get; set; }
@@ -75,6 +77,8 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<Models.EmailTemplate> EmailTemplates { get; set; }
     public virtual DbSet<Models.PasswordResetTicket> PasswordResetTickets { get; set; }
     public virtual DbSet<Models.UserPermission> UserPermissions { get; set; }
+    public virtual DbSet<Models.PermissionModule> PermissionModules { get; set; }
+    public virtual DbSet<Models.PermissionDefinition> PermissionDefinitions { get; set; }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -131,6 +135,42 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey<UserPermission>(d => d.UserId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("fk_user_permissions_user");
+        });
+
+        modelBuilder.Entity<PermissionModule>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.ToTable("permission_modules");
+
+            entity.HasIndex(e => e.ModuleKey, "idx_permission_modules_module_key").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ModuleKey).HasMaxLength(50).HasColumnName("module_key");
+            entity.Property(e => e.Label).HasMaxLength(200).HasColumnName("label");
+            entity.Property(e => e.Icon).HasMaxLength(50).HasColumnName("icon");
+            entity.Property(e => e.SortOrder).HasColumnName("sort_order");
+            entity.Property(e => e.Creado).HasColumnName("creado");
+        });
+
+        modelBuilder.Entity<PermissionDefinition>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.ToTable("permission_definitions");
+
+            entity.HasIndex(e => e.Key, "idx_permission_definitions_key").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ModuleId).HasColumnName("module_id");
+            entity.Property(e => e.Key).HasMaxLength(100).HasColumnName("key");
+            entity.Property(e => e.Label).HasMaxLength(200).HasColumnName("label");
+            entity.Property(e => e.SortOrder).HasColumnName("sort_order");
+            entity.Property(e => e.Creado).HasColumnName("creado");
+
+            entity.HasOne(d => d.Module)
+                .WithMany(m => m.Permissions)
+                .HasForeignKey(d => d.ModuleId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_permission_definitions_module");
         });
 
         modelBuilder.Entity<AlertasInterna>(entity =>
@@ -561,6 +601,8 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => e.ProductoId, "producto_id");
 
+            entity.HasIndex(e => e.VaccineId, "idx_detalles_factura_vaccine");
+
             entity.HasIndex(e => e.ProductosConsultasId, "productos_consultas_id");
 
             entity.Property(e => e.Id)
@@ -585,6 +627,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.ProductoId)
 
                 .HasColumnName("producto_id");
+            entity.Property(e => e.VaccineId)
+
+                .HasColumnName("vaccine_id");
             entity.Property(e => e.ProductosConsultasId)
 
                 .HasColumnName("productos_consultas_id");
@@ -598,7 +643,13 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.Producto).WithMany(p => p.DetallesFacturas)
                 .HasForeignKey(d => d.ProductoId)
+                .IsRequired(false)
                 .HasConstraintName("detalles_factura_ibfk_2");
+
+            entity.HasOne(d => d.Vaccine).WithMany()
+                .HasForeignKey(d => d.VaccineId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("detalles_factura_ibfk_4");
 
             entity.HasOne(d => d.ProductosConsultas).WithMany(p => p.DetallesFacturas)
                 .HasForeignKey(d => d.ProductosConsultasId)
@@ -809,8 +860,6 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => e.IdenteficacionMascota, "identeficacion_mascota").IsUnique();
 
-            entity.HasIndex(e => new { e.Nombre, e.Especie, e.Raza }, "idx_Busqueda_mascotas");
-
             entity.HasIndex(e => e.ClienteId, "idx_cliente_id");
 
             entity.HasIndex(e => e.Nombre, "idx_nombre_mascota");
@@ -839,9 +888,9 @@ public partial class AppDbContext : DbContext
 
 
                 .HasColumnName("creado");
-            entity.Property(e => e.Especie)
+            entity.Property(e => e.EspecieId)
 
-                .HasColumnName("especie");
+                .HasColumnName("especie_id");
             entity.Property(e => e.Esterilizado)
 
                 .HasColumnName("esterilizado");
@@ -865,6 +914,11 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Cliente).WithMany(p => p.Mascota)
                 .HasForeignKey(d => d.ClienteId)
                 .HasConstraintName("mascotas_ibfk_1");
+
+            entity.HasOne(d => d.Especie).WithMany(p => p.Mascotas)
+                .HasForeignKey(d => d.EspecieId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("mascotas_ibfk_2");
         });
 
         modelBuilder.Entity<HistoriaClinica>(entity =>
@@ -1075,24 +1129,33 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("vaccines");
 
-            entity.HasIndex(e => e.ProductoId, "idx_vaccine_producto");
-
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Name).HasMaxLength(150).HasColumnName("name");
-            entity.Property(e => e.Species).HasMaxLength(50).HasColumnName("species");
+            entity.Property(e => e.EspecieId).HasColumnName("especie_id");
             entity.Property(e => e.MinimumAgeWeeks).HasColumnName("minimum_age_weeks");
             entity.Property(e => e.BoosterFrequencyValue).HasColumnName("booster_frequency_value");
             entity.Property(e => e.BoosterFrequencyUnit).HasMaxLength(20).HasColumnName("booster_frequency_unit");
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.Price).HasPrecision(10, 2).HasColumnName("price");
-            entity.Property(e => e.ProductoId).HasColumnName("producto_id");
             entity.Property(e => e.Active).HasColumnName("active");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
-            entity.HasOne(d => d.Producto).WithMany(p => p.Vaccines)
-                .HasForeignKey(d => d.ProductoId)
-                .OnDelete(DeleteBehavior.SetNull)
+            entity.HasOne(d => d.Especie).WithMany(p => p.Vaccines)
+                .HasForeignKey(d => d.EspecieId)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("vaccines_ibfk_1");
+        });
+
+        modelBuilder.Entity<Especie>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("especies");
+
+            entity.HasIndex(e => e.Nombre, "idx_especies_nombre").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Nombre).HasMaxLength(50).HasColumnName("nombre");
         });
 
         modelBuilder.Entity<VaccineSchemeStage>(entity =>
@@ -1177,6 +1240,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.DetalleFacturaId).HasColumnName("detalle_factura_id");
             entity.Property(e => e.ReminderSevenSentAt).HasColumnName("reminder_seven_sent_at");
             entity.Property(e => e.ReminderThreeSentAt).HasColumnName("reminder_three_sent_at");
+            entity.Property(e => e.ReminderDayBeforeSentAt).HasColumnName("reminder_day_before_sent_at");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
             entity.HasOne(d => d.Mascota).WithMany(p => p.PetVaccinations)

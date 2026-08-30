@@ -77,13 +77,15 @@ if (app.Environment.IsDevelopment())
 app.UseCors("HappyPetsPolicy");
 app.UseStaticFiles();
 
+app.UseRateLimiter();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<MessageHub>("/hubs/mensajes");
-app.MapHub<NotificactionsPush>("/hubs/notificaciones");
-app.MapHealthChecks("/health");
+app.MapHub<MessageHub>("/hubs/mensajes").AllowAnonymous();
+app.MapHub<NotificactionsPush>("/hubs/notificaciones").AllowAnonymous();
+app.MapHealthChecks("/health").AllowAnonymous();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("Bienvenido a Happy Pets API {EnvironmentName}. Orígenes CORS: {LocalOrigin}, {TunnelOrigin}",

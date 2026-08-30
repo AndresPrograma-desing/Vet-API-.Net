@@ -1,6 +1,8 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.DTOs;
 using vet_api_Net.Constants;
@@ -10,6 +12,8 @@ namespace vet_api_Net.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[AllowAnonymous]
+[EnableRateLimiting("auth")]
 public class PasswordRecoveryController : ControllerBase
 {
     private readonly IPasswordRecoveryService _passwordRecoveryService;
@@ -37,9 +41,9 @@ public class PasswordRecoveryController : ControllerBase
 
             return Ok(new { success = true, message = ResponseMessagesPasswordRecovery.CodeSentSuccess });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { success = false, error = ex.Message });
+            return StatusCode(500, new { success = false, error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -61,9 +65,9 @@ public class PasswordRecoveryController : ControllerBase
 
             return Ok(new { success = true, message = ResponseMessagesPasswordRecovery.CodeVerifiedSuccess });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { success = false, error = ex.Message });
+            return StatusCode(500, new { success = false, error = ResponseErrors.InternalServerError });
         }
     }
 }

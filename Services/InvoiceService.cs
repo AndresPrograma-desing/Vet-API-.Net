@@ -65,16 +65,38 @@ public class InvoiceService : IInvoiceService
         }
         else if (detalles != null && detalles.Count > 0)
         {
-            foreach (var d in detalles)
+            foreach (var d in detalles.Where(d => !d.VaccineId.HasValue))
             {
                 decimal unitPrice = await _currencyService.ConvertPriceAsync(d.PrecioUnitario);
                 items.Add(new FacturationItemDTO
                 {
                     ProductosConsultasId = d.ProductosConsultasId,
                     ProductoId = d.ProductoId,
+                    VaccineId = d.VaccineId,
                     Codigo = d.Producto?.Codigo ?? string.Empty,
                     Nombre = d.Producto?.Nombre ?? string.Empty,
                     Descripcion = d.Descripcion ?? d.Producto?.Descripcion,
+                    PrecioUnitario = unitPrice,
+                    Cantidad = d.Cantidad,
+                    Total = unitPrice * d.Cantidad,
+                    ConsultaPrice = convertedConsultaPrice
+                });
+            }
+        }
+
+        if (detalles != null)
+        {
+            foreach (var d in detalles.Where(d => d.VaccineId.HasValue))
+            {
+                decimal unitPrice = await _currencyService.ConvertPriceAsync(d.PrecioUnitario);
+                items.Add(new FacturationItemDTO
+                {
+                    ProductosConsultasId = d.ProductosConsultasId,
+                    ProductoId = d.ProductoId,
+                    VaccineId = d.VaccineId,
+                    Codigo = string.Empty,
+                    Nombre = d.Vaccine?.Name ?? d.Descripcion ?? string.Empty,
+                    Descripcion = d.Descripcion,
                     PrecioUnitario = unitPrice,
                     Cantidad = d.Cantidad,
                     Total = unitPrice * d.Cantidad,
@@ -188,22 +210,6 @@ public class InvoiceService : IInvoiceService
 
             if (secretariaId > 0)
             {
-                var consulta = await _facturasRepository.GetConsultaForInvoiceAsync(citaId, citaEntity?.MascotaId ?? dto.MascotaId!.Value);
-                
-                decimal subtotalInDb = 0m;
-                decimal consultaPriceInDb = consulta?.ConsultaPrice ?? 0m;
-
-                if (consulta?.ConsultasProductos != null)
-                {
-                    foreach (var cp in consulta.ConsultasProductos)
-                    {
-                        var basePrice = cp.PrecioUnitario > 0m ? cp.PrecioUnitario : (cp.Producto?.PrecioVenta ?? cp.Producto?.Precio ?? 0m);
-                        subtotalInDb += (basePrice * cp.Cantidad);
-                    }
-                }
-
-                decimal totalInDb = subtotalInDb + consultaPriceInDb;
-
                 var nueva = new Factura
                 {
                     NumeroFactura = numeroFactura,
@@ -212,9 +218,9 @@ public class InvoiceService : IInvoiceService
                     ConsultaId = consultaId,
                     SecretariaId = secretariaId,
                     FechaEmision = DateTime.UtcNow,
-                    Subtotal = subtotalInDb,
+                    Subtotal = dto.Subtotal,
                     Descuento = dto.Descuento ?? 0m,
-                    Total = totalInDb - (dto.Descuento ?? 0m),
+                    Total = dto.Total,
                     MetodoPago = dto.MetodoPago,
                     EstadoPago = dto.EstadoPago == Status.InvoicePending ? Status.Pending : dto.EstadoPago,
                     Notas = dto.Notas,

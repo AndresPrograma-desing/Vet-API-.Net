@@ -46,10 +46,10 @@ public class FacturasRepository : IFacturasRepository
     public async Task<List<DetallesFactura>> GetDetallesByConsultaIdAsync(int consultaId)
     {
         return await _db.DetallesFacturas
-            .Where(d => d.ProductosConsultasId != null)
             .Include(d => d.Producto)
+            .Include(d => d.Vaccine)
             .Include(d => d.ProductosConsultas)
-            .Where(d => d.ProductosConsultas != null && d.ProductosConsultas.ConsultaId == consultaId)
+            .Where(d => d.Factura.ConsultaId == consultaId)
             .ToListAsync();
     }
 
@@ -58,6 +58,7 @@ public class FacturasRepository : IFacturasRepository
         return await _db.DetallesFacturas
             .Where(d => d.FacturaId == facturaId)
             .Include(d => d.Producto)
+            .Include(d => d.Vaccine)
             .ToListAsync();
     }
 

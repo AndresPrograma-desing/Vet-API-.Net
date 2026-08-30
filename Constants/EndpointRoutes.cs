@@ -40,6 +40,11 @@ namespace vet_api_Net.Routes
             public const string Update = "{userId}";
         }
 
+        public static class Permissions
+        {
+            public const string Catalog = "permission";
+        }
+
         public static class Citas
         {
             public const string GetAllRequests = "requests";
@@ -154,6 +159,8 @@ namespace vet_api_Net.Routes
             public const string CreateBatch = "{id}/batches";
             public const string SchemeStages = "{id}/scheme-stages";
             public const string DeleteSchemeStage = "{id}/scheme-stages/{stageId}";
+            public const string GetSpecies = "species";
+            public const string CreateSpecies = "species";
         }
         public static class PetVaccination
         {
@@ -230,7 +237,7 @@ namespace vet_api_Net.Routes
         }
         public static class DashboardController
         {
-            public const string Stats = "stats";
+            public const string Stats = "dashboard";
         }
         public static class ProfileController
         {

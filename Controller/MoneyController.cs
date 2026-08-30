@@ -52,9 +52,9 @@ public class MoneyController : ControllerBase
             return Ok(updatedMoneyType);
 
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { mensaje = ex.Message });
+            return StatusCode(500, new { mensaje = ResponseErrors.InternalServerError });
         }
     }
 
@@ -105,9 +105,9 @@ public class MoneyController : ControllerBase
             var result = await _moneyTypeService.UpdateBcvDollarPriceAsync(request.Price);
             return Ok(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { mensaje = ex.Message });
+            return StatusCode(500, new { mensaje = ResponseErrors.InternalServerError });
         }
     }
 
@@ -128,9 +128,9 @@ public class MoneyController : ControllerBase
             var result = await _moneyTypeService.UpdateBcvDollarPriceAsync(precio.Value);
             return Ok(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { mensaje = ex.Message });
+            return StatusCode(500, new { mensaje = ResponseErrors.InternalServerError });
         }
     }
 }

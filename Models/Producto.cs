@@ -44,6 +44,4 @@ public partial class Producto
     public virtual ICollection<HistorialPrecio> HistorialPrecios { get; set; } = new List<HistorialPrecio>();
 
     public virtual ICollection<MovimientosInventario> MovimientosInventarios { get; set; } = new List<MovimientosInventario>();
-
-    public virtual ICollection<Vaccine> Vaccines { get; set; } = new List<Vaccine>();
 }

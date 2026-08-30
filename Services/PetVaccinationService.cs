@@ -25,7 +25,7 @@ public class PetVaccinationService : IPetVaccinationService
         var mascota = await _repository.GetMascotaByIdAsync(mascotaId)
             ?? throw new KeyNotFoundException(ResponseMessagesVaccination.MascotaNotFound);
 
-        var vaccines = await _repository.GetActiveVaccinesBySpeciesAsync(mascota.Especie);
+        var vaccines = await _repository.GetActiveVaccinesByEspecieIdAsync(mascota.EspecieId);
         var today = DateOnly.FromDateTime(DateTime.Now);
 
         var items = new List<PetVaccinationStatusDTO>();
@@ -139,9 +139,6 @@ public class PetVaccinationService : IPetVaccinationService
         if (petVaccination.DetalleFacturaId.HasValue)
             throw new InvalidOperationException(ResponseMessagesVaccination.AlreadySentToInvoice);
 
-        if (!petVaccination.Vaccine.ProductoId.HasValue)
-            throw new InvalidOperationException(ResponseMessagesVaccination.VaccineNotLinkedToProduct);
-
         if (!petVaccination.ConsultaId.HasValue)
             throw new InvalidOperationException(ResponseMessagesVaccination.NoConsultaLinked);
 
@@ -151,7 +148,7 @@ public class PetVaccinationService : IPetVaccinationService
         var detalle = new DetallesFactura
         {
             FacturaId = factura.Id,
-            ProductoId = petVaccination.Vaccine.ProductoId.Value,
+            VaccineId = petVaccination.Vaccine.Id,
             Descripcion = petVaccination.Vaccine.Name,
             Cantidad = 1,
             PrecioUnitario = petVaccination.Vaccine.Price,
@@ -196,7 +193,7 @@ public class PetVaccinationService : IPetVaccinationService
         {
             MascotaId = mascota.Id,
             MascotaNombre = mascota.Nombre,
-            Especie = mascota.Especie,
+            Especie = mascota.Especie.Nombre,
             Raza = mascota.Raza,
             ClienteNombre = mascota.Cliente != null ? $"{mascota.Cliente.Nombre} {mascota.Cliente.Apellido}" : string.Empty,
             ClienteTelefono = mascota.Cliente?.Telefono,

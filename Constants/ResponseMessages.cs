@@ -1,8 +1,8 @@
 using System;
 
 /*
- describe: 
- - Este archivo es para configurar los mensajes de respuesta del sistema, 
+ describe:
+ - Este archivo es para configurar los mensajes de respuesta del sistema,
    Organiza los strings de las respuestas en clases para su facil orden y escalabilidad
 */
 
@@ -21,6 +21,135 @@ namespace vet_api_Net.Constants
         public const string Admin = "admin";
         public const string Secretaria = "secretaria";
         public const string Doctor = "doctor";
+    }
+    public static class RoleLabels
+    {
+        public static readonly Dictionary<string, string> Values = new()
+        {
+            [Roles.Admin] = "Administrador",
+            [Roles.Secretaria] = "Secretaria",
+            [Roles.Doctor] = "Doctor",
+        };
+    }
+    public static class ResponseMessagesDtos
+    {
+        public static class Cliente
+        {
+            public const string NombreRequired = "El nombre es requerido.";
+            public const string NombreMaxLength = "El nombre no puede exceder los 100 caracteres.";
+            public const string ApellidoRequired = "El apellido es requerido.";
+            public const string ApellidoMaxLength = "El apellido no puede exceder los 100 caracteres.";
+            public const string EmailRequired = "El correo electrónico es requerido.";
+            public const string InvalidEmailFormat = "El correo electrónico no tiene un formato válido.";
+            public const string TelefonoMaxLength = "El teléfono no puede exceder los 20 caracteres.";
+            public const string DireccionMaxLength = "La dirección no puede exceder los 300 caracteres.";
+            public const string IdentificacionMaxLength = "La identificación no puede exceder los 20 caracteres.";
+            public const string NotaMaxLength = "La nota no puede exceder los 500 caracteres.";
+        }
+        public static class Mascota
+        {
+            public const string NombreRequired = "El nombre de la mascota es requerido.";
+            public const string NombreMaxLength = "El nombre no puede exceder los 100 caracteres.";
+            public const string EspecieRequired = "La especie es requerida.";
+            public const string EspecieMaxLength = "La especie no puede exceder los 50 caracteres.";
+            public const string RazaMaxLength = "La raza no puede exceder los 50 caracteres.";
+            public const string ColorMaxLength = "El color no puede exceder los 50 caracteres.";
+            public const string SexoRequired = "El sexo es requerido.";
+            public const string SexoMaxLength = "El sexo no puede exceder los 20 caracteres.";
+            public const string FechaNacimientoMaxLength = "La fecha de nacimiento no puede exceder los 20 caracteres.";
+            public const string PesoNoNegativo = "El peso no puede ser negativo.";
+            public const string IdentificacionMaxLength = "La identificación de la mascota no puede exceder los 50 caracteres.";
+            public const string AlergiasMaxLength = "Las alergias no pueden exceder los 500 caracteres.";
+            public const string CondicionesMedicasMaxLength = "Las condiciones médicas no pueden exceder los 500 caracteres.";
+        }
+        public static class Producto
+        {
+            public const string CodigoRequired = "El código del producto es requerido.";
+            public const string CodigoMaxLength = "El código no puede exceder los 50 caracteres.";
+            public const string NombreMaxLength = "El nombre no puede exceder los 200 caracteres.";
+            public const string DescripcionMaxLength = "La descripción no puede exceder los 500 caracteres.";
+            public const string CategoriaIdInvalid = "La categoria_id debe ser un identificador válido.";
+            public const string TipoRequired = "El tipo de producto es requerido.";
+            public const string TipoMaxLength = "El tipo no puede exceder los 50 caracteres.";
+            public const string StockNoNegativo = "El stock no puede ser negativo.";
+            public const string StockMinimoNoNegativo = "El stock mínimo no puede ser negativo.";
+            public const string UnidadMedidaMaxLength = "La unidad de medida no puede exceder los 50 caracteres.";
+            public const string ProveedorMaxLength = "El proveedor no puede exceder los 200 caracteres.";
+        }
+        public static class Consulta
+        {
+            public const string CitaIdInvalid = "El cita_id debe ser un identificador válido.";
+            public const string MascotaIdInvalid = "El mascota_id debe ser un identificador válido.";
+            public const string DoctorIdInvalid = "El doctor_id debe ser un identificador válido.";
+            public const string PesoActualNoNegativo = "El peso actual no puede ser negativo.";
+            public const string SintomasRequired = "Los síntomas son requeridos.";
+            public const string SintomasMaxLength = "Los síntomas no pueden exceder los 1000 caracteres.";
+            public const string DiagnosticoMaxLength = "El diagnóstico no puede exceder los 1000 caracteres.";
+            public const string TratamientoMaxLength = "El tratamiento no puede exceder los 1000 caracteres.";
+            public const string RecetaMaxLength = "La receta no puede exceder los 1000 caracteres.";
+            public const string ObservacionesMaxLength = "Las observaciones no pueden exceder los 1000 caracteres.";
+            public const string ConsultaPriceNoNegativo = "El precio de la consulta no puede ser negativo.";
+        }
+        public static class ConsultaProducto
+        {
+            public const string ProductoIdInvalid = "El producto_id debe ser un identificador válido.";
+            public const string CantidadPositiva = "La cantidad debe ser mayor a cero.";
+            public const string PrecioUnitarioNoNegativo = "El precio unitario no puede ser negativo.";
+            public const string DosisMaxLength = "La dosis no puede exceder los 100 caracteres.";
+            public const string ViaAdministracionMaxLength = "La vía de administración no puede exceder los 100 caracteres.";
+            public const string FrecuenciaMaxLength = "La frecuencia no puede exceder los 100 caracteres.";
+            public const string DuracionMaxLength = "La duración no puede exceder los 100 caracteres.";
+            public const string InstruccionesMaxLength = "Las instrucciones no pueden exceder los 500 caracteres.";
+            public const string AplicadoPorInvalid = "El aplicado_por debe ser un identificador válido.";
+        }
+        public static class ConsultaVaccine
+        {
+            public const string VaccineIdInvalid = "El vaccine_id debe ser un identificador válido.";
+            public const string VaccineBatchIdInvalid = "El vaccine_batch_id debe ser un identificador válido.";
+            public const string DoseMaxLength = "La dosis no puede exceder los 100 caracteres.";
+            public const string ClinicalObservationsMaxLength = "Las observaciones clínicas no pueden exceder los 500 caracteres.";
+        }
+        public static class Usuario
+        {
+            public const string InvalidEmailFormat = "El correo electrónico no tiene un formato válido.";
+            public const string RolRequired = "El rol es requerido.";
+            public const string RolMaxLength = "El rol no puede exceder los 20 caracteres.";
+            public const string TelefonoMaxLength = "El teléfono no puede exceder los 20 caracteres.";
+            public const string NombreMaxLength = "El nombre no puede exceder los 100 caracteres.";
+            public const string ApellidoMaxLength = "El apellido no puede exceder los 100 caracteres.";
+        }
+        public static class Cita
+        {
+            public const string SecretariaIdInvalid = "secretaria_id inválido";
+            public const string RequiredMotivo = "El motivo de la cita es requerido.";
+            public const string MotivoMaxLength = "El motivo no puede exceder los 500 caracteres.";
+            public const string TipoCitaMaxLength = "El tipo de cita no puede exceder los 50 caracteres.";
+            public const string EstadoMaxLength = "El estado no puede exceder los 50 caracteres.";
+            public const string NotasMaxLength = "Las notas no pueden exceder los 1000 caracteres.";
+            public const string MetodoPagoMaxLength = "El método de pago no puede exceder los 50 caracteres.";
+            public const string EstadoRequired = "El estado es requerido.";
+        }
+        public static class Factura
+        {
+            public const string NumeroFacturaRequired = "El número de factura es requerido.";
+            public const string NumeroFacturaMaxLength = "El número de factura no puede exceder los 50 caracteres.";
+            public const string ClienteIdInvalid = "El cliente_id debe ser un identificador válido.";
+            public const string MascotaIdInvalid = "El mascota_id debe ser un identificador válido.";
+            public const string DoctorIdInvalid = "El doctor_id debe ser un identificador válido.";
+            public const string ProductoIdInvalid = "El producto_id debe ser un identificador válido.";
+            public const string ItemsRequired = "La factura debe tener al menos un ítem.";
+            public const string MontoNoNegativo = "El monto no puede ser negativo.";
+            public const string CantidadPositiva = "La cantidad debe ser mayor a cero.";
+            public const string MetodoPagoRequired = "El método de pago es requerido.";
+            public const string MetodoPagoMaxLength = "El método de pago no puede exceder los 50 caracteres.";
+            public const string EstadoPagoMaxLength = "El estado de pago no puede exceder los 50 caracteres.";
+            public const string NotasMaxLength = "Las notas no pueden exceder los 1000 caracteres.";
+            public const string CodigoRequired = "El código del producto es requerido.";
+            public const string CodigoMaxLength = "El código no puede exceder los 50 caracteres.";
+            public const string ItemNombreRequired = "El nombre del producto es requerido.";
+            public const string ItemNombreMaxLength = "El nombre no puede exceder los 200 caracteres.";
+            public const string ItemDescripcionMaxLength = "La descripción no puede exceder los 500 caracteres.";
+        }
     }
     public static class ResponseMessagesLogin
     {
@@ -186,7 +315,7 @@ namespace vet_api_Net.Constants
         public const string Factura = "Recibo";
         public const string Currency = "BS";
         public const string HappyPets = "Happy Pets";
-        public const string FooterText = "Factura generada por el sistema de gestión de Happy Pets 2026";
+        public const string FooterText = "Recibo generado por el sistema de gestión de Happy Pets 2026";
         public const string ThankYou = "Gracias por confiar en Happy Pets";
         public const string SpecialVet = "Veterinaria Especializada";
         public const string Code = "Código";
@@ -391,6 +520,10 @@ namespace vet_api_Net.Constants
         public const string ErrorGettingPermissions = "Ocurrió un error interno al obtener los permisos del usuario.";
         public const string ErrorUpdatingPermissions = "Ocurrió un error interno al actualizar los permisos del usuario.";
     }
+    public static class ResponseMessagesPermissions
+    {
+        public const string ErrorGettingCatalog = "Ocurrió un error interno al obtener el catálogo de permisos.";
+    }
     public static class ResponseMessagesReportController
     {
         public const string Enabled = "activada";
@@ -550,6 +683,8 @@ namespace vet_api_Net.Constants
         public const string NoDefinido = "No Definido";
         public const string UnknownMonth = "Desconocido";
         public const string Cancelado = "cancelado";
+        public static string InvalidGroupBy(string groupBy) => $"Agrupación '{groupBy}' inválida. Las opciones válidas son: por día, por semana, por mes o por año.";
+        public static string InvalidStatus(string status) => $"Estado '{status}' inválido. Use pendientes, completadas o canceladas.";
 
         public static class Months
         {
@@ -565,6 +700,14 @@ namespace vet_api_Net.Constants
             public const string Oct = "Oct";
             public const string Nov = "Nov";
             public const string Dic = "Dic";
+        }
+
+        public static class GroupBy
+        {
+            public const string Day = "day";
+            public const string Week = "week";
+            public const string Month = "month";
+            public const string Year = "year";
         }
     }
     public static class ResponseMessagesUtilties
@@ -587,7 +730,7 @@ namespace vet_api_Net.Constants
         public static readonly string[] AllowedContentTypes = { "image/jpeg", "image/png", "image/webp", "image/gif" };
         public const long MaxFileSizeBytes = 5 * 1024 * 1024;
         public const string SaveAvatarError = "No se pudo guardar el avatar: no existe el usuario con id {0}";
-        // public const string 
+        // public const string
     }
     public static class ResponseMessagesCalendar
     {
@@ -629,7 +772,6 @@ namespace vet_api_Net.Constants
         public const string PetVaccinationNotFound = "Registro de vacunación no encontrado.";
         public const string PostponementReasonRequired = "El motivo de la postergación es requerido.";
         public const string AlreadyPostponed = "Esta vacunación ya se encuentra postergada.";
-        public const string VaccineNotLinkedToProduct = "La vacuna no está vinculada a un producto facturable. Configure el producto antes de enviar a factura.";
         public const string NoConsultaLinked = "El registro de vacunación no está asociado a una consulta.";
         public const string FacturaNotFoundForConsulta = "No existe una factura generada para la consulta de esta vacunación.";
         public const string AlreadySentToInvoice = "Esta vacunación ya fue enviada a una factura.";
@@ -639,5 +781,16 @@ namespace vet_api_Net.Constants
         public static string PendingReminderNotificationTitle(string petName) => $"Refuerzo próximo: {petName}";
         public static string PendingReminderNotificationMessage(string petName, string vaccineName, string dueDate) =>
             $"La mascota {petName} tiene el refuerzo de {vaccineName} programado para el {dueDate}. Da seguimiento telefónico al cliente.";
+        public static string DayBeforeReminderEmailSubject(string systemName) => $"Recordatorio de vacunación mañana - {systemName}";
+        public static string DayBeforeReminderNotificationTitle(string petName) => $"Vacuna mañana: {petName}";
+        public static string DayBeforeReminderNotificationMessage(string petName, string vaccineName, string dueDate) =>
+            $"La mascota {petName} tiene programada la vacuna {vaccineName} para mañana {dueDate}. Confirma la asistencia con el cliente.";
+    }
+    public static class ResponseMessagesEspecie
+    {
+        public const string EspecieNombreRequired = "El nombre de la especie es requerido.";
+        public const string EspecieMaxLength = "El nombre de la especie no puede exceder los 50 caracteres.";
+        public const string EspecieAlreadyExists = "Ya existe una especie con ese nombre.";
+        public const string EspecieNotFound = "Especie no encontrada.";
     }
 }

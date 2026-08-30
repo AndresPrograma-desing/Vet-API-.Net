@@ -25,9 +25,9 @@ public class PetsController : ControllerBase
             var mascotas = await _petsService.GetAllMascotasAsync();
             return Ok(mascotas);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -40,9 +40,9 @@ public class PetsController : ControllerBase
             if (mascota == null) return NotFound(new { message = ResponseMessagesPetsController.MascotaNotFound });
             return Ok(mascota);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -55,9 +55,9 @@ public class PetsController : ControllerBase
             if (result == null) return NotFound(new { message = ResponseMessagesPetsController.MascotaNotFound });
             return Ok(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -70,9 +70,9 @@ public class PetsController : ControllerBase
             if (!success) return NotFound(new { message = ResponseMessagesPetsController.MascotaNotFound });
             return Ok(new { message = "Mascota eliminada correctamente con todo su historial clínico, citas y consultas asociadas." });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 }

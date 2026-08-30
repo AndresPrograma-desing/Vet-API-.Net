@@ -92,7 +92,7 @@ public class UserService : IUserService
         return valid ? user : null;
     }
 
-    public async Task<Usuario> CreateUserAsync(CreateUserDTO userDto)
+    public async Task<UsuarioResponseDTO> CreateUserAsync(CreateUserDTO userDto)
     {
         if (userDto == null)
         {
@@ -150,8 +150,18 @@ public class UserService : IUserService
             throw new Exception(detailMessage, ex);
         }
 
-        user.Password = string.Empty;
-        return user;
+        return new UsuarioResponseDTO
+        {
+            Id = user.Id,
+            Nombre = user.Nombre,
+            Apellido = user.Apellido,
+            Email = user.Email,
+            Telefono = user.Telefono,
+            Rol = user.Rol,
+            Activo = user.Activo,
+            AvatarUrl = user.AvatarUrl,
+            Creado = user.Creado
+        };
     }
 
     public async Task<List<Usuario>> GetSecretariasAsync()
@@ -174,7 +184,17 @@ public class UserService : IUserService
         return user;
     }
 
-    public async Task<Usuario?> DisableUserAsync(int id) => await UpdateUserStatusAsync(id, false);
+    public async Task<Usuario?> DisableUserAsync(int id)
+    {
+        var user = await _userRepository.GetByIdAsync(id);
+        if (user == null) return null;
+        if (string.Equals(user.Rol, Roles.Admin, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(ResponseMessagesUsers.CannotDeleteAdmin);
+        }
+        return await UpdateUserStatusAsync(id, false);
+    }
+
     public async Task<Usuario?> EnableUserAsync(int id) => await UpdateUserStatusAsync(id, true);
 
     public async Task<Usuario?> DeleteUserAsync(int id)
@@ -182,7 +202,7 @@ public class UserService : IUserService
         var user = await _userRepository.GetByIdAsync(id);
         if (user == null) return null;
 
-        if (string.Equals(user.Rol, "admin", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(user.Rol, Roles.Admin, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException(ResponseMessagesUsers.CannotDeleteAdmin);
         }

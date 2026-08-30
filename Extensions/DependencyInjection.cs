@@ -4,7 +4,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -192,6 +195,50 @@ public static class DependencyInjection
                 };
             });
 
+        services.AddAuthorization(options =>
+        {
+            options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+        });
+
+        var rateLimitingOptions = configuration.GetSection(RateLimitingOptions.SectionName).Get<RateLimitingOptions>()
+            ?? new RateLimitingOptions();
+
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+            {
+                var path = httpContext.Request.Path.Value ?? string.Empty;
+                if (path.StartsWith("/health", StringComparison.OrdinalIgnoreCase) ||
+                    path.StartsWith("/hubs/", StringComparison.OrdinalIgnoreCase))
+                {
+                    return RateLimitPartition.GetNoLimiter("exempt");
+                }
+
+                var partitionKey = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = rateLimitingOptions.GlobalPermitLimit,
+                    Window = TimeSpan.FromSeconds(rateLimitingOptions.GlobalWindowSeconds),
+                    QueueLimit = 0
+                });
+            });
+
+            options.AddPolicy("auth", httpContext =>
+            {
+                var partitionKey = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = rateLimitingOptions.AuthPermitLimit,
+                    Window = TimeSpan.FromSeconds(rateLimitingOptions.AuthWindowSeconds),
+                    QueueLimit = 0
+                });
+            });
+        });
+
         // (El chequeo de DB y la cadena de conexión se han movido arriba de CORS)
 
         services.AddDbContext<AppDbContext>(options =>
@@ -268,12 +315,15 @@ public static class DependencyInjection
         services.AddScoped<ILogsSistemaRepository, LogsSistemaRepository>();
         services.AddScoped<IUserPermissionRepository, UserPermissionRepository>();
         services.AddScoped<IVaccineRepository, VaccineRepository>();
+        services.AddScoped<IEspecieRepository, EspecieRepository>();
         services.AddScoped<IPetVaccinationRepository, PetVaccinationRepository>();
         services.AddScoped<IWorkerConfigRepository, WorkerConfigRepository>();
+        services.AddScoped<IPermissionDefinitionRepository, PermissionDefinitionRepository>();
 
         // Servicios de la Aplicación
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IUserPermissionService, UserPermissionService>();
+        services.AddScoped<IPermissionDefinitionService, PermissionDefinitionService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<ICreateProductService, ProductCreateService>();
@@ -305,6 +355,7 @@ public static class DependencyInjection
         services.AddScoped<ICalendarService, CalendarService>();
         services.AddScoped<ISystemLogService, SystemLogService>();
         services.AddScoped<IVaccineService, VaccineService>();
+        services.AddScoped<IEspecieService, EspecieService>();
         services.AddScoped<IPetVaccinationService, PetVaccinationService>();
         services.AddScoped<IWorkerConfigService, WorkerConfigService>();
         services.AddHttpClient<IEmailSenderService, vet_api_Net.HttpServices.ResendEmailService>()
@@ -350,6 +401,7 @@ public static class DependencyInjection
         services.Configure<TokenTemporalOptions>(configuration.GetSection(TokenTemporalOptions.SectionName));
         services.Configure<TemplatesHTML>(configuration.GetSection(TemplatesHTML.SectionName));
         services.Configure<SecurityOptions>(configuration.GetSection(SecurityOptions.SectionName));
+        services.Configure<RateLimitingOptions>(configuration.GetSection(RateLimitingOptions.SectionName));
 
         return services;
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using vet_api_Net.Constants;
+using vet_api_Net.Data.seeds.Items;
 using vet_api_Net.Infrastructure.Configuration;
 using vet_api_Net.Models;
 
@@ -54,6 +55,7 @@ namespace vet_api_Net.Data.seeds
                     TRUNCATE TABLE mascotas RESTART IDENTITY CASCADE;
                     TRUNCATE TABLE clientes RESTART IDENTITY CASCADE;
                     TRUNCATE TABLE productos RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE especies RESTART IDENTITY CASCADE;
                     {{TRUNCATE_USUARIOS}}
                     TRUNCATE TABLE categorias_productos RESTART IDENTITY CASCADE;
                     TRUNCATE TABLE metodos_pago RESTART IDENTITY CASCADE;
@@ -82,6 +84,7 @@ namespace vet_api_Net.Data.seeds
                     TRUNCATE TABLE mascotas;
                     TRUNCATE TABLE clientes;
                     TRUNCATE TABLE productos;
+                    TRUNCATE TABLE especies;
                     {{TRUNCATE_USUARIOS}}
                     TRUNCATE TABLE categorias_productos;
                     TRUNCATE TABLE metodos_pago;
@@ -318,12 +321,22 @@ namespace vet_api_Net.Data.seeds
             context.Clientes.AddRange(clientes);
             context.SaveChanges();
 
+            if (!context.Especies.Any())
+            {
+                context.Especies.AddRange(
+                    new Especie { Nombre = "canino" },
+                    new Especie { Nombre = "felino" });
+                context.SaveChanges();
+            }
+            var especieCanino = context.Especies.First(e => e.Nombre == "canino");
+            var especieFelino = context.Especies.First(e => e.Nombre == "felino");
+
             var mascotas = new List<Mascota>
             {
                 new Mascota {
                     ClienteId = clientes[0].Id,
                     Nombre = "Firulais",
-                    Especie = "perro",
+                    EspecieId = especieCanino.Id,
                     Sexo = "macho",
                     Color = "Marrón",
                     Peso = 15.5m,
@@ -339,7 +352,7 @@ namespace vet_api_Net.Data.seeds
                 new Mascota {
                     ClienteId = clientes[1].Id,
                     Nombre = "Michi",
-                    Especie = "gato",
+                    EspecieId = especieFelino.Id,
                     Sexo = "macho",
                     Color = "Blanco",
                     Peso = 4.2m,
@@ -355,7 +368,7 @@ namespace vet_api_Net.Data.seeds
                 new Mascota {
                     ClienteId = clientes[2].Id,
                     Nombre = "Rex",
-                    Especie = "perro",
+                    EspecieId = especieCanino.Id,
                     Sexo = "macho",
                     Color = "Negro",
                     Peso = 30.0m,
@@ -371,7 +384,7 @@ namespace vet_api_Net.Data.seeds
                 new Mascota {
                     ClienteId = clientes[3].Id,
                     Nombre = "Luna",
-                    Especie = "gato",
+                    EspecieId = especieFelino.Id,
                     Sexo = "hembra",
                     Color = "Gris",
                     Peso = 3.5m,
@@ -387,7 +400,7 @@ namespace vet_api_Net.Data.seeds
                 new Mascota {
                     ClienteId = clientes[4].Id,
                     Nombre = "Rocky",
-                    Especie = "perro",
+                    EspecieId = especieCanino.Id,
                     Sexo = "macho",
                     Color = "Dorado",
                     Peso = 25.0m,
@@ -403,7 +416,7 @@ namespace vet_api_Net.Data.seeds
                 new Mascota {
                     ClienteId = clientes[5].Id,
                     Nombre = "Pelusa",
-                    Especie = "gato",
+                    EspecieId = especieFelino.Id,
                     Sexo = "hembra",
                     Color = "Blanco y Negro",
                     Peso = 5.1m,
@@ -419,7 +432,7 @@ namespace vet_api_Net.Data.seeds
                 new Mascota {
                     ClienteId = clientes[3].Id,
                     Nombre = "Max",
-                    Especie = "perro",
+                    EspecieId = especieCanino.Id,
                     Sexo = "macho",
                     Color = "Blanco",
                     Peso = 8.0m, IdenteficacionMascota = "M-007",
@@ -472,59 +485,47 @@ namespace vet_api_Net.Data.seeds
                 }
             }
             context.SaveChanges();
-            var categoria = context.CategoriasProductos.FirstOrDefault()!;
 
-            var productos = new List<Producto>
+            // Catálogo dummy de 200 productos (50 por categoría, ver Data/seeds/Items/) para poblar
+            // listados, búsquedas y paginación con volumen realista. Nombres no necesariamente reales.
+            var catalogoPorCategoria = new (string CategoriaNombre, string[] Nombres, string Tipo, string UnidadMedida, bool PuedeRequerirReceta)[]
             {
-                new Producto {
-                    Codigo = "P-001",
-                    Nombre = "Vacuna Antirrábica",
-                    CategoriaId = categoria.Id!,
-                    Tipo = "medicamento",
-                    Precio = 10.00m,
-                    PrecioVenta = 15.00m,
-                    Stock = 50,
-                    StockMinimo = 10,
-                    UnidadMedida = "dosis",
-                    RequiereReceta = false,
-                    Descripcion = "Vacuna anual contra la rabia",
-                    Proveedor = "Pfizer",
-                    Creado = DateTime.Now,
-                    Actualizado = DateTime.Now
-                },
-                new Producto {
-                    Codigo = "P-002",
-                    Nombre = "Desparasitante",
-                    CategoriaId = categoria.Id,
-                    Tipo = "medicamento",
-                    Precio = 5.00m,
-                    PrecioVenta = 5.00m,
-                    Stock = 100,
-                    StockMinimo = 20,
-                    UnidadMedida = "pastilla",
-                    RequiereReceta = false,
-                    Descripcion = "Desparasitante interno de amplio espectro",
-                    Proveedor = "Bayer",
-                    Creado = DateTime.Now,
-                    Actualizado = DateTime.Now
-                },
-                new Producto {
-                    Codigo = "P-003",
-                    Nombre = "Antibiótico",
-                    CategoriaId = categoria.Id,
-                    Tipo = "medicamento",
-                    Precio = 1.00m,
-                    PrecioVenta = 1.00m,
-                    Stock = 3,
-                    StockMinimo = 5,
-                    UnidadMedida = "frasco",
-                    RequiereReceta = true,
-                    Descripcion = "Amoxicilina para infecciones bacterianas",
-                    Proveedor = "Genfarm",
-                    Creado = DateTime.Now,
-                    Actualizado = DateTime.Now
-                }
+                ("Medicinas", MedicineItems.Nombres, "medicamento", "unidad", true),
+                ("Alimentos", FoodItems.Nombres, "alimento", "unidad", false),
+                ("Accesorios", AccessoryItems.Nombres, "accesorio", "unidad", false),
+                ("Higiene", HygieneItems.Nombres, "higiene", "unidad", false)
             };
+
+            var productos = new List<Producto>();
+            var rng = new Random(20260825);
+            var consecutivo = 1;
+            foreach (var (categoriaNombre, nombres, tipo, unidadMedida, puedeRequerirReceta) in catalogoPorCategoria)
+            {
+                var categoriaProducto = context.CategoriasProductos.First(c => c.Nombre == categoriaNombre);
+                foreach (var nombre in nombres)
+                {
+                    var precio = Math.Round((decimal)(rng.NextDouble() * 45 + 2), 2);
+                    var margen = 1.2m + (decimal)(rng.NextDouble() * 0.5);
+                    productos.Add(new Producto
+                    {
+                        Codigo = $"P-{consecutivo:D4}",
+                        Nombre = nombre,
+                        CategoriaId = categoriaProducto.Id,
+                        Tipo = tipo,
+                        Precio = precio,
+                        PrecioVenta = Math.Round(precio * margen, 2),
+                        Stock = rng.Next(0, 120),
+                        StockMinimo = rng.Next(5, 20),
+                        UnidadMedida = unidadMedida,
+                        RequiereReceta = puedeRequerirReceta && rng.NextDouble() < 0.5,
+                        Descripcion = $"{nombre} - catálogo {categoriaNombre.ToLower()}.",
+                        Proveedor = "Proveedor Genérico",
+                        Creado = DateTime.Now,
+                        Actualizado = DateTime.Now
+                    });
+                    consecutivo++;
+                }
+            }
             context.Productos.AddRange(productos);
             context.SaveChanges();
 
@@ -635,75 +636,138 @@ namespace vet_api_Net.Data.seeds
             context.Consultas.AddRange(consultas);
             context.SaveChanges();
 
+            // Facturas + detalles dummy repartidas con distintos saltos de días/semanas/meses (0 a ~160 días atrás)
+            // para alimentar el dashboard de ganancias con una serie más realista, no solo un punto por mes
+            // (GetTotalGananciasAsync/GetTotalPerdidasAsync/GetGananciasMensualesAsync en DashboardRespository.cs).
+            var metodosPagoFactura = new[] { PaymentMethods.Cash, PaymentMethods.Transfer, PaymentMethods.Card, PaymentMethods.MobilePayment };
+            var facturaSeeds = new[]
+            {
+                new { Cliente = clientes[0], Mascota = mascotas[0], ConsultaId = (int?)consultas[0].Id, DiasAtras = 0, Estado = Status.Completed, Productos = new[] { productos[0], productos[52] } },
+                new { Cliente = clientes[1], Mascota = mascotas[1], ConsultaId = (int?)null, DiasAtras = 3, Estado = Status.Completed, Productos = new[] { productos[101] } },
+                new { Cliente = clientes[2], Mascota = mascotas[2], ConsultaId = (int?)null, DiasAtras = 7, Estado = Status.Completed, Productos = new[] { productos[3] } },
+                new { Cliente = clientes[3], Mascota = mascotas[3], ConsultaId = (int?)null, DiasAtras = 14, Estado = Status.Cancelled, Productos = new[] { productos[55] } },
+                new { Cliente = clientes[4], Mascota = mascotas[4], ConsultaId = (int?)null, DiasAtras = 21, Estado = Status.Completed, Productos = new[] { productos[102], productos[151] } },
+                new { Cliente = clientes[5], Mascota = mascotas[5], ConsultaId = (int?)null, DiasAtras = 35, Estado = Status.Completed, Productos = new[] { productos[7] } },
+                new { Cliente = clientes[0], Mascota = mascotas[6], ConsultaId = (int?)null, DiasAtras = 49, Estado = Status.Pending, Productos = new[] { productos[153] } },
+                new { Cliente = clientes[1], Mascota = mascotas[1], ConsultaId = (int?)null, DiasAtras = 70, Estado = Status.Completed, Productos = new[] { productos[8], productos[103] } },
+                new { Cliente = clientes[2], Mascota = mascotas[2], ConsultaId = (int?)null, DiasAtras = 100, Estado = Status.Completed, Productos = new[] { productos[150] } },
+                new { Cliente = clientes[3], Mascota = mascotas[3], ConsultaId = (int?)null, DiasAtras = 130, Estado = Status.Cancelled, Productos = new[] { productos[60] } },
+                new { Cliente = clientes[4], Mascota = mascotas[4], ConsultaId = (int?)null, DiasAtras = 160, Estado = Status.Completed, Productos = new[] { productos[10], productos[110] } }
+            };
+
+            var facturasConDetalles = new List<(Factura Factura, List<DetallesFactura> Detalles)>();
+            var facturaConsecutivo = 1;
+            foreach (var seed in facturaSeeds)
+            {
+                var fechaEmision = DateTime.Now.AddDays(-seed.DiasAtras);
+                var detalles = seed.Productos.Select(p => new DetallesFactura
+                {
+                    ProductoId = p.Id,
+                    Descripcion = p.Nombre,
+                    Cantidad = 1,
+                    PrecioUnitario = p.PrecioVenta,
+                    Total = p.PrecioVenta,
+                    Created = fechaEmision
+                }).ToList();
+
+                var subtotal = detalles.Sum(d => d.Total);
+                var consultaPrice = seed.ConsultaId.HasValue ? (consultas[0].ConsultaPrice ?? 0m) : 0m;
+
+                var factura = new Factura
+                {
+                    NumeroFactura = $"FAC-{facturaConsecutivo:D4}",
+                    ClienteId = seed.Cliente.Id,
+                    MascotaId = seed.Mascota.Id,
+                    ConsultaId = seed.ConsultaId,
+                    SecretariaId = secretaria.Id,
+                    FechaEmision = fechaEmision,
+                    Subtotal = subtotal,
+                    Descuento = 0m,
+                    Total = subtotal + consultaPrice,
+                    MetodoPago = metodosPagoFactura[facturaConsecutivo % metodosPagoFactura.Length],
+                    EstadoPago = seed.Estado,
+                    Creado = fechaEmision,
+                    Actualizado = fechaEmision
+                };
+                facturasConDetalles.Add((factura, detalles));
+                facturaConsecutivo++;
+            }
+            context.Facturas.AddRange(facturasConDetalles.Select(x => x.Factura));
+            context.SaveChanges();
+
+            foreach (var (factura, detalles) in facturasConDetalles)
+            {
+                foreach (var detalle in detalles)
+                {
+                    detalle.FacturaId = factura.Id;
+                }
+                context.DetallesFacturas.AddRange(detalles);
+            }
+            context.SaveChanges();
+
             // Seed del catálogo de vacunas + lotes + aplicaciones, vinculadas a las mascotas/clientes creados arriba,
             // cubriendo los 3 estados de semaforización, un esquema de cachorro en curso y una postergación médica.
-            var vaccineProduct = context.Productos.FirstOrDefault(p => p.Codigo == "P-001");
-            if (vaccineProduct != null && !context.Vaccines.Any())
+            if (!context.Vaccines.Any())
             {
                 var today = DateOnly.FromDateTime(DateTime.Now);
 
                 var rabiaCanina = new Vaccine
                 {
                     Name = "Antirrábica",
-                    Species = "canino",
+                    EspecieId = especieCanino.Id,
                     MinimumAgeWeeks = 12,
                     BoosterFrequencyValue = 1,
                     BoosterFrequencyUnit = "years",
                     Description = "Vacuna anual contra la rabia",
                     Price = 15.00m,
-                    ProductoId = vaccineProduct.Id,
                     Active = true,
                     CreatedAt = DateTime.Now
                 };
                 var rabiaFelina = new Vaccine
                 {
                     Name = "Antirrábica",
-                    Species = "felino",
+                    EspecieId = especieFelino.Id,
                     MinimumAgeWeeks = 12,
                     BoosterFrequencyValue = 1,
                     BoosterFrequencyUnit = "years",
-                    Description = "Vacuna anual contra la rabia (felinos). Sin producto de facturación vinculado todavía.",
+                    Description = "Vacuna anual contra la rabia (felinos).",
                     Price = 15.00m,
-                    ProductoId = null,
                     Active = true,
                     CreatedAt = DateTime.Now
                 };
                 var parvovirusCanino = new Vaccine
                 {
                     Name = "Parvovirus",
-                    Species = "canino",
+                    EspecieId = especieCanino.Id,
                     MinimumAgeWeeks = 6,
                     BoosterFrequencyValue = 1,
                     BoosterFrequencyUnit = "years",
                     Description = "Esquema inicial de cachorro (series con intervalos de 21 días) y refuerzo anual en adultos.",
                     Price = 12.00m,
-                    ProductoId = null,
                     Active = true,
                     CreatedAt = DateTime.Now
                 };
                 var tripleFelina = new Vaccine
                 {
                     Name = "Triple Felina",
-                    Species = "felino",
+                    EspecieId = especieFelino.Id,
                     MinimumAgeWeeks = 8,
                     BoosterFrequencyValue = 1,
                     BoosterFrequencyUnit = "years",
                     Description = "Panleucopenia, Rinotraqueitis y Calicivirus.",
                     Price = 18.00m,
-                    ProductoId = null,
                     Active = true,
                     CreatedAt = DateTime.Now
                 };
                 var moquilloCanino = new Vaccine
                 {
                     Name = "Moquillo",
-                    Species = "canino",
+                    EspecieId = especieCanino.Id,
                     MinimumAgeWeeks = 8,
                     BoosterFrequencyValue = 6,
                     BoosterFrequencyUnit = "months",
                     Description = "Refuerzo semestral en adultos.",
                     Price = 14.00m,
-                    ProductoId = null,
                     Active = true,
                     CreatedAt = DateTime.Now
                 };

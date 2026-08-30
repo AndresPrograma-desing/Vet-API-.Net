@@ -35,9 +35,9 @@ public class PetVaccinationController : ControllerBase
         {
             return NotFound(new { message = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -53,9 +53,9 @@ public class PetVaccinationController : ControllerBase
         {
             return NotFound(new { message = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -79,9 +79,9 @@ public class PetVaccinationController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -105,9 +105,9 @@ public class PetVaccinationController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
@@ -127,16 +127,16 @@ public class PetVaccinationController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 
     [HttpGet(Endpoints.PetVaccination.PendingThisWeek)]
     public async Task<IActionResult> GetPendingThisWeek(
-        [FromQuery] string? searchTerm, 
-        [FromQuery] int pageNumber = 1, 
+        [FromQuery] string? searchTerm,
+        [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
         try
@@ -144,9 +144,9 @@ public class PetVaccinationController : ControllerBase
             var result = await _petVaccinationService.GetPendingThisWeekAsync(pageNumber, pageSize, searchTerm);
             return Ok(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { error = ex.Message });
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
     }
 }

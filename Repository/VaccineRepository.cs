@@ -24,7 +24,7 @@ public class VaccineRepository : IVaccineRepository
         var query = _context.Vaccines.AsNoTracking().AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(species))
-            query = query.Where(v => v.Species.ToLower() == species.Trim().ToLower());
+            query = query.Where(v => v.Especie.Nombre.ToLower() == species.Trim().ToLower());
 
         if (active.HasValue)
             query = query.Where(v => v.Active == active.Value);
@@ -37,6 +37,7 @@ public class VaccineRepository : IVaccineRepository
 
         return await query
             .Include(v => v.SchemeStages)
+            .Include(v => v.Especie)
             .OrderBy(v => v.Name)
             .ToPagedResultAsync(pageNumber, pageSize);
     }
@@ -45,7 +46,7 @@ public class VaccineRepository : IVaccineRepository
         => await _context.Vaccines.FindAsync(id);
 
     public async Task<Vaccine?> GetByIdWithStagesAsync(int id)
-        => await _context.Vaccines.Include(v => v.SchemeStages).FirstOrDefaultAsync(v => v.Id == id);
+        => await _context.Vaccines.Include(v => v.SchemeStages).Include(v => v.Especie).FirstOrDefaultAsync(v => v.Id == id);
 
     public void AddVaccine(Vaccine vaccine)
         => _context.Vaccines.Add(vaccine);

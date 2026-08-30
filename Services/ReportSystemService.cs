@@ -73,7 +73,7 @@ namespace vet_api_Net.Services
 					m.Id,
 					m.ClienteId,
 					m.Nombre,
-					m.Especie,
+					Especie = m.Especie.Nombre,
 					m.Raza,
 					m.Sexo,
 					m.FechaNacimiento,

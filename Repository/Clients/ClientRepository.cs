@@ -47,6 +47,8 @@ public class ClientRepository : IClientRepository
                 .ThenInclude(m => m.Consulta)
             .Include(c => c.Mascota)
                 .ThenInclude(m => m.Cita)
+            .Include(c => c.Mascota)
+                .ThenInclude(m => m.Especie)
             .OrderBy(c => c.Id)
             .ToListAsync();
 
@@ -86,6 +88,7 @@ public class ClientRepository : IClientRepository
     {
         return await _context.Mascotas
             .AsNoTracking()
+            .Include(m => m.Especie)
             .Where(m => m.ClienteId == clienteId)
             .ToListAsync();
     }

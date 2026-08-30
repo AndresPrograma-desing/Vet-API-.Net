@@ -33,9 +33,9 @@ public class NotificationController : ControllerBase
         {
             return NotFound(new { message = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = ResponseMessagesNotification.ErrorGettingNotifications, details = ex.Message });
+            return StatusCode(500, new { message = ResponseMessagesNotification.ErrorGettingNotifications });
         }
     }
 
@@ -61,9 +61,9 @@ public class NotificationController : ControllerBase
         {
             return Conflict(new { message = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = ResponseMessagesNotification.ErrorCreatingNotification, details = ex.Message });
+            return StatusCode(500, new { message = ResponseMessagesNotification.ErrorCreatingNotification });
         }
     }
 
@@ -99,10 +99,10 @@ public class NotificationController : ControllerBase
             // Por si el usuario del token ya no existe físicamente en la DB
             return NotFound(new { message = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Cualquier fallo inesperado del servidor se va por un 500 controlado
-            return StatusCode(500, new { message = ResponseMessagesNotification.ErrorUpdatingNotification, details = ex.Message });
+            return StatusCode(500, new { message = ResponseMessagesNotification.ErrorUpdatingNotification });
         }
     }
 }

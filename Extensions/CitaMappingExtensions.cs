@@ -28,7 +28,7 @@ public static class CitaMappingExtensions
                 Id = cr.Mascota.Id,
                 ClienteId = cr.Mascota.ClienteId,
                 Nombre = cr.Mascota.Nombre,
-                Especie = cr.Mascota.Especie,
+                Especie = cr.Mascota.Especie.Nombre,
                 Raza = cr.Mascota.Raza,
                 Sexo = cr.Mascota.Sexo,
                 FechaNacimiento = cr.Mascota.FechaNacimiento?.ToString("yyyy-MM-dd"),

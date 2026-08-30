@@ -41,13 +41,17 @@ public async Task<ActionResult<ConsultaRequestDTO>> Create([FromBody] CreateCons
     {
         return BadRequest(new { message = ex.Message });
     }
-    catch (KeyNotFoundException ex)  
+    catch (KeyNotFoundException ex)
     {
         return NotFound(new { message = ex.Message });
     }
-    catch (Exception ex)  
+    catch (InvalidOperationException ex)
     {
-        return StatusCode(500, new { message = ResponseErrors.InternalServerError, details = ex.Message });
+        return BadRequest(new { message = ex.Message });
+    }
+    catch (Exception)
+    {
+        return StatusCode(500, new { message = ResponseErrors.InternalServerError });
     }
 }
 
@@ -61,9 +65,9 @@ public async Task<ActionResult<ConsultaRequestDTO>> Create([FromBody] CreateCons
 
             return Ok(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = ResponseErrors.InternalServerError, details = ex.Message});
+            return StatusCode(500, new { message = ResponseErrors.InternalServerError });
         }
     }
 
@@ -84,9 +88,9 @@ public async Task<ActionResult<ConsultaRequestDTO>> Create([FromBody] CreateCons
         {
             return StatusCode(403, new { error = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new {message = ResponseErrors.InternalServerError, details = ex.Message });
+            return StatusCode(500, new { message = ResponseErrors.InternalServerError });
         }
     }
 
@@ -106,9 +110,9 @@ public async Task<ActionResult<ConsultaRequestDTO>> Create([FromBody] CreateCons
         {
             return NotFound(new { message = ex.Message });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = ResponseMessagesConsultas.ErrorCreated, details = ex.Message });
+            return StatusCode(500, new { message = ResponseMessagesConsultas.ErrorCreated });
         }
     }
 }
