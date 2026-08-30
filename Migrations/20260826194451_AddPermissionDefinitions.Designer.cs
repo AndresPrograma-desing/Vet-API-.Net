@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using vet_api_Net.Data;
@@ -11,9 +12,11 @@ using vet_api_Net.Data;
 namespace vet_api_Net.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260826194451_AddPermissionDefinitions")]
+    partial class AddPermissionDefinitions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1136,6 +1139,12 @@ namespace vet_api_Net.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("creado");
 
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("icon");
+
                     b.Property<string>("Key")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -1148,65 +1157,16 @@ namespace vet_api_Net.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("label");
 
-                    b.Property<int>("ModuleId")
-                        .HasColumnType("integer")
-                        .HasColumnName("module_id");
-
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer")
                         .HasColumnName("sort_order");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ModuleId");
 
                     b.HasIndex(new[] { "Key" }, "idx_permission_definitions_key")
                         .IsUnique();
 
                     b.ToTable("permission_definitions", (string)null);
-                });
-
-            modelBuilder.Entity("vet_api_Net.Models.PermissionModule", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Creado")
-                        .HasColumnType("timestamp without time zone")
-                        .HasColumnName("creado");
-
-                    b.Property<string>("Icon")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("icon");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("label");
-
-                    b.Property<string>("ModuleKey")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("module_key");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer")
-                        .HasColumnName("sort_order");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex(new[] { "ModuleKey" }, "idx_permission_modules_module_key")
-                        .IsUnique();
-
-                    b.ToTable("permission_modules", (string)null);
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.PetVaccination", b =>
@@ -2123,18 +2083,6 @@ namespace vet_api_Net.Migrations
                     b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("vet_api_Net.Models.PermissionDefinition", b =>
-                {
-                    b.HasOne("vet_api_Net.Models.PermissionModule", "Module")
-                        .WithMany("Permissions")
-                        .HasForeignKey("ModuleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_permission_definitions_module");
-
-                    b.Navigation("Module");
-                });
-
             modelBuilder.Entity("vet_api_Net.Models.PetVaccination", b =>
                 {
                     b.HasOne("vet_api_Net.Models.Consulta", "Consulta")
@@ -2306,11 +2254,6 @@ namespace vet_api_Net.Migrations
             modelBuilder.Entity("vet_api_Net.Models.MetodoPago", b =>
                 {
                     b.Navigation("Citas");
-                });
-
-            modelBuilder.Entity("vet_api_Net.Models.PermissionModule", b =>
-                {
-                    b.Navigation("Permissions");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.Producto", b =>

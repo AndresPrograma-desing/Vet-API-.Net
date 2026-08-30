@@ -22,6 +22,15 @@ namespace vet_api_Net.Constants
         public const string Secretaria = "secretaria";
         public const string Doctor = "doctor";
     }
+    public static class RoleLabels
+    {
+        public static readonly Dictionary<string, string> Values = new()
+        {
+            [Roles.Admin] = "Administrador",
+            [Roles.Secretaria] = "Secretaria",
+            [Roles.Doctor] = "Doctor",
+        };
+    }
     public static class ResponseMessagesDtos
     {
         public static class Cliente
@@ -503,6 +512,10 @@ namespace vet_api_Net.Constants
         public const string PermissionsRequired = "Debe indicar la lista de permisos.";
         public const string ErrorGettingPermissions = "Ocurrió un error interno al obtener los permisos del usuario.";
         public const string ErrorUpdatingPermissions = "Ocurrió un error interno al actualizar los permisos del usuario.";
+    }
+    public static class ResponseMessagesPermissions
+    {
+        public const string ErrorGettingCatalog = "Ocurrió un error interno al obtener el catálogo de permisos.";
     }
     public static class ResponseMessagesReportController
     {

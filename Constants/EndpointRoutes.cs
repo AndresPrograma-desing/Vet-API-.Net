@@ -40,6 +40,11 @@ namespace vet_api_Net.Routes
             public const string Update = "{userId}";
         }
 
+        public static class Permissions
+        {
+            public const string Catalog = "permission";
+        }
+
         public static class Citas
         {
             public const string GetAllRequests = "requests";

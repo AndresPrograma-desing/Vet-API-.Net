@@ -92,7 +92,7 @@ public class UserService : IUserService
         return valid ? user : null;
     }
 
-    public async Task<Usuario> CreateUserAsync(CreateUserDTO userDto)
+    public async Task<UsuarioResponseDTO> CreateUserAsync(CreateUserDTO userDto)
     {
         if (userDto == null)
         {
@@ -150,8 +150,18 @@ public class UserService : IUserService
             throw new Exception(detailMessage, ex);
         }
 
-        user.Password = string.Empty;
-        return user;
+        return new UsuarioResponseDTO
+        {
+            Id = user.Id,
+            Nombre = user.Nombre,
+            Apellido = user.Apellido,
+            Email = user.Email,
+            Telefono = user.Telefono,
+            Rol = user.Rol,
+            Activo = user.Activo,
+            AvatarUrl = user.AvatarUrl,
+            Creado = user.Creado
+        };
     }
 
     public async Task<List<Usuario>> GetSecretariasAsync()
