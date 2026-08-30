@@ -663,6 +663,7 @@ namespace vet_api_Net.Constants
         public const string NoDefinido = "No Definido";
         public const string UnknownMonth = "Desconocido";
         public const string Cancelado = "cancelado";
+        public static string InvalidGroupBy(string groupBy) => $"Agrupación '{groupBy}' inválida. Las opciones válidas son: por día, por semana, por mes o por año.";
 
         public static class Months
         {
@@ -678,6 +679,14 @@ namespace vet_api_Net.Constants
             public const string Oct = "Oct";
             public const string Nov = "Nov";
             public const string Dic = "Dic";
+        }
+
+        public static class GroupBy
+        {
+            public const string Day = "day";
+            public const string Week = "week";
+            public const string Month = "month";
+            public const string Year = "year";
         }
     }
     public static class ResponseMessagesUtilties

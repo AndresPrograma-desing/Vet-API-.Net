@@ -56,12 +56,13 @@ public class DashboardRepository : IDashboardRepository
         return await query.CountAsync();
     }
 
-    public async Task<int> GetTotalCitasAsync(DateTime? startDate, DateTime? endDate)
+    public async Task<int> GetTotalCitasAsync(DateTime? startDate, DateTime? endDate, string? status)
     {
         var query = _context.Citas.AsQueryable();
         if (startDate.HasValue) query = query.Where(c => c.FechaCita >= startDate.Value);
         if (endDate.HasValue) query = query.Where(c => c.FechaCita <= endDate.Value);
-        
+        if (!string.IsNullOrWhiteSpace(status)) query = query.Where(c => c.Estado != null && c.Estado.ToLower() == status.ToLower());
+
         return await query.CountAsync();
     }
 
@@ -92,11 +93,12 @@ public class DashboardRepository : IDashboardRepository
         return await query.CountAsync();
     }
 
-    public async Task<Dictionary<string, int>> GetCitasPorEstadoAsync(DateTime? startDate, DateTime? endDate)
+    public async Task<Dictionary<string, int>> GetCitasPorEstadoAsync(DateTime? startDate, DateTime? endDate, string? status)
     {
         var query = _context.Citas.AsQueryable();
         if (startDate.HasValue) query = query.Where(c => c.FechaCita >= startDate.Value);
         if (endDate.HasValue) query = query.Where(c => c.FechaCita <= endDate.Value);
+        if (!string.IsNullOrWhiteSpace(status)) query = query.Where(c => c.Estado != null && c.Estado.ToLower() == status.ToLower());
 
         var groups = await query
             .GroupBy(c => c.Estado ?? ResponseMessagesDashboard.NoDefinido)
@@ -110,12 +112,17 @@ public class DashboardRepository : IDashboardRepository
         );
     }
 
-    public async Task<List<Cita>> GetUltimasCitasAsync(int count)
+    public async Task<List<Cita>> GetUltimasCitasAsync(int count, string? status)
     {
-        return await _context.Citas
+        var query = _context.Citas
             .Include(c => c.Mascota)
                 .ThenInclude(m => m.Cliente)
             .Include(c => c.Doctor)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(status)) query = query.Where(c => c.Estado != null && c.Estado.ToLower() == status.ToLower());
+
+        return await query
             .OrderByDescending(c => c.FechaCita)
             .ThenByDescending(c => c.HoraCita)
             .Take(count)
@@ -139,33 +146,67 @@ public class DashboardRepository : IDashboardRepository
             .ToListAsync();
     }
 
-    public async Task<List<DashboardEarningByMonthDTO>> GetGananciasMensualesAsync(int meses)
+    public async Task<List<DashboardEarningByMonthDTO>> GetGroupedEarningsAsync(DateTime? startDate, DateTime? endDate, string groupBy)
     {
-        var startDate = DateTime.UtcNow.AddMonths(-meses);
-        
+        var effectiveEnd = endDate ?? DateTime.Now;
+        var effectiveStart = startDate ?? groupBy switch
+        {
+            ResponseMessagesDashboard.GroupBy.Day => effectiveEnd.AddDays(-30),
+            ResponseMessagesDashboard.GroupBy.Week => effectiveEnd.AddDays(-7 * 12),
+            ResponseMessagesDashboard.GroupBy.Year => effectiveEnd.AddYears(-5),
+            _ => effectiveEnd.AddMonths(-6)
+        };
+
         var facturas = await _context.Facturas
-            .Where(f => f.FechaEmision >= startDate && 
-                        f.EstadoPago != null && 
-                        f.EstadoPago.ToLower() != Status.Pending.ToLower() && 
-                        f.EstadoPago.ToLower() != Status.Cancelled.ToLower() && 
+            .Where(f => f.FechaEmision >= effectiveStart &&
+                        f.FechaEmision <= effectiveEnd &&
+                        f.EstadoPago != null &&
+                        f.EstadoPago.ToLower() != Status.Pending.ToLower() &&
+                        f.EstadoPago.ToLower() != Status.Cancelled.ToLower() &&
                         f.EstadoPago.ToLower() != ResponseMessagesDashboard.Cancelado)
             .Select(f => new { f.FechaEmision, f.Total })
             .ToListAsync();
 
         // Agrupación en memoria para soportar múltiples bases de datos sin problemas de traducción de LINQ a SQL sobre DateTime
+        Func<DateTime, DateTime> bucketStart = groupBy switch
+        {
+            ResponseMessagesDashboard.GroupBy.Day => d => d.Date,
+            ResponseMessagesDashboard.GroupBy.Week => d => StartOfWeek(d),
+            ResponseMessagesDashboard.GroupBy.Year => d => new DateTime(d.Year, 1, 1),
+            _ => d => new DateTime(d.Year, d.Month, 1)
+        };
+
         var result = facturas
-            .GroupBy(f => new { f.FechaEmision.Year, f.FechaEmision.Month })
+            .GroupBy(f => bucketStart(f.FechaEmision))
             .Select(g => new DashboardEarningByMonthDTO
             {
-                Mes = GetMonthName(g.Key.Month),
+                FechaInicio = g.Key,
+                Periodo = FormatPeriodLabel(g.Key, groupBy),
+                Mes = groupBy == ResponseMessagesDashboard.GroupBy.Month ? GetMonthName(g.Key.Month) : string.Empty,
                 Anio = g.Key.Year,
                 Ganancia = g.Sum(f => f.Total)
             })
-            .OrderBy(r => r.Anio)
-            .ThenBy(r => GetMonthNumber(r.Mes))
+            .OrderBy(r => r.FechaInicio)
             .ToList();
 
         return result;
+    }
+
+    private static DateTime StartOfWeek(DateTime date)
+    {
+        int diff = ((int)date.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+        return date.Date.AddDays(-diff);
+    }
+
+    private static string FormatPeriodLabel(DateTime bucketStart, string groupBy)
+    {
+        return groupBy switch
+        {
+            ResponseMessagesDashboard.GroupBy.Day => bucketStart.ToString("dd/MM/yyyy"),
+            ResponseMessagesDashboard.GroupBy.Week => $"Semana del {bucketStart:dd/MM/yyyy}",
+            ResponseMessagesDashboard.GroupBy.Year => bucketStart.Year.ToString(),
+            _ => $"{GetMonthName(bucketStart.Month)} {bucketStart.Year}"
+        };
     }
 
     private static string GetMonthName(int month)
@@ -186,22 +227,5 @@ public class DashboardRepository : IDashboardRepository
             12 => ResponseMessagesDashboard.Months.Dic,
             _ => ResponseMessagesDashboard.UnknownMonth
         };
-    }
-
-    private static int GetMonthNumber(string name)
-    {
-        if (name == ResponseMessagesDashboard.Months.Ene) return 1;
-        if (name == ResponseMessagesDashboard.Months.Feb) return 2;
-        if (name == ResponseMessagesDashboard.Months.Mar) return 3;
-        if (name == ResponseMessagesDashboard.Months.Abr) return 4;
-        if (name == ResponseMessagesDashboard.Months.May) return 5;
-        if (name == ResponseMessagesDashboard.Months.Jun) return 6;
-        if (name == ResponseMessagesDashboard.Months.Jul) return 7;
-        if (name == ResponseMessagesDashboard.Months.Ago) return 8;
-        if (name == ResponseMessagesDashboard.Months.Sep) return 9;
-        if (name == ResponseMessagesDashboard.Months.Oct) return 10;
-        if (name == ResponseMessagesDashboard.Months.Nov) return 11;
-        if (name == ResponseMessagesDashboard.Months.Dic) return 12;
-        return 0;
     }
 }

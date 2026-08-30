@@ -27,11 +27,11 @@ namespace vet_api_Net.Controllers
         }
 
         [HttpGet(Endpoints.ExcellController.DownloadDashboard)]
-        public async Task<IActionResult> DownloadDashboardExcel([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate, [FromQuery] bool useUsd = false)
+        public async Task<IActionResult> DownloadDashboardExcel([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate, [FromQuery] string groupBy = "month", [FromQuery] string? status = null)
         {
             try
             {
-                var stats = await _dashboardService.GetDashboardStatsAsync(startDate, endDate, useUsd);
+                var stats = await _dashboardService.GetDashboardStatsAsync(startDate, endDate, groupBy, status);
                 if (stats == null) return NotFound(new { message = ResponseErrors.NotFound });
 
                 var fileBytes = _excelGenerator.GenerateDashboardExcel(stats);

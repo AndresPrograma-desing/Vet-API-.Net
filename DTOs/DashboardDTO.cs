@@ -41,6 +41,9 @@ public record DashboardStatsDTO
 
     [JsonPropertyName("ganancias_mensuales")]
     public List<DashboardEarningByMonthDTO> GananciasMensuales { get; set; } = new();
+
+    [JsonPropertyName("money_type")]
+    public string MoneyType { get; set; } = string.Empty;
 }
 
 public record DashboardCitaDTO
@@ -96,6 +99,12 @@ public record DashboardProductDTO
 
 public record DashboardEarningByMonthDTO
 {
+    [JsonPropertyName("periodo")]
+    public string Periodo { get; set; } = string.Empty;
+
+    [JsonPropertyName("fecha_inicio")]
+    public DateTime FechaInicio { get; set; }
+
     [JsonPropertyName("mes")]
     public string Mes { get; set; } = string.Empty;
 
