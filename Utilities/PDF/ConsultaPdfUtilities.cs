@@ -92,6 +92,11 @@ namespace vet_api_Net.Utilities.Pdf
                             column.Item().PaddingTop(15).Element(BuildProductsTable);
                         }
 
+                        if (_consulta.Vacunas != null && _consulta.Vacunas.Any())
+                        {
+                            column.Item().PaddingTop(15).Element(BuildVaccinesTable);
+                        }
+
                         column.Item().PaddingTop(15).Element(ComposeTotals);
                     });
 
@@ -265,10 +270,58 @@ namespace vet_api_Net.Utilities.Pdf
                 });
             }
 
+            private void BuildVaccinesTable(IContainer container)
+            {
+                container.Column(col =>
+                {
+                    col.Item().PaddingBottom(4).Text("VACUNAS APLICADAS").FontSize(10).Bold().FontColor(_primaryColor);
+
+                    col.Item().Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.RelativeColumn(3);
+                            columns.RelativeColumn(2);
+                            columns.RelativeColumn(2);
+                            columns.RelativeColumn(2);
+                            columns.ConstantColumn(65);
+                        });
+
+                        table.Header(header =>
+                        {
+                            IContainer StyleHeaderCell(IContainer c, string bg) => c.Background(bg).Padding(5).AlignMiddle();
+
+                            header.Cell().Element(c => StyleHeaderCell(c, _primaryColor)).Text("Vacuna").FontColor(Colors.White).FontSize(8.5f).Bold();
+                            header.Cell().Element(c => StyleHeaderCell(c, _primaryColor)).Text("Dosis").FontColor(Colors.White).FontSize(8.5f).Bold();
+                            header.Cell().Element(c => StyleHeaderCell(c, _primaryColor)).Text("Fecha Aplicación").FontColor(Colors.White).FontSize(8.5f).Bold();
+                            header.Cell().Element(c => StyleHeaderCell(c, _primaryColor)).Text("Próxima Dosis").FontColor(Colors.White).FontSize(8.5f).Bold();
+                            header.Cell().Element(c => StyleHeaderCell(c, _primaryColor)).AlignRight().Text("Precio").FontColor(Colors.White).FontSize(8.5f).Bold();
+                        });
+
+                        bool alternate = false;
+                        foreach (var vac in _consulta.Vacunas)
+                        {
+                            var rowColor = alternate ? _secondaryColor : "#FFFFFF";
+                            alternate = !alternate;
+
+                            IContainer StyleContentCell(IContainer c, string bg, string border) =>
+                                c.Background(bg).PaddingHorizontal(5).PaddingVertical(4).BorderBottom(1).BorderColor(border).AlignMiddle();
+
+                            table.Cell().Element(c => StyleContentCell(c, rowColor, _borderLight)).Text(vac.NombreVacuna ?? "").FontSize(8.5f).FontColor(_textDark);
+                            table.Cell().Element(c => StyleContentCell(c, rowColor, _borderLight)).Text(string.IsNullOrEmpty(vac.Dose) ? "-" : vac.Dose).FontSize(8.5f).FontColor(_textDark);
+                            table.Cell().Element(c => StyleContentCell(c, rowColor, _borderLight)).Text(vac.ApplicationDate.ToString("dd/MM/yyyy")).FontSize(8.5f).FontColor(_textDark);
+                            table.Cell().Element(c => StyleContentCell(c, rowColor, _borderLight)).Text(vac.NextDoseDate.HasValue ? vac.NextDoseDate.Value.ToString("dd/MM/yyyy") : "-").FontSize(8.5f).FontColor(_textDark);
+                            table.Cell().Element(c => StyleContentCell(c, rowColor, _borderLight)).AlignRight().Text($"{_currencySymbol}{vac.PrecioUnitario:N2}").FontSize(8.5f).Bold().FontColor(_textDark);
+                        }
+                    });
+                });
+            }
+
             private void ComposeTotals(IContainer container)
             {
                 decimal totalProductos = _consulta.Productos?.Sum(p => p.Cantidad * p.PrecioUnitario) ?? 0;
-                decimal granTotal = _consulta.ConsultaPrice + totalProductos;
+                decimal totalVacunas = _consulta.Vacunas?.Sum(v => v.PrecioUnitario) ?? 0;
+                decimal granTotal = _consulta.ConsultaPrice + totalProductos + totalVacunas;
 
                 container.Row(r =>
                 {
@@ -286,6 +339,12 @@ namespace vet_api_Net.Utilities.Pdf
                         {
                             rr.RelativeItem().Text("Total Insumos:").FontSize(9).FontColor(_textMuted);
                             rr.ConstantItem(90).AlignRight().Text($"{_currencySymbol}{totalProductos:N2}").FontSize(9).FontColor(_textDark);
+                        });
+
+                        c.Item().PaddingVertical(2).Row(rr =>
+                        {
+                            rr.RelativeItem().Text("Total Vacunas:").FontSize(9).FontColor(_textMuted);
+                            rr.ConstantItem(90).AlignRight().Text($"{_currencySymbol}{totalVacunas:N2}").FontSize(9).FontColor(_textDark);
                         });
 
                         c.Item().PaddingVertical(4).LineHorizontal(1).LineColor(_primaryColor);

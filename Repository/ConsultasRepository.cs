@@ -30,6 +30,8 @@ public class ConsultasRepository : IConsultasRepository
         return await _context.Consultas
             .Include(c => c.ConsultasProductos)
                 .ThenInclude(cp => cp.Producto)
+            .Include(c => c.PetVaccinations)
+                .ThenInclude(pv => pv.Vaccine)
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
@@ -76,6 +78,17 @@ public class ConsultasRepository : IConsultasRepository
                     Frecuencia = cp.Frecuencia,
                     Duracion = cp.Duracion,
                     Instrucciones = cp.Instrucciones
+                }).ToList(),
+                Vacunas = c.PetVaccinations.Select(pv => new ConsultaVaccineDetalleDTO
+                {
+                    Id = pv.Id,
+                    VaccineId = pv.VaccineId,
+                    NombreVacuna = pv.Vaccine.Name,
+                    Dose = pv.Dose,
+                    ApplicationDate = pv.ApplicationDate,
+                    NextDoseDate = pv.NextDoseDate,
+                    PrecioUnitario = pv.Vaccine.Price,
+                    DetalleFacturaId = pv.DetalleFacturaId
                 }).ToList()
             })
             .FirstOrDefaultAsync();
@@ -116,6 +129,17 @@ public class ConsultasRepository : IConsultasRepository
                     Frecuencia = cp.Frecuencia,
                     Duracion = cp.Duracion,
                     Instrucciones = cp.Instrucciones
+                }).ToList(),
+                Vacunas = c.PetVaccinations.Select(pv => new ConsultaVaccineDetalleDTO
+                {
+                    Id = pv.Id,
+                    VaccineId = pv.VaccineId,
+                    NombreVacuna = pv.Vaccine.Name,
+                    Dose = pv.Dose,
+                    ApplicationDate = pv.ApplicationDate,
+                    NextDoseDate = pv.NextDoseDate,
+                    PrecioUnitario = pv.Vaccine.Price,
+                    DetalleFacturaId = pv.DetalleFacturaId
                 }).ToList()
             })
             .FirstOrDefaultAsync();
@@ -165,6 +189,17 @@ public class ConsultasRepository : IConsultasRepository
                     Frecuencia = cp.Frecuencia,
                     Duracion = cp.Duracion,
                     Instrucciones = cp.Instrucciones
+                }).ToList(),
+                Vacunas = c.PetVaccinations.Select(pv => new ConsultaVaccineDetalleDTO
+                {
+                    Id = pv.Id,
+                    VaccineId = pv.VaccineId,
+                    NombreVacuna = pv.Vaccine.Name,
+                    Dose = pv.Dose,
+                    ApplicationDate = pv.ApplicationDate,
+                    NextDoseDate = pv.NextDoseDate,
+                    PrecioUnitario = pv.Vaccine.Price,
+                    DetalleFacturaId = pv.DetalleFacturaId
                 }).ToList()
             })
             .ToListAsync();

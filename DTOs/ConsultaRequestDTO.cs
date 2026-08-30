@@ -63,6 +63,9 @@ public record ConsultaRequestDTO
     // Al declarar esta propiedad de última, aparecerá al final del JSON
     [JsonPropertyName("productos")]
     public List<ConsultaProductoDetalleDTO> Productos { get; set; } = new();
+
+    [JsonPropertyName("vacunas")]
+    public List<ConsultaVaccineDetalleDTO> Vacunas { get; set; } = new();
 }
 
 public class ConsultaProductoDetalleDTO
@@ -96,4 +99,31 @@ public class ConsultaProductoDetalleDTO
 
     [JsonPropertyName("instrucciones")]
     public string? Instrucciones { get; set; }
+}
+
+public class ConsultaVaccineDetalleDTO
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("vaccine_id")]
+    public int VaccineId { get; set; }
+
+    [JsonPropertyName("nombre_vacuna")]
+    public string? NombreVacuna { get; set; }
+
+    [JsonPropertyName("dose")]
+    public string? Dose { get; set; }
+
+    [JsonPropertyName("application_date")]
+    public DateOnly ApplicationDate { get; set; }
+
+    [JsonPropertyName("next_dose_date")]
+    public DateOnly? NextDoseDate { get; set; }
+
+    [JsonPropertyName("precio_unitario")]
+    public decimal PrecioUnitario { get; set; }
+
+    [JsonPropertyName("detalle_factura_id")]
+    public int? DetalleFacturaId { get; set; }
 }

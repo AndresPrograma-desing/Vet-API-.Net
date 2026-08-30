@@ -102,6 +102,13 @@ namespace vet_api_Net.Constants
             public const string InstruccionesMaxLength = "Las instrucciones no pueden exceder los 500 caracteres.";
             public const string AplicadoPorInvalid = "El aplicado_por debe ser un identificador válido.";
         }
+        public static class ConsultaVaccine
+        {
+            public const string VaccineIdInvalid = "El vaccine_id debe ser un identificador válido.";
+            public const string VaccineBatchIdInvalid = "El vaccine_batch_id debe ser un identificador válido.";
+            public const string DoseMaxLength = "La dosis no puede exceder los 100 caracteres.";
+            public const string ClinicalObservationsMaxLength = "Las observaciones clínicas no pueden exceder los 500 caracteres.";
+        }
         public static class Usuario
         {
             public const string InvalidEmailFormat = "El correo electrónico no tiene un formato válido.";
@@ -308,7 +315,7 @@ namespace vet_api_Net.Constants
         public const string Factura = "Recibo";
         public const string Currency = "BS";
         public const string HappyPets = "Happy Pets";
-        public const string FooterText = "Factura generada por el sistema de gestión de Happy Pets 2026";
+        public const string FooterText = "Recibo generado por el sistema de gestión de Happy Pets 2026";
         public const string ThankYou = "Gracias por confiar en Happy Pets";
         public const string SpecialVet = "Veterinaria Especializada";
         public const string Code = "Código";

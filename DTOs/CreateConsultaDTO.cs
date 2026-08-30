@@ -56,4 +56,7 @@ public record CreateConsultaDTO
 
     [JsonPropertyName("productos")]
     public List<CreateConsultaProductoDTO>? Productos { get; set; }
+
+    [JsonPropertyName("vacunas")]
+    public List<CreateConsultaVaccineDTO>? Vacunas { get; set; }
 }
