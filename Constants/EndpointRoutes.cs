@@ -232,7 +232,7 @@ namespace vet_api_Net.Routes
         public static class PasswordRecovery
         {
             public const string RequestCode = "request-code";
-        public const string VerifyCode = "verify-code";
+            public const string VerifyCode = "verify-code";
             public const string ResetPassword = "reset-password";
         }
         public static class DashboardController
