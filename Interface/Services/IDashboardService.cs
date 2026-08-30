@@ -5,5 +5,5 @@ namespace vet_api_Net.Interfaze.Services;
 
 public interface IDashboardService
 {
-    Task<DashboardStatsDTO> GetDashboardStatsAsync(DateTime? startDate, DateTime? endDate, bool useUsd);
+    Task<DashboardStatsDTO> GetDashboardStatsAsync(DateTime? startDate, DateTime? endDate, string groupBy, string? status);
 }

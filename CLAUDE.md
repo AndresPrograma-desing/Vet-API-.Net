@@ -319,6 +319,7 @@ public record {Nombre}DTO
 - Usar `[JsonPropertyName("snake_case")]` para serialización al frontend
 - Separar DTOs de entrada (`Create{X}DTO`) de DTOs de respuesta (`{X}RequestDTO`, `{X}ResponseDTO`)
 - Valores por defecto: `string.Empty` para strings, `null!` para requeridos, `new()` para listas
+- **Idioma de campos nuevos (regla vigente desde 2026-08-29):** todo campo de DTO **nuevo** (propiedad C# y su `JsonPropertyName`) se nombra en **inglés**, manteniendo `snake_case` en el JSON (ej. `MoneyType` → `"money_type"`, no `Moneda`/`"moneda"`). Los campos ya existentes en DTOs actuales (`total_ganancias`, `fecha_cita`, `cliente_nombre`, etc.) **no se renombran retroactivamente** — se mantienen en español para no romper el contrato ya consumido por el frontend. Esta regla reemplaza, solo para campos nuevos, la mención de DTOs en español de la nota de idioma general de este documento.
 
 ### 4.8 Utilities
 
@@ -677,6 +678,8 @@ En ambos casos con el formato `//Describe:` seguido de una descripción breve de
 ## idioma
 
 **Regla** Simpre colocar la sintaxis en ingles, pero respuestas de errores o otra cosa si van en espanol, como lo hece mayormente todo el API
+
+**Aclaración (vigente desde 2026-08-29):** esta regla aplica hacia adelante, no retroactivamente. Mucho código existente tiene identificadores en español (nombres de método, parámetros, variables) porque así se escribió originalmente — no hay que renombrarlo solo por encontrarlo. Pero todo identificador **nuevo** que se agregue de acá en adelante (parámetros de método, query params, nombres de variable, nombres de método) debe ir en inglés, incluso cuando el código de alrededor ya esté en español. Ejemplo real: el filtro de estado de citas del Dashboard se llama `status` (no `estado`) como parámetro/query param, aunque la propiedad del modelo que compara siga siendo `Cita.Estado` (correcto en español, por la regla de Models/DTOs de la sección 4). Ver también la nota de idioma de DTOs en la sección 4.7.
 
 ## Variables de entorno
 

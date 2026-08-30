@@ -636,6 +636,75 @@ namespace vet_api_Net.Data.seeds
             context.Consultas.AddRange(consultas);
             context.SaveChanges();
 
+            // Facturas + detalles dummy repartidas con distintos saltos de días/semanas/meses (0 a ~160 días atrás)
+            // para alimentar el dashboard de ganancias con una serie más realista, no solo un punto por mes
+            // (GetTotalGananciasAsync/GetTotalPerdidasAsync/GetGananciasMensualesAsync en DashboardRespository.cs).
+            var metodosPagoFactura = new[] { PaymentMethods.Cash, PaymentMethods.Transfer, PaymentMethods.Card, PaymentMethods.MobilePayment };
+            var facturaSeeds = new[]
+            {
+                new { Cliente = clientes[0], Mascota = mascotas[0], ConsultaId = (int?)consultas[0].Id, DiasAtras = 0, Estado = Status.Completed, Productos = new[] { productos[0], productos[52] } },
+                new { Cliente = clientes[1], Mascota = mascotas[1], ConsultaId = (int?)null, DiasAtras = 3, Estado = Status.Completed, Productos = new[] { productos[101] } },
+                new { Cliente = clientes[2], Mascota = mascotas[2], ConsultaId = (int?)null, DiasAtras = 7, Estado = Status.Completed, Productos = new[] { productos[3] } },
+                new { Cliente = clientes[3], Mascota = mascotas[3], ConsultaId = (int?)null, DiasAtras = 14, Estado = Status.Cancelled, Productos = new[] { productos[55] } },
+                new { Cliente = clientes[4], Mascota = mascotas[4], ConsultaId = (int?)null, DiasAtras = 21, Estado = Status.Completed, Productos = new[] { productos[102], productos[151] } },
+                new { Cliente = clientes[5], Mascota = mascotas[5], ConsultaId = (int?)null, DiasAtras = 35, Estado = Status.Completed, Productos = new[] { productos[7] } },
+                new { Cliente = clientes[0], Mascota = mascotas[6], ConsultaId = (int?)null, DiasAtras = 49, Estado = Status.Pending, Productos = new[] { productos[153] } },
+                new { Cliente = clientes[1], Mascota = mascotas[1], ConsultaId = (int?)null, DiasAtras = 70, Estado = Status.Completed, Productos = new[] { productos[8], productos[103] } },
+                new { Cliente = clientes[2], Mascota = mascotas[2], ConsultaId = (int?)null, DiasAtras = 100, Estado = Status.Completed, Productos = new[] { productos[150] } },
+                new { Cliente = clientes[3], Mascota = mascotas[3], ConsultaId = (int?)null, DiasAtras = 130, Estado = Status.Cancelled, Productos = new[] { productos[60] } },
+                new { Cliente = clientes[4], Mascota = mascotas[4], ConsultaId = (int?)null, DiasAtras = 160, Estado = Status.Completed, Productos = new[] { productos[10], productos[110] } }
+            };
+
+            var facturasConDetalles = new List<(Factura Factura, List<DetallesFactura> Detalles)>();
+            var facturaConsecutivo = 1;
+            foreach (var seed in facturaSeeds)
+            {
+                var fechaEmision = DateTime.Now.AddDays(-seed.DiasAtras);
+                var detalles = seed.Productos.Select(p => new DetallesFactura
+                {
+                    ProductoId = p.Id,
+                    Descripcion = p.Nombre,
+                    Cantidad = 1,
+                    PrecioUnitario = p.PrecioVenta,
+                    Total = p.PrecioVenta,
+                    Created = fechaEmision
+                }).ToList();
+
+                var subtotal = detalles.Sum(d => d.Total);
+                var consultaPrice = seed.ConsultaId.HasValue ? (consultas[0].ConsultaPrice ?? 0m) : 0m;
+
+                var factura = new Factura
+                {
+                    NumeroFactura = $"FAC-{facturaConsecutivo:D4}",
+                    ClienteId = seed.Cliente.Id,
+                    MascotaId = seed.Mascota.Id,
+                    ConsultaId = seed.ConsultaId,
+                    SecretariaId = secretaria.Id,
+                    FechaEmision = fechaEmision,
+                    Subtotal = subtotal,
+                    Descuento = 0m,
+                    Total = subtotal + consultaPrice,
+                    MetodoPago = metodosPagoFactura[facturaConsecutivo % metodosPagoFactura.Length],
+                    EstadoPago = seed.Estado,
+                    Creado = fechaEmision,
+                    Actualizado = fechaEmision
+                };
+                facturasConDetalles.Add((factura, detalles));
+                facturaConsecutivo++;
+            }
+            context.Facturas.AddRange(facturasConDetalles.Select(x => x.Factura));
+            context.SaveChanges();
+
+            foreach (var (factura, detalles) in facturasConDetalles)
+            {
+                foreach (var detalle in detalles)
+                {
+                    detalle.FacturaId = factura.Id;
+                }
+                context.DetallesFacturas.AddRange(detalles);
+            }
+            context.SaveChanges();
+
             // Seed del catálogo de vacunas + lotes + aplicaciones, vinculadas a las mascotas/clientes creados arriba,
             // cubriendo los 3 estados de semaforización, un esquema de cachorro en curso y una postergación médica.
             if (!context.Vaccines.Any())
