@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -53,6 +55,21 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var apiSettings = scope.ServiceProvider.GetRequiredService<IOptions<ApiSettingsOptions>>().Value;
     var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    var startupLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    var pendingMigrations = db.Database.GetPendingMigrations().ToList();
+    if (pendingMigrations.Count > 0)
+    {
+        startupLogger.LogInformation("Aplicando {Count} migración(es) pendiente(s): {Migrations}",
+            pendingMigrations.Count, string.Join(", ", pendingMigrations));
+        db.Database.Migrate();
+        startupLogger.LogInformation("Migraciones aplicadas correctamente.");
+    }
+    else
+    {
+        startupLogger.LogInformation("No hay migraciones pendientes. Continuando con el arranque.");
+    }
+
     var seedDataOptions = configuration.GetSection("SeedData").Get<SeedDataOptions>() ?? new SeedDataOptions();
     if (seedDataOptions.Initialize)
     {
