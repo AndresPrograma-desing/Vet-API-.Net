@@ -23,4 +23,5 @@ public record ConsultaPdfDTO
     public string? CorreoCliente { get; set; }
     public string? MascotaNombre { get; set; }
     public List<ConsultaProductoDetalleDTO> Productos { get; set; } = new();
+    public List<ConsultaVaccineDetalleDTO> Vacunas { get; set; } = new();
 }

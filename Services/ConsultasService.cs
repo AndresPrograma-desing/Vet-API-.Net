@@ -18,11 +18,13 @@ public class ConsultasService : IConsultasService
     private readonly IConsultasRepository _repository;
     private readonly ApiSettingsOptions _apiSettings;
     private readonly IUserScopeResolver _userScopeResolver;
-    public ConsultasService(IConsultasRepository repository, IOptions<ApiSettingsOptions> apiSettingsOptions, IUserScopeResolver userScopeResolver)
+    private readonly IPetVaccinationService _petVaccinationService;
+    public ConsultasService(IConsultasRepository repository, IOptions<ApiSettingsOptions> apiSettingsOptions, IUserScopeResolver userScopeResolver, IPetVaccinationService petVaccinationService)
     {
         _repository = repository;
         _apiSettings = apiSettingsOptions.Value;
         _userScopeResolver = userScopeResolver;
+        _petVaccinationService = petVaccinationService;
     }
 
 
@@ -95,6 +97,26 @@ public class ConsultasService : IConsultasService
             await _repository.SaveChangesAsync();
         }
 
+        if (dto.Vacunas != null && dto.Vacunas.Any())
+        {
+            foreach (var v in dto.Vacunas)
+            {
+                await _petVaccinationService.RegisterApplicationAsync(new RegisterPetVaccinationDTO
+                {
+                    MascotaId = dto.MascotaId,
+                    VaccineId = v.VaccineId,
+                    VaccineBatchId = v.VaccineBatchId,
+                    ConsultaId = medicalRecord.Id,
+                    DoctorId = dto.DoctorId,
+                    ApplicationDate = v.ApplicationDate,
+                    WeightAtApplication = v.WeightAtApplication,
+                    Dose = v.Dose,
+                    NextDoseDateOverride = v.NextDoseDateOverride,
+                    ClinicalObservations = v.ClinicalObservations
+                });
+            }
+        }
+
         await ProcessInternalBillingAsync(medicalRecord.Id, appointment, pet);
 
         return await _repository.GetConsultaDtoByIdAsync(medicalRecord.Id);
@@ -135,9 +157,13 @@ public class ConsultasService : IConsultasService
         try
         {
             var targetRecord = await _repository.GetConsultaWithProductsAsync(recordId);
-            if (targetRecord?.ConsultasProductos == null || !targetRecord.ConsultasProductos.Any()) return;
+            var hasProductos = targetRecord?.ConsultasProductos != null && targetRecord.ConsultasProductos.Any();
+            var pendingVaccinations = targetRecord?.PetVaccinations?.Where(pv => !pv.DetalleFacturaId.HasValue).ToList() ?? new List<PetVaccination>();
+            if (targetRecord == null || (!hasProductos && !pendingVaccinations.Any())) return;
 
-            decimal subtotal = targetRecord.ConsultasProductos.Sum(cp => cp.PrecioUnitario * cp.Cantidad);
+            decimal productsSubtotal = hasProductos ? targetRecord.ConsultasProductos.Sum(cp => cp.PrecioUnitario * cp.Cantidad) : 0m;
+            decimal vaccinesSubtotal = pendingVaccinations.Sum(pv => pv.Vaccine.Price);
+            decimal subtotal = productsSubtotal + vaccinesSubtotal;
             decimal discount = 0m;
             decimal total = subtotal - discount;
 
@@ -191,7 +217,32 @@ public class ConsultasService : IConsultasService
                     Created = DateTime.UtcNow
                 });
             }
+
+            var vaccineDetails = new List<(PetVaccination Vaccination, DetallesFactura Detalle)>();
+            foreach (var pv in pendingVaccinations)
+            {
+                var detalle = new DetallesFactura
+                {
+                    FacturaId = invoice.Id,
+                    VaccineId = pv.VaccineId,
+                    Descripcion = pv.Vaccine?.Name,
+                    Cantidad = 1,
+                    PrecioUnitario = pv.Vaccine?.Price ?? 0m,
+                    Total = pv.Vaccine?.Price ?? 0m,
+                    Created = DateTime.UtcNow
+                };
+                _repository.AddDetalleFactura(detalle);
+                vaccineDetails.Add((pv, detalle));
+            }
+
             await _repository.SaveChangesAsync();
+
+            foreach (var (pv, detalle) in vaccineDetails)
+            {
+                pv.DetalleFacturaId = detalle.Id;
+            }
+            if (vaccineDetails.Any())
+                await _repository.SaveChangesAsync();
         }
         catch (Exception)
         {
