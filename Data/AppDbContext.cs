@@ -77,6 +77,8 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<Models.EmailTemplate> EmailTemplates { get; set; }
     public virtual DbSet<Models.PasswordResetTicket> PasswordResetTickets { get; set; }
     public virtual DbSet<Models.UserPermission> UserPermissions { get; set; }
+    public virtual DbSet<Models.PermissionModule> PermissionModules { get; set; }
+    public virtual DbSet<Models.PermissionDefinition> PermissionDefinitions { get; set; }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -133,6 +135,42 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey<UserPermission>(d => d.UserId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("fk_user_permissions_user");
+        });
+
+        modelBuilder.Entity<PermissionModule>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.ToTable("permission_modules");
+
+            entity.HasIndex(e => e.ModuleKey, "idx_permission_modules_module_key").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ModuleKey).HasMaxLength(50).HasColumnName("module_key");
+            entity.Property(e => e.Label).HasMaxLength(200).HasColumnName("label");
+            entity.Property(e => e.Icon).HasMaxLength(50).HasColumnName("icon");
+            entity.Property(e => e.SortOrder).HasColumnName("sort_order");
+            entity.Property(e => e.Creado).HasColumnName("creado");
+        });
+
+        modelBuilder.Entity<PermissionDefinition>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.ToTable("permission_definitions");
+
+            entity.HasIndex(e => e.Key, "idx_permission_definitions_key").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ModuleId).HasColumnName("module_id");
+            entity.Property(e => e.Key).HasMaxLength(100).HasColumnName("key");
+            entity.Property(e => e.Label).HasMaxLength(200).HasColumnName("label");
+            entity.Property(e => e.SortOrder).HasColumnName("sort_order");
+            entity.Property(e => e.Creado).HasColumnName("creado");
+
+            entity.HasOne(d => d.Module)
+                .WithMany(m => m.Permissions)
+                .HasForeignKey(d => d.ModuleId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_permission_definitions_module");
         });
 
         modelBuilder.Entity<AlertasInterna>(entity =>

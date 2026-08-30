@@ -319,10 +319,12 @@ public static class DependencyInjection
         services.AddScoped<IEspecieRepository, EspecieRepository>();
         services.AddScoped<IPetVaccinationRepository, PetVaccinationRepository>();
         services.AddScoped<IWorkerConfigRepository, WorkerConfigRepository>();
+        services.AddScoped<IPermissionDefinitionRepository, PermissionDefinitionRepository>();
 
         // Servicios de la Aplicación
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IUserPermissionService, UserPermissionService>();
+        services.AddScoped<IPermissionDefinitionService, PermissionDefinitionService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<ICreateProductService, ProductCreateService>();

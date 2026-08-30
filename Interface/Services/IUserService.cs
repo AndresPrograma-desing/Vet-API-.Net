@@ -10,7 +10,7 @@ public interface IUserService
 {
     Task<List<Usuario>> GetAllUserAsync();
 
-    Task<Usuario> CreateUserAsync(CreateUserDTO userDto);
+    Task<UsuarioResponseDTO> CreateUserAsync(CreateUserDTO userDto);
     Task<List<Usuario>> GetSecretariasAsync();
 
     Task<Usuario?> DisableUserAsync(int id);
