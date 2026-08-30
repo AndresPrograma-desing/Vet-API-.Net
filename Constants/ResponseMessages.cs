@@ -684,6 +684,7 @@ namespace vet_api_Net.Constants
         public const string UnknownMonth = "Desconocido";
         public const string Cancelado = "cancelado";
         public static string InvalidGroupBy(string groupBy) => $"Agrupación '{groupBy}' inválida. Las opciones válidas son: por día, por semana, por mes o por año.";
+        public static string InvalidStatus(string status) => $"Estado '{status}' inválido. Use pendientes, completadas o canceladas.";
 
         public static class Months
         {

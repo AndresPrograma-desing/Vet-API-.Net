@@ -237,7 +237,7 @@ namespace vet_api_Net.Routes
         }
         public static class DashboardController
         {
-            public const string Stats = "stats";
+            public const string Stats = "dashboard";
         }
         public static class ProfileController
         {
