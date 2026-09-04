@@ -39,7 +39,7 @@ public class AuthController : ControllerBase
             var user = await _authService.LoginAsync(request);
             if (user == null)
             {
-                return Unauthorized(new { error = ResponseMessagesAuthController.Unauthorized });
+                return Unauthorized(new { error = ResponseMessagesLogin.ErrorCredential });
             }
 
             var token = _authService.GenerateToken(user);
@@ -64,10 +64,12 @@ public class AuthController : ControllerBase
                 tryAgainTime = ex.Security.TryAgainTime
             });
         }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
         catch (InvalidOperationException ex)
         {
-            var error = ex;
-
             return BadRequest(new { error = ex.Message });
         }
         catch (Exception)

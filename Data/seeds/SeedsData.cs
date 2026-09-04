@@ -1021,8 +1021,8 @@ namespace vet_api_Net.Data.seeds
                     BackendExternalUrl = "https://g27frlv5-5168.use2.devtunnels.ms/",
                     BcvApiUrl = "https://www.bcv.org.ve",
                     ResendApiUrl = "https://api.resend.com/emails",
-                    ResendApiKey = "re_8ihXsxrL_NRxgtRcoyqjou3J75MjbJdFo",
-                    ResendFromEmail = "HappyPets <onboarding@resend.dev>",
+                    ResendApiKey = "re_8ihXsxrL_NRxgtRcoyqjou3J75MjbJdFo",// Ya no esta funcional
+                    ResendFromEmail = "HappyPets <[EMAIL_ADDRESS]>",
                     LastUpdated = DateTime.UtcNow
                 };
                 context.SystemConfigs.Add(systemConfig);

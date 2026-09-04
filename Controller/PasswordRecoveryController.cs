@@ -17,6 +17,8 @@ namespace vet_api_Net.Controllers;
 public class PasswordRecoveryController : ControllerBase
 {
     private readonly IPasswordRecoveryService _passwordRecoveryService;
+    private const string Email = "email";
+    
 
     public PasswordRecoveryController(IPasswordRecoveryService passwordRecoveryService)
     {
@@ -24,7 +26,7 @@ public class PasswordRecoveryController : ControllerBase
     }
 
     [HttpGet(Endpoints.PasswordRecovery.RequestCode)]
-    public async Task<IActionResult> RequestRecoveryCode([FromQuery] string identifier)
+    public async Task<IActionResult> RequestRecoveryCode([FromQuery(Name = Email)] string identifier)
     {
         if (string.IsNullOrWhiteSpace(identifier))
         {

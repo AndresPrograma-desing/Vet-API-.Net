@@ -47,20 +47,20 @@ public class AuthService : IAuthService
         var (isValid, message) = await VerifyEmailRoleAsync(request.Email, request.Rol);
         if (!isValid)
         {
-            throw new Exception(message);
+            throw new InvalidOperationException(message);
         }
 
         if (string.IsNullOrWhiteSpace(request.Password))
         {
             await SafeRegisterFailedAttemptAsync(request.Email);
-            return null;
+            throw new ArgumentException(ResponseMessagesLogin.RequiredPassword);
         }
 
         var user = await _usersRepository.GetByEmailAndRolAsync(request.Email, request.Rol);
         if (user == null)
         {
             await SafeRegisterFailedAttemptAsync(request.Email);
-            throw new InvalidOperationException(message);
+            throw new InvalidOperationException(ResponseMessagesLogin.UserNotExisting);
         }
 
         if (await _usersRepository.IsUserDisabledAsync(request.Email))
@@ -174,7 +174,7 @@ public class AuthService : IAuthService
         }
         catch (Exception)
         {
-            throw new Exception(ResponseMessagesLogin.ErrorSavingPassword);
+            throw new InvalidOperationException(ResponseMessagesLogin.ErrorSavingPassword);
         }
     }
 
