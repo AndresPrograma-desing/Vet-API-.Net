@@ -60,7 +60,7 @@ public class AuthService : IAuthService
         if (user == null)
         {
             await SafeRegisterFailedAttemptAsync(request.Email);
-            throw new InvalidOperationException(ResponseMessagesLogin.UserNotExisting);
+            throw new InvalidOperationException(ResponseMessagesLogin.ErrorCredential);
         }
 
         if (await _usersRepository.IsUserDisabledAsync(request.Email))
@@ -194,7 +194,7 @@ public class AuthService : IAuthService
 
         if (userRole == null)
         {
-            return (false, ResponseMessagesLogin.UserNotExisting);
+            return (false, ResponseMessagesLogin.ErrorCredential);
         }
 
         if (userRole != roleName)
