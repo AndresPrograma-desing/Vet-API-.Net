@@ -44,10 +44,9 @@ public class AuthService : IAuthService
             });
         }
 
-        var (isValid, message) = await VerifyEmailRoleAsync(request.Email, request.Rol);
-        if (!isValid)
+        if (string.IsNullOrWhiteSpace(request.Email))
         {
-            throw new InvalidOperationException(message);
+            throw new ArgumentException(ResponseMessagesLogin.RequiredEmail);
         }
 
         if (string.IsNullOrWhiteSpace(request.Password))
@@ -56,7 +55,7 @@ public class AuthService : IAuthService
             throw new ArgumentException(ResponseMessagesLogin.RequiredPassword);
         }
 
-        var user = await _usersRepository.GetByEmailAndRolAsync(request.Email, request.Rol);
+        var user = await _usersRepository.GetByEmailAsync(request.Email);
         if (user == null)
         {
             await SafeRegisterFailedAttemptAsync(request.Email);
@@ -181,28 +180,6 @@ public class AuthService : IAuthService
     public async Task<Usuario?> GetUserByIdAsync(int id)
     {
         return await _usersRepository.GetByIdAsync(id);
-    }
-
-    private async Task<(bool IsValid, string Message)> VerifyEmailRoleAsync(string email, string roleName)
-    {
-        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(roleName))
-        {
-            return (false, ResponseMessagesLogin.EmailAndRolRequired);
-        }
-
-        var userRole = await _usersRepository.GetRoleByEmailAsync(email);
-
-        if (userRole == null)
-        {
-            return (false, ResponseMessagesLogin.ErrorCredential);
-        }
-
-        if (userRole != roleName)
-        {
-            return (false, ResponseMessagesLogin.NoRolForUser);
-        }
-
-        return (true, "");
     }
 
     private async Task SafeRegisterFailedAttemptAsync(string email)

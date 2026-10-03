@@ -15,6 +15,7 @@ namespace vet_api_Net.Constants
         public const string BadRequest = "Solicitud incorrecta.";
         public const string Unauthorized = "No autorizado.";
         public const string Forbidden = "Prohibido.";
+        public const string TooManyRequests = "Se excedió el límite de peticiones.";
     }
     public static class Roles
     {
@@ -174,7 +175,7 @@ namespace vet_api_Net.Constants
     public static class ResponseMessagesPasswordRecovery
     {
         public const string RequiredEmail = "El correo electrónico es requerido.";
-        public const string ErrorRequestingCode = "No se encontró ningún usuario con ese correo electrónico o no se pudo enviar el correo.";
+        public const string ErrorRequestingCode = "Hubo un error, intentalo mas tarde.";
         public const string CodeSentSuccess = "Código de recuperación enviado con éxito.";
         public const string RequiredCode = "El código de verificación es requerido.";
         public const string InvalidCode = "Código de verificación inválido, expirado o error al enviar el correo.";
