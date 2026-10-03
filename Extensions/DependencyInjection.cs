@@ -17,6 +17,7 @@ using Microsoft.OpenApi.Models;
 using MySqlConnector;
 using Npgsql;
 using QuestPDF.Infrastructure;
+using vet_api_Net.Constants;
 using vet_api_Net.Data;
 using vet_api_Net.HttpServices;
 using vet_api_Net.Infrastructure.Configuration;
@@ -208,6 +209,12 @@ public static class DependencyInjection
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            options.OnRejected = async (context, cancellationToken) =>
+            {
+                context.HttpContext.Response.ContentType = "application/json";
+                await context.HttpContext.Response.WriteAsJsonAsync(new { error = ResponseErrors.TooManyRequests }, cancellationToken);
+            };
 
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
             {

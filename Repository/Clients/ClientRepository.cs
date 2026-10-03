@@ -75,12 +75,13 @@ public class ClientRepository : IClientRepository
             return null;
 
         var term = identifier.Trim().ToLower();
+        var normalizedTerm = term.Replace("-", "").Replace(".", "").Replace(" ", "");
 
         return await _context.Clientes
             .AsNoTracking()
             .Include(c => c.Mascota)
             .FirstOrDefaultAsync(c =>
-                c.Identificacion.ToLower() == term ||
+                c.Identificacion.ToLower().Replace("-", "").Replace(".", "").Replace(" ", "").Contains(normalizedTerm) ||
                 c.Email.ToLower() == term);
     }
 
