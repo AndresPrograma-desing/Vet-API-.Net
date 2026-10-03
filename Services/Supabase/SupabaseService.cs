@@ -48,15 +48,12 @@ namespace vet_api_Net.Services.Supabase
                     Upsert = true,
                     ContentType = file.ContentType
                 });
-                _logger.LogInformation($"La imagen se ha guardado en el bucket: {_supabaseSettingsOptions.Bucket}");
 
             var baseAvatarUrl = _supabaseClient.Storage
                 .From(_supabaseSettingsOptions.Bucket)
                 .GetPublicUrl(filePath);
 
             var avatarUrl = $"{baseAvatarUrl}?t={DateTime.UtcNow.Ticks}";
-
-            _logger.LogInformation($"Generated avatar URL: {avatarUrl}");
             
             var updatedUser = await _userRepository.SaveAvatarUrl(userId, avatarUrl);
             if (updatedUser is null)
