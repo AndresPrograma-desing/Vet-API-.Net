@@ -446,6 +446,8 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Nota)
 
                 .HasColumnName("nota");
+            entity.Property(e => e.ImageUrl)
+                .HasColumnName("image_url");
             entity.Property(e => e.Telefono)
                 .HasMaxLength(20)
                 .HasColumnName("telefono");
@@ -875,6 +877,8 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Alergias)
 
                 .HasColumnName("alergias");
+            entity.Property(e => e.ImageUrl)
+                .HasColumnName("image_url");
             entity.Property(e => e.ClienteId)
 
                 .HasColumnName("cliente_id");

@@ -7,4 +7,5 @@ public interface ISupabaseService
 {
     Task<string> UploadAvatarAsync(IFormFile file, int userId);
     Task<string> GetUrlAvatar(string userId);
+    Task<string> UploadImageAsync(IFormFile file, string folder, int entityId);
 }

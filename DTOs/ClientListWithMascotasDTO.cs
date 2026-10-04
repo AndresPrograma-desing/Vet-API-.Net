@@ -29,6 +29,9 @@ public record ClientListWithMascotasDTO
     [JsonPropertyName("nota")]
     public string? Nota { get; set; }
 
+    [JsonPropertyName("image_url")]
+    public string? ImageUrl { get; set; }
+
     [JsonPropertyName("creado")]
     public DateTime Creado { get; set; }
 

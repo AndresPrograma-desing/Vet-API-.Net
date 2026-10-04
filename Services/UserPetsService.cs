@@ -46,6 +46,7 @@ public class UserPetsService : IUserPetsService
             Alergias = m.Alergias,
             CondicionesMedicas = m.CondicionesMedicas,
             Esterilizado = m.Esterilizado,
+            ImageUrl = m.ImageUrl,
             Cliente = m.Cliente != null ? new DetailsCitaDTO
             {
                 Id = m.Cliente.Id,

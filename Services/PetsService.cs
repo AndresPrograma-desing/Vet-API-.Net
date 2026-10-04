@@ -45,6 +45,7 @@ public class PetsService : IPetsService
             Alergias = mascota.Alergias,
             CondicionesMedicas = mascota.CondicionesMedicas,
             Esterilizado = mascota.Esterilizado,
+            ImageUrl = mascota.ImageUrl,
             Cliente = mascota.Cliente != null ? new DetailsCitaDTO
             {
                 Id = mascota.Cliente.Id,
@@ -81,6 +82,7 @@ public class PetsService : IPetsService
             Alergias = mascota.Alergias,
             CondicionesMedicas = mascota.CondicionesMedicas,
             Esterilizado = mascota.Esterilizado,
+            ImageUrl = mascota.ImageUrl,
             Cliente = mascota.Cliente != null ? new DetailsCitaDTO
             {
                 Id = mascota.Cliente.Id,
