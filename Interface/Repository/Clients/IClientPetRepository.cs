@@ -12,6 +12,9 @@ public interface IClientPetRepository
     void AddPet(Mascota pet);
     Task<bool> SaveChangesAsync();
     Task<bool> ClientExistsAsync(int clientId);
+    Task<bool> PetExistsAsync(int petId);
     Task<IEnumerable<Cliente>> GetClientsWithPetsLookupAsync(string searchTerm);
     Task<bool> PetExistsByIdentificacionAsync(string identificacion);
+    Task<bool> SetClientImageUrlAsync(int clientId, string imageUrl);
+    Task<bool> SetPetImageUrlAsync(int petId, string imageUrl);
 }

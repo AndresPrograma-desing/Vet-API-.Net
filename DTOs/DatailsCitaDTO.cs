@@ -65,9 +65,12 @@ public record MascotaResumenDTO
     [JsonPropertyName("esterilizado")]
     public bool? Esterilizado { get; set; }
 
+    [JsonPropertyName("image_url")]
+    public string? ImageUrl { get; set; }
+
     [JsonPropertyName("Cliente")]
     public DetailsCitaDTO? Cliente { get; set; }
-    
+
     [JsonPropertyName("creado")]
     public DateTime? Creado { get; set; }
 

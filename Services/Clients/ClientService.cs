@@ -54,6 +54,7 @@ public class ClientService : IClientService
             Direccion = c.Direccion,
             Identificacion = c.Identificacion,
             Nota = c.Nota,
+            ImageUrl = c.ImageUrl,
             Creado = c.Creado,
             Actualizado = c.Actualizado,
             Mascotas = c.Mascota.Select(m => new MascotaResumenDTO
@@ -70,6 +71,7 @@ public class ClientService : IClientService
                 Alergias = m.Alergias,
                 CondicionesMedicas = m.CondicionesMedicas,
                 Esterilizado = m.Esterilizado,
+                ImageUrl = m.ImageUrl,
                 Creado = m.Creado,
                 Actualizado = m.Actualizado,
                 Consultas = m.Consulta.Select(con => new ConsultaResumenDTO
@@ -158,6 +160,7 @@ public class ClientService : IClientService
             Alergias = m.Alergias,
             CondicionesMedicas = m.CondicionesMedicas,
             Esterilizado = m.Esterilizado,
+            ImageUrl = m.ImageUrl,
             Creado = m.Creado,
             Actualizado = m.Actualizado
         }).ToList();

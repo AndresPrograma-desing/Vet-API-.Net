@@ -432,6 +432,8 @@ namespace vet_api_Net.Constants
     {
         public const string InvalidPayload = "Payload inválido";
         public const string InternalErrorCP = "Error interno al crear cliente y mascota";
+        public const string ErrorUploadingImage = "Ocurrió un error al subir la imagen.";
+        public const string PetNotFound = "Mascota no encontrada.";
     }
     public static class ResponseMessagesFacturaController
     {
@@ -731,6 +733,8 @@ namespace vet_api_Net.Constants
         public static readonly string[] AllowedContentTypes = { "image/jpeg", "image/png", "image/webp", "image/gif" };
         public const long MaxFileSizeBytes = 5 * 1024 * 1024;
         public const string SaveAvatarError = "No se pudo guardar el avatar: no existe el usuario con id {0}";
+        public const string ClientImagesFolder = "clients";
+        public const string PetImagesFolder = "pets";
         // public const string
     }
     public static class ResponseMessagesCalendar

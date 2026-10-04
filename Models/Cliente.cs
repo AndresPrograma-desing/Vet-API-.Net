@@ -21,6 +21,8 @@ public partial class Cliente
 
     public string? Nota { get; set; }
 
+    public string? ImageUrl { get; set; }
+
     public DateTime Creado { get; set; }
 
     public DateTime Actualizado { get; set; }

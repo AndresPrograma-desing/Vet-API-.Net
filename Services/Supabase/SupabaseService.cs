@@ -63,6 +63,43 @@ namespace vet_api_Net.Services.Supabase
 
             return avatarUrl;
         }
+        public async Task<string> UploadImageAsync(IFormFile file, string folder, int entityId)
+        {
+            if (file == null || file.Length == 0)
+            {
+                throw new ArgumentException(ResponseMessagesSupabase.EmptyFile);
+            }
+
+            if (!ResponseMessagesSupabase.AllowedContentTypes.Contains(file.ContentType, StringComparer.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException(ResponseMessagesSupabase.InvalidFileType);
+            }
+
+            if (file.Length > ResponseMessagesSupabase.MaxFileSizeBytes)
+            {
+                throw new ArgumentException(ResponseMessagesSupabase.FileTooLarge);
+            }
+
+            var filePath = $"{folder}/{entityId}/image{Path.GetExtension(file.FileName)}";
+
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+
+            await _supabaseClient.Storage
+                .From(_supabaseSettingsOptions.Bucket)
+                .Upload(memoryStream.ToArray(), filePath, new SupabaseStorageOptions
+                {
+                    Upsert = true,
+                    ContentType = file.ContentType
+                });
+
+            var baseUrl = _supabaseClient.Storage
+                .From(_supabaseSettingsOptions.Bucket)
+                .GetPublicUrl(filePath);
+
+            return $"{baseUrl}?t={DateTime.UtcNow.Ticks}";
+        }
+
         public async Task<string> GetUrlAvatar(string userId)
         {
             return _supabaseClient.Storage

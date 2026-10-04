@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using DTOs;
 using vet_api_Net.Routes;
@@ -63,6 +64,50 @@ public async Task<IActionResult> CreatePetForExistingClient([FromBody] CreatePet
         return StatusCode(500, new { message = ResponseMessagesClientPetController.InternalErrorCP });
     }
 }
+
+    [HttpPost(Endpoints.ClientPets.UploadClientImage)]
+    public async Task<IActionResult> UploadClientImage([FromRoute] int id, IFormFile image)
+    {
+        try
+        {
+            var imageUrl = await _clientPetService.UploadClientImageAsync(id, image);
+            return Ok(new { image_url = imageUrl });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { error = ResponseMessagesClientPetController.ErrorUploadingImage });
+        }
+    }
+
+    [HttpPost(Endpoints.ClientPets.UploadPetImage)]
+    public async Task<IActionResult> UploadPetImage([FromRoute] int id, IFormFile image)
+    {
+        try
+        {
+            var imageUrl = await _clientPetService.UploadPetImageAsync(id, image);
+            return Ok(new { image_url = imageUrl });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { error = ResponseMessagesClientPetController.ErrorUploadingImage });
+        }
+    }
 
     [HttpGet(Endpoints.ClientPets.GetClientsWithPetsLookup)]
     public async Task<IActionResult> GetClientsWithPetsLookup([FromQuery] string? query)

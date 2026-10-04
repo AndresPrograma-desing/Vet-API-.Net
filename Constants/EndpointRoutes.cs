@@ -75,6 +75,8 @@ namespace vet_api_Net.Routes
             public const string CreateWithPet = "create-with-pet";
             public const string CreatePetForExistingClient = "add-pet";
             public const string GetClientsWithPetsLookup = "lookup/clients";
+            public const string UploadClientImage = "client/{id}/image";
+            public const string UploadPetImage = "pet/{id}/image";
         }
         public static class Consultas
         {

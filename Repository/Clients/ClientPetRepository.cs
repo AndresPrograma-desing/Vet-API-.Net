@@ -40,9 +40,33 @@ public class ClientPetRepository : IClientPetRepository
     {
         return await _context.SaveChangesAsync() > 0;
     }
+
+    public async Task<bool> SetClientImageUrlAsync(int clientId, string imageUrl)
+    {
+        var client = await _context.Clientes.FindAsync(clientId);
+        if (client == null) return false;
+
+        client.ImageUrl = imageUrl;
+        client.Actualizado = DateTime.Now;
+        return await _context.SaveChangesAsync() > 0;
+    }
+
+    public async Task<bool> SetPetImageUrlAsync(int petId, string imageUrl)
+    {
+        var pet = await _context.Mascotas.FindAsync(petId);
+        if (pet == null) return false;
+
+        pet.ImageUrl = imageUrl;
+        pet.Actualizado = DateTime.Now;
+        return await _context.SaveChangesAsync() > 0;
+    }
     public async Task<bool> ClientExistsAsync(int clientId)
     {
         return await _context.Clientes.AnyAsync(c => c.Id == clientId);
+    }
+    public async Task<bool> PetExistsAsync(int petId)
+    {
+        return await _context.Mascotas.AnyAsync(m => m.Id == petId);
     }
     public async Task<IEnumerable<Cliente>> GetClientsWithPetsLookupAsync(string searchTerm)
 {
