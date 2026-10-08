@@ -17,6 +17,8 @@ public interface IUsersRepository
     Task<string?> GetRoleByEmailAsync(string email);
     Task<List<Usuario>> GetAllUsersAsync();
     Task<List<Usuario>> GetUsersByRoleAsync(string role);
+    Task<Usuario?> GetBotAsync();
+    Task<List<Usuario>> GetActiveUsersByRoleAsync(string role);
     Task AddUserAsync(Usuario user);
     Task DeleteUserAsync(Usuario user);
     Task<ChangeNameUsersDTO?> ChangeNameUsersAsync(int id, string newName, string newLastName, string newEmail, string newPhone);

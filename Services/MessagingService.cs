@@ -4,12 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using DTOs;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using vet_api_Net.Constants;
-using vet_api_Net.Data;
 using vet_api_Net.Hubs;
 using vet_api_Net.Interface.Services;
+using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Models;
 
@@ -18,13 +17,15 @@ namespace vet_api_Net.Services;
 
 public class MessagingService : IMessagingService
 {
-    private readonly AppDbContext _context;
+    private readonly IMessagingRepository _repository;
+    private readonly IUsersRepository _usersRepository;
     private readonly IHubContext<MessageHub> _hubContext;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public MessagingService(AppDbContext context, IHubContext<MessageHub> hubContext, IServiceScopeFactory scopeFactory)
+    public MessagingService(IMessagingRepository repository, IUsersRepository usersRepository, IHubContext<MessageHub> hubContext, IServiceScopeFactory scopeFactory)
     {
-        _context = context;
+        _repository = repository;
+        _usersRepository = usersRepository;
         _hubContext = hubContext;
         _scopeFactory = scopeFactory;
     }
@@ -40,8 +41,8 @@ public class MessagingService : IMessagingService
             FechaEnvio = DateTime.Now
         };
 
-        _context.Mensajes.Add(mensaje);
-        await _context.SaveChangesAsync();
+        await _repository.AddAsync(mensaje);
+        await _repository.SaveChangesAsync();
 
         var result = new MensajeDTO
         {
@@ -55,28 +56,20 @@ public class MessagingService : IMessagingService
 
         await _hubContext.Clients.Group(mensaje.ReceptorId.ToString()).SendAsync("ReceiveMessage", result);
         await _hubContext.Clients.Group(mensaje.EmisorId.ToString()).SendAsync("ReceiveMessage", result);
-
-        // Interceptar mensajes dirigidos al asistente Groq
-        var receptor = await _context.Usuarios.FindAsync(dto.ReceptorId);
+ 
+        var receptor = await _usersRepository.GetByIdAsync(dto.ReceptorId);
         if (receptor != null && receptor.Rol == "assistant" && receptor.Email == "groq@happy-pets.dev")
         {
-            // Ejecutar la respuesta de la IA en segundo plano para no bloquear el envío
             _ = Task.Run(async () =>
             {
                 using var scope = _scopeFactory.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var repository = scope.ServiceProvider.GetRequiredService<IMessagingRepository>();
                 var groqService = scope.ServiceProvider.GetRequiredService<INowGrodService>();
                 var hub = scope.ServiceProvider.GetRequiredService<IHubContext<MessageHub>>();
 
                 try
                 {
-                    // Obtener historial reciente para dar memoria al asistente
-                    var conversationHistory = await db.Mensajes
-                        .Where(m => (m.EmisorId == dto.EmisorId && m.ReceptorId == dto.ReceptorId) ||
-                                    (m.EmisorId == dto.ReceptorId && m.ReceptorId == dto.EmisorId))
-                        .OrderBy(m => m.FechaEnvio)
-                        .Take(15)
-                        .ToListAsync();
+                    var conversationHistory = await repository.GetRecentConversationAsync(dto.EmisorId, dto.ReceptorId, 15);
 
                     var sb = new System.Text.StringBuilder();
                     sb.AppendLine("Aquí está el historial reciente de nuestra conversación:");
@@ -87,24 +80,22 @@ public class MessagingService : IMessagingService
                     }
                     sb.AppendLine($"Usuario: {dto.Contenido}");
 
-                    // Consultar a Groq
                     var groqResponse = await groqService.EnviarConsultaAsync(new GroqChatRequestDTO
                     {
                         Pregunta = sb.ToString()
                     });
 
-                    // Guardar respuesta del asistente
                     var aiMsg = new Mensaje
                     {
-                        EmisorId = dto.ReceptorId, // Groq es el emisor
-                        ReceptorId = dto.EmisorId, // El usuario es el receptor
+                        EmisorId = dto.ReceptorId,  
+                        ReceptorId = dto.EmisorId,  
                         Contenido = groqResponse.Respuesta,
                         Leido = false,
                         FechaEnvio = DateTime.Now
                     };
 
-                    db.Mensajes.Add(aiMsg);
-                    await db.SaveChangesAsync();
+                    await repository.AddAsync(aiMsg);
+                    await repository.SaveChangesAsync();
 
                     var aiDto = new MensajeDTO
                     {
@@ -115,14 +106,12 @@ public class MessagingService : IMessagingService
                         Leido = false,
                         FechaEnvio = aiMsg.FechaEnvio
                     };
-
-                    // Notificar respuesta por SignalR
+ 
                     await hub.Clients.Group(aiMsg.ReceptorId.ToString()).SendAsync("ReceiveMessage", aiDto);
                     await hub.Clients.Group(aiMsg.EmisorId.ToString()).SendAsync("ReceiveMessage", aiDto);
                 }
                 catch (Exception ex)
-                {
-                    // Enviar mensaje de error en el chat si falla Groq
+                { 
                     var errorMsg = new Mensaje
                     {
                         EmisorId = dto.ReceptorId,
@@ -131,8 +120,8 @@ public class MessagingService : IMessagingService
                         Leido = false,
                         FechaEnvio = DateTime.Now
                     };
-                    db.Mensajes.Add(errorMsg);
-                    await db.SaveChangesAsync();
+                    await repository.AddAsync(errorMsg);
+                    await repository.SaveChangesAsync();
 
                     var errDto = new MensajeDTO
                     {
@@ -153,10 +142,7 @@ public class MessagingService : IMessagingService
 
     public async Task<List<MensajeDTO>> GetConversationAsync(int userId, int otherUserId)
     {
-        var rows = await _context.Mensajes
-            .Where(m => (m.EmisorId == userId && m.ReceptorId == otherUserId) || (m.EmisorId == otherUserId && m.ReceptorId == userId))
-            .OrderBy(m => m.FechaEnvio)
-            .ToListAsync();
+        var rows = await _repository.GetConversationAsync(userId, otherUserId);
 
         return rows.Select(m => new MensajeDTO
         {
@@ -171,10 +157,7 @@ public class MessagingService : IMessagingService
 
     public async Task<List<MensajeDTO>> GetUserMessagesAsync(int userId)
     {
-        var rows = await _context.Mensajes
-            .Where(m => m.ReceptorId == userId)
-            .OrderByDescending(m => m.FechaEnvio)
-            .ToListAsync();
+        var rows = await _repository.GetByReceptorAsync(userId);
 
         return rows.Select(m => new MensajeDTO
         {
@@ -189,11 +172,11 @@ public class MessagingService : IMessagingService
 
     public async Task MarkAsReadAsync(int messageId)
     {
-        var msg = await _context.Mensajes.FindAsync(messageId);
+        var msg = await _repository.GetByIdAsync(messageId);
         if (msg == null) throw new KeyNotFoundException(ResponseMessagesMessaging.MessageNotFound);
 
         msg.Leido = true;
-        await _context.SaveChangesAsync();
+        await _repository.SaveChangesAsync();
 
         var dto = new MensajeDTO
         {

@@ -1,8 +1,8 @@
 using DTOs;
 using NCrontab;
-using Microsoft.EntityFrameworkCore;
+
 using vet_api_Net.Constants;
-using vet_api_Net.Data;
+using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.HttpServices;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Interfaze.Utilities;
@@ -60,7 +60,7 @@ public class BcvWorker : BackgroundService
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     var scraper = scope.ServiceProvider.GetRequiredService<IBcvScraper>();
-                    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    var moneyTypeRepository = scope.ServiceProvider.GetRequiredService<IMoneyTypeRepository>();
                     var notificationsPushService = scope.ServiceProvider.GetRequiredService<INotificationsPushService>();
 
                     _logger.LogInformation("Consultando precio en el BCV...");
@@ -69,8 +69,7 @@ public class BcvWorker : BackgroundService
 
                     if (precioActual.HasValue && precioActual.Value > 0)
                     {
-                        var moneyEntry = await context.MoneyTypes
-                            .FirstOrDefaultAsync(m => m.Id == targetId, stoppingToken);
+                        var moneyEntry = await moneyTypeRepository.GetByIdAsync(targetId, stoppingToken);
 
                         if (moneyEntry != null)
                         {
@@ -98,12 +97,12 @@ public class BcvWorker : BackgroundService
                                 MoneyName = _apiSettings.VES!,
                                 Fecha = DateTime.Now
                             };
-                            context.MoneyTypes.Add(nuevaTasa);
+                            moneyTypeRepository.Add(nuevaTasa);
 
                             _logger.LogInformation("Registro ID {Id} creado por primera vez: {Precio} Bs.", targetId, precioActual);
                         }
 
-                        await context.SaveChangesAsync(stoppingToken);
+                        await moneyTypeRepository.SaveChangesAsync(stoppingToken);
                         _logger.LogInformation("Precio actualizado correctamente: {Precio} Bs.", precioActual);
                     }
                     else

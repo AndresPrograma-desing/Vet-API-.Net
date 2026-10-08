@@ -19,6 +19,7 @@ public interface IFacturasRepository
     Task<Cita?> GetCitaByIdAsync(int citaId);
     Task<MetodoPago?> GetMetodoPagoByIdAsync(int metodoPagoId);
     Task<int> GetFirstUsuarioIdAsync();
+    Task<List<Factura>> GetByDocumentFileNameAsync(string fileName, string escapedFileName);
     void AddFactura(Factura factura);
     void UpdateFactura(Factura factura);
     Task<bool> SaveChangesAsync();

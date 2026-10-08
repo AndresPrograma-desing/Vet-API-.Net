@@ -5,13 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using DTOs;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using vet_api_Net.Constants;
-using vet_api_Net.Data;
+using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Services;
 using vet_api_Net.WorkerSettings;
@@ -136,10 +136,12 @@ namespace vet_api_Net.Worker
                             .ToArray();
 
                         using var scope = _services.CreateScope();
-                        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                        var workerConfigRepository = scope.ServiceProvider.GetRequiredService<IWorkerConfigRepository>();
+                        var usersRepository = scope.ServiceProvider.GetRequiredService<IUsersRepository>();
+                        var facturasRepository = scope.ServiceProvider.GetRequiredService<IFacturasRepository>();
                         var messagingService = scope.ServiceProvider.GetService<IMessagingService>();
                         var notificationsPushService = scope.ServiceProvider.GetRequiredService<INotificationsPushService>();
-                        var dbSetting = await db.WorkerConfigs.FirstOrDefaultAsync(w => w.WorkerName == WorkerNames.DeleteFacturaWorker, stoppingToken);
+                        var dbSetting = await workerConfigRepository.GetByWorkerNameAsync(WorkerNames.DeleteFacturaWorker, stoppingToken);
 
                         var effectiveThreshold = _threshold;
                         if (dbSetting != null && !dbSetting.IsEnabled)
@@ -158,12 +160,10 @@ namespace vet_api_Net.Worker
 
                                 if (age >= effectiveThreshold)
                                 {
-                                    var bot = await db.Usuarios.FirstOrDefaultAsync(u => u.Nombre == "Bot" || u.Email == "bottest@example.com");
+                                    var bot = await usersRepository.GetBotAsync();
                                     int? botId = bot?.Id;
 
-                                    var secretarias = await db.Usuarios
-                                        .Where(u => u.Rol == "secretaria" && (u.Activo == null || u.Activo == true))
-                                        .ToListAsync();
+                                    var secretarias = await usersRepository.GetActiveUsersByRoleAsync("secretaria");
 
 
                                     var messageText = $"La factura {fileName} ha expirado y fue eliminada automáticamente.";
@@ -189,19 +189,16 @@ namespace vet_api_Net.Worker
                                     try
                                     {
                                         var escapedName = Uri.EscapeDataString(fileName);
-                                        var facturasToUpdate = await db.Facturas
-                                            .Include(f => f.Cliente)
-                                            .Where(f => !string.IsNullOrEmpty(f.UrlDocx) && (EF.Functions.Like(f.UrlDocx, "%" + fileName + "%") || EF.Functions.Like(f.UrlDocx, "%" + escapedName + "%")))
-                                            .ToListAsync();
+                                        var facturasToUpdate = await facturasRepository.GetByDocumentFileNameAsync(fileName, escapedName);
 
                                         if (facturasToUpdate != null && facturasToUpdate.Count > 0)
                                         {
                                             foreach (var fac in facturasToUpdate)
                                             {
                                                 fac.UrlDocx = "la factura se ha eliminado";
-                                                db.Facturas.Update(fac);
+                                                facturasRepository.UpdateFactura(fac);
                                             }
-                                            await db.SaveChangesAsync();
+                                            await facturasRepository.SaveChangesAsync();
                                             var clienteName = "Cliente";
                                             var firstFac = facturasToUpdate.FirstOrDefault();
                                             if (firstFac?.Cliente != null)

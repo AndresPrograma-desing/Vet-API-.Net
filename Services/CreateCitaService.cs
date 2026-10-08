@@ -1,9 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using DTOs;
+using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
-using vet_api_Net.Data;
 using vet_api_Net.Models;
 using vet_api_Net.Constants;
 
@@ -11,11 +10,15 @@ namespace vet_api_Net.Services;
 
 public class CreateCitaService : ICreateCitaService
 {
-    private readonly AppDbContext _context;
+    private readonly ICitasRepository _citasRepository;
+    private readonly IPetsRepository _petsRepository;
+    private readonly IUsersRepository _usersRepository;
 
-    public CreateCitaService(AppDbContext context)
+    public CreateCitaService(ICitasRepository citasRepository, IPetsRepository petsRepository, IUsersRepository usersRepository)
     {
-        _context = context;
+        _citasRepository = citasRepository;
+        _petsRepository = petsRepository;
+        _usersRepository = usersRepository;
     }
 
     public async Task<Cita> CreateCitaAsync(CreateCitaDTO dto)
@@ -26,15 +29,14 @@ public class CreateCitaService : ICreateCitaService
         if (dto.DoctorId <= 0) throw new ArgumentException(ResponseMessagesUsers.DoctorNotFound);
         if (string.IsNullOrWhiteSpace(dto.HoraCita)) throw new ArgumentException(ResponseMessagesCitas.RequiredHoraCita);
 
-        var mascota = await _context.Mascotas.FindAsync(dto.MascotaId);
-        if (mascota == null) throw new KeyNotFoundException(ResponseMessagesCitas.MascotaNotFound);
+        if (!await _petsRepository.ExistsAsync(dto.MascotaId)) throw new KeyNotFoundException(ResponseMessagesCitas.MascotaNotFound);
 
-        var doctor = await _context.Usuarios.FindAsync(dto.DoctorId);
+        var doctor = await _usersRepository.GetByIdAsync(dto.DoctorId);
         if (doctor == null) throw new KeyNotFoundException(ResponseMessagesUsers.DoctorNotFound);
 
         if (dto.SecretariaId.HasValue)
         {
-            var sec = await _context.Usuarios.FindAsync(dto.SecretariaId.Value);
+            var sec = await _usersRepository.GetByIdAsync(dto.SecretariaId.Value);
             if (sec == null) throw new KeyNotFoundException(ResponseMessagesUsers.SecretarialNotFound);
         }
 
@@ -60,9 +62,7 @@ public class CreateCitaService : ICreateCitaService
         }
 
         // --- EVITAR SOLAPAMIENTOS DE RANGOS DE 30 MINUTOS ---
-        var citasDelDia = await _context.Citas
-            .Where(c => c.DoctorId == dto.DoctorId && c.FechaCita.Date == fecha)
-            .ToListAsync();
+        var citasDelDia = await _citasRepository.GetByDoctorAndDateAsync(dto.DoctorId, fecha);
 
         var requestedStart = fecha.Add(hora.ToTimeSpan());
         var requestedEnd = requestedStart.AddMinutes(30);
@@ -139,7 +139,7 @@ public class CreateCitaService : ICreateCitaService
 
                 if (!foundFreeSlot)
                 {
-                    throw new InvalidOperationException("No se encontró ningún horario disponible para autoagendar este día.");
+                    throw new InvalidOperationException(ResponseMessagesCitas.NotAvailableSlots);
                 }
             }
             else
@@ -164,7 +164,7 @@ public class CreateCitaService : ICreateCitaService
         if (!string.IsNullOrWhiteSpace(dto.MetodoPago))
         {
             var metodoNombre = dto.MetodoPago!.Trim();
-            var metodo = await _context.MetodoPagos.FirstOrDefaultAsync(m => m.Nombre.ToLower() == metodoNombre.ToLower());
+            var metodo = await _citasRepository.GetPaymentMethodByNameAsync(metodoNombre);
             if (metodo == null)
             {
                 metodo = new MetodoPago
@@ -173,17 +173,17 @@ public class CreateCitaService : ICreateCitaService
                     Creado = DateTime.Now,
                     Actualizado = DateTime.Now
                 };
-                _context.MetodoPagos.Add(metodo);
-                await _context.SaveChangesAsync();
+                _citasRepository.AddPaymentMethod(metodo);
+                await _citasRepository.SaveChangesAsync();
             }
 
             cita.MetodoPagoId = metodo.Id;
         }
 
-        _context.Citas.Add(cita);
-        await _context.SaveChangesAsync();
- 
-        var citaRecargada = await _context.Citas.Include(c => c.MetodoPago).FirstOrDefaultAsync(c => c.Id == cita.Id);
+        await _citasRepository.AddAsync(cita);
+        await _citasRepository.SaveChangesAsync();
+
+        var citaRecargada = await _citasRepository.GetByIdWithPaymentMethodAsync(cita.Id);
         return citaRecargada ?? cita;
     }
 }

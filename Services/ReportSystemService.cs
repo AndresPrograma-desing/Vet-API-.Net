@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using vet_api_Net.Data;
+using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Models;
 using vet_api_Net.Constants;
@@ -11,132 +10,48 @@ namespace vet_api_Net.Services
 {
 	public class ReportSystemService : IReportSystemService
 	{
-		private readonly AppDbContext _context;
+		private readonly IReportRepository _repository;
+		private readonly IWorkerConfigRepository _workerConfigRepository;
 
-		public ReportSystemService(AppDbContext context)
+		public ReportSystemService(IReportRepository repository, IWorkerConfigRepository workerConfigRepository)
 		{
-			_context = context;
+			_repository = repository;
+			_workerConfigRepository = workerConfigRepository;
 		}
 
 		public async Task<IEnumerable<Reporte>> GetAllAsync()
 		{
-			return await _context.Reportes.AsNoTracking().ToListAsync();
+			return await _repository.GetAllAsync();
 		}
 
 		public async Task<Reporte?> GetByIdAsync(int id)
 		{
-			return await _context.Reportes.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
+			return await _repository.GetByIdAsync(id);
 		}
 
 		public async Task<Reporte> CreateAsync(Reporte reporte)
 		{
-			_context.Reportes.Add(reporte);
-			await _context.SaveChangesAsync();
+			await _repository.AddAsync(reporte);
+			await _repository.SaveChangesAsync();
 			return reporte;
 		}
 
 		public async Task<bool> DeleteAsync(int id)
 		{
-			var reporte = await _context.Reportes.FindAsync(id);
+			var reporte = await _repository.GetByIdTrackedAsync(id);
 			if (reporte == null)
 			{
 				return false;
 			}
 
-			_context.Reportes.Remove(reporte);
-			await _context.SaveChangesAsync();
+			_repository.Remove(reporte);
+			await _repository.SaveChangesAsync();
 			return true;
 		}
 
 		public async Task<Reporte> GenerateFullSystemReportAsync(string generadoPor)
-		{	 
-			var clientes = await _context.Clientes
-				.AsNoTracking()
-				.Select(c => new
-				{
-					c.Id,
-					c.Nombre,
-					c.Apellido,
-					c.Email,
-					c.Telefono,
-					c.Direccion,
-					c.Identificacion,
-					c.Creado,
-					c.Actualizado
-				})
-				.ToListAsync();
-
-			var mascotas = await _context.Mascotas
-				.AsNoTracking()
-				.Select(m => new
-				{
-					m.Id,
-					m.ClienteId,
-					m.Nombre,
-					Especie = m.Especie.Nombre,
-					m.Raza,
-					m.Sexo,
-					m.FechaNacimiento,
-					m.Peso,
-					m.Creado,
-					m.Actualizado
-				})
-				.ToListAsync();
-
-			var productos = await _context.Productos
-				.AsNoTracking()
-				.Select(p => new
-				{
-					p.Id,
-					p.Codigo,
-					p.Nombre,
-					p.Tipo,
-					p.Precio,
-					p.PrecioVenta,
-					p.Stock,
-					p.StockMinimo,
-					p.Proveedor,
-					p.Creado,
-					p.Actualizado
-				})
-				.ToListAsync();
-
-			var facturas = await _context.Facturas
-				.AsNoTracking()
-				.Select(f => new
-				{
-					f.Id,
-					f.NumeroFactura,
-					f.ClienteId,
-					f.MascotaId,
-					f.ConsultaId,
-					f.SecretariaId,
-					f.FechaEmision,
-					f.Subtotal,
-					f.Descuento,
-					f.Total,
-					f.MetodoPago,
-					f.EstadoPago,
-					f.Creado,
-					f.Actualizado
-				})
-				.ToListAsync();
-
-			var usuarios = await _context.Usuarios
-				.AsNoTracking()
-				.Select(u => new
-				{
-					u.Id,
-					u.Nombre,
-					u.Apellido,
-					u.Email,
-					u.Rol,
-					u.Activo,
-					u.UltimoAcceso,
-					u.Creado,
-					u.Actualizado
-				})
-				.ToListAsync();
+		{
+			var (clientes, mascotas, productos, facturas, usuarios) = await _repository.GetSystemSnapshotAsync();
 
 			var data = new
 			{
@@ -160,28 +75,78 @@ namespace vet_api_Net.Services
 				GeneradoPor = string.IsNullOrWhiteSpace(generadoPor) ? "sistema" : generadoPor
 			};
 
-			_context.Reportes.Add(reporte);
-			await _context.SaveChangesAsync();
+			await _repository.AddAsync(reporte);
+			await _repository.SaveChangesAsync();
 			return reporte;
 		}
 		
 		public async Task<object?> IsEnabledAsync()
-{
-    var deleteConfig = await _context.WorkerConfigs
-        .AsNoTracking()
-        .FirstOrDefaultAsync(w => w.WorkerName == WorkerNames.DeleteReportWorker);
-    var generateConfig = await _context.WorkerConfigs
-        .AsNoTracking()
-        .FirstOrDefaultAsync(w => w.WorkerName == WorkerNames.AutoGenerateReportWorker);
+		{
+			var deleteConfig = await _workerConfigRepository.GetByWorkerNameAsync(WorkerNames.DeleteReportWorker);
+			var generateConfig = await _workerConfigRepository.GetByWorkerNameAsync(WorkerNames.AutoGenerateReportWorker);
 
-    if (deleteConfig == null && generateConfig == null) return null;
+			if (deleteConfig == null && generateConfig == null) return null;
 
-    return new
-    {
-        Days = deleteConfig?.RetentionValue ?? 30,
-        IsEnabled = deleteConfig?.IsEnabled ?? true,
-        GenerateEnabled = generateConfig?.GenerateEnabled ?? false
-    };
-}
+			return new
+			{
+				Days = deleteConfig?.RetentionValue ?? 30,
+				IsEnabled = deleteConfig?.IsEnabled ?? true,
+				GenerateEnabled = generateConfig?.GenerateEnabled ?? false
+			};
+		}
+
+		public async Task UpdateRetentionDaysAsync(int days)
+		{
+			var setting = await _workerConfigRepository.GetByWorkerNameAsync(WorkerNames.DeleteReportWorker);
+
+			if (setting == null)
+			{
+				setting = new WorkerConfig { WorkerName = WorkerNames.DeleteReportWorker, RetentionValue = days };
+				_workerConfigRepository.AddWorkerConfig(setting);
+			}
+			else
+			{
+				setting.RetentionValue = days;
+				setting.LastUpdated = DateTime.UtcNow;
+			}
+
+			await _workerConfigRepository.SaveChangesAsync();
+		}
+
+		public async Task SetAutoDeleteEnabledAsync(bool enable)
+		{
+			var setting = await _workerConfigRepository.GetByWorkerNameAsync(WorkerNames.DeleteReportWorker);
+
+			if (setting == null)
+			{
+				setting = new WorkerConfig { WorkerName = WorkerNames.DeleteReportWorker, IsEnabled = enable, RetentionValue = 30 };
+				_workerConfigRepository.AddWorkerConfig(setting);
+			}
+			else
+			{
+				setting.IsEnabled = enable;
+				setting.LastUpdated = DateTime.UtcNow;
+			}
+
+			await _workerConfigRepository.SaveChangesAsync();
+		}
+
+		public async Task SetAutoGenerateEnabledAsync(bool enable)
+		{
+			var setting = await _workerConfigRepository.GetByWorkerNameAsync(WorkerNames.AutoGenerateReportWorker);
+
+			if (setting == null)
+			{
+				setting = new WorkerConfig { WorkerName = WorkerNames.AutoGenerateReportWorker, GenerateEnabled = enable };
+				_workerConfigRepository.AddWorkerConfig(setting);
+			}
+			else
+			{
+				setting.GenerateEnabled = enable;
+				setting.LastUpdated = DateTime.UtcNow;
+			}
+
+			await _workerConfigRepository.SaveChangesAsync();
+		}
 	}
 }

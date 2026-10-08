@@ -130,6 +130,14 @@ public class FacturasRepository : IFacturasRepository
         _db.Facturas.Add(factura);
     }
 
+    public async Task<List<Factura>> GetByDocumentFileNameAsync(string fileName, string escapedFileName)
+    {
+        return await _db.Facturas
+            .Include(f => f.Cliente)
+            .Where(f => !string.IsNullOrEmpty(f.UrlDocx) && (EF.Functions.Like(f.UrlDocx, "%" + fileName + "%") || EF.Functions.Like(f.UrlDocx, "%" + escapedFileName + "%")))
+            .ToListAsync();
+    }
+
     public void UpdateFactura(Factura factura)
     {
         _db.Facturas.Update(factura);
