@@ -1,7 +1,6 @@
 using DTOs;
-using Microsoft.EntityFrameworkCore;
 using vet_api_Net.Constants;
-using vet_api_Net.Data;
+using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Services;
 namespace vet_api_Net.Worker
@@ -28,19 +27,17 @@ namespace vet_api_Net.Worker
                 {
                     using (var scope = _services.CreateScope())
                     {
-                        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                        var workerConfigRepository = scope.ServiceProvider.GetRequiredService<IWorkerConfigRepository>();
+                        var reportRepository = scope.ServiceProvider.GetRequiredService<IReportRepository>();
                         var reportService = scope.ServiceProvider.GetRequiredService<IReportSystemService>();
                         var notificationsPushService = scope.ServiceProvider.GetRequiredService<INotificationsPushService>();
 
-                        var config = await db.WorkerConfigs.FirstOrDefaultAsync(w => w.WorkerName == WorkerNames.AutoGenerateReportWorker, stoppingToken);
+                        var config = await workerConfigRepository.GetByWorkerNameAsync(WorkerNames.AutoGenerateReportWorker, stoppingToken);
                         bool GenerateEnabled = config?.GenerateEnabled ?? false;
 
                         if (GenerateEnabled)
                         {
-                            var ultimoReporteSistema = await db.Reportes
-                                .Where(r => r.GeneradoPor == "sistema")
-                                .OrderByDescending(r => r.FechaCreacion)
-                                .FirstOrDefaultAsync(stoppingToken);
+                            var ultimoReporteSistema = await reportRepository.GetLastByGeneratorAsync("sistema", stoppingToken);
 
                             // var proximaFechaGeneracion = ultimoReporteSistema?.FechaCreacion.AddDays(15) ?? DateTime.MinValue;
                             var proximaFechaGeneracion = ultimoReporteSistema?.FechaCreacion.AddSeconds(15) ?? DateTime.MinValue;

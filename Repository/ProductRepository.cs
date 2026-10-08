@@ -57,6 +57,16 @@ public class ProductRepository : IProductRepository
         return await _context.CategoriasProductos.AsNoTracking().ToListAsync();
     }
 
+    public async Task<bool> ExistsByCodeOrNameAsync(string code, string name)
+    {
+        return await _context.Productos.AnyAsync(p => p.Codigo == code || p.Nombre == name);
+    }
+
+    public async Task<bool> CategoryExistsAsync(int categoryId)
+    {
+        return await _context.CategoriasProductos.AnyAsync(c => c.Id == categoryId);
+    }
+
     public void AddProduct(Producto product)
     {
         _context.Productos.Add(product);

@@ -2,15 +2,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
-using System.Data;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using DTOs;
-using vet_api_Net.Data;
 using vet_api_Net.Hubs;
+using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Constants;
 
 namespace vet_api_Net.Services
@@ -37,11 +35,11 @@ namespace vet_api_Net.Services
                 try
                 {
                     using var scope = _scopeFactory.CreateScope();
-                    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    var repository = scope.ServiceProvider.GetRequiredService<IMessagingRepository>();
  
                     if (_mensajesTableExists != true)
                     {
-                        _mensajesTableExists = await MensajesTableExistsAsync(db, stoppingToken);
+                        _mensajesTableExists = await repository.TableExistsAsync(stoppingToken);
                         if (_mensajesTableExists != true)
                         { 
                             await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
@@ -49,10 +47,7 @@ namespace vet_api_Net.Services
                         }
                     }
 
-                    var messages = await db.Mensajes
-                        .Where(m => m.Leido == false)
-                        .OrderBy(m => m.FechaEnvio)
-                        .ToListAsync(stoppingToken);
+                    var messages = await repository.GetUnreadAsync(stoppingToken);
 
                     foreach (var m in messages)
                     {
@@ -89,25 +84,6 @@ namespace vet_api_Net.Services
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(3600), stoppingToken);
-            }
-        }
-
-        private static async Task<bool> MensajesTableExistsAsync(AppDbContext db, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var conn = db.Database.GetDbConnection();
-                if (conn.State != ConnectionState.Open)
-                    await conn.OpenAsync(cancellationToken);
-
-                await using var cmd = conn.CreateCommand();
-                cmd.CommandText = MessagePoller.Query;
-                var result = await cmd.ExecuteScalarAsync(cancellationToken);
-                return result != null && result != DBNull.Value;
-            }
-            catch
-            {
-                return false;
             }
         }
     }

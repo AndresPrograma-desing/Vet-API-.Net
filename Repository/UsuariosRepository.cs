@@ -183,6 +183,14 @@ public class UsersRepository : IUsersRepository
             .ToListAsync();
     }
 
+    public async Task<Usuario?> GetBotAsync()
+        => await _context.Usuarios.FirstOrDefaultAsync(u => u.Nombre == "Bot" || u.Email == "bottest@example.com");
+
+    public async Task<List<Usuario>> GetActiveUsersByRoleAsync(string role)
+        => await _context.Usuarios
+            .Where(u => u.Rol == role && (u.Activo == null || u.Activo == true))
+            .ToListAsync();
+
     public Task AddUserAsync(Usuario user)
     {
         _context.Usuarios.Add(user);

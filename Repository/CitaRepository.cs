@@ -152,6 +152,22 @@ public class CitasRepository : ICitasRepository
     }).ToList();
 }
 
+    public async Task<List<Cita>> GetByDoctorAndDateAsync(int doctorId, DateTime date)
+        => await _context.Citas
+            .Where(c => c.DoctorId == doctorId && c.FechaCita.Date == date.Date)
+            .ToListAsync();
+
+    public async Task<Cita?> GetByIdWithPaymentMethodAsync(int id)
+        => await _context.Citas.Include(c => c.MetodoPago).FirstOrDefaultAsync(c => c.Id == id);
+
+    public async Task<MetodoPago?> GetPaymentMethodByNameAsync(string name)
+    {
+        var lower = name.ToLower();
+        return await _context.MetodoPagos.FirstOrDefaultAsync(m => m.Nombre.ToLower() == lower);
+    }
+
+    public void AddPaymentMethod(MetodoPago metodoPago) => _context.MetodoPagos.Add(metodoPago);
+
     public async Task AddAsync(Cita cita) => await _context.Citas.AddAsync(cita);
 
     public void Update(Cita cita) => _context.Citas.Update(cita);

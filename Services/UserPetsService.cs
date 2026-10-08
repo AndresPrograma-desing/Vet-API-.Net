@@ -3,20 +3,19 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using DTOs;
 using vet_api_Net.Interfaze.Services;
-using vet_api_Net.Data;
+using vet_api_Net.Interfaze.Repositories;
 
 namespace vet_api_Net.Services;
 
 public class UserPetsService : IUserPetsService
 {
-    private readonly AppDbContext _context;
+    private readonly IPetsRepository _repository;
 
-    public UserPetsService(AppDbContext context)
+    public UserPetsService(IPetsRepository repository)
     {
-        _context = context;
+        _repository = repository;
     }
 
     public async Task<List<MascotaResumenDTO>> GetUserPetsAsync(string nombre)
@@ -25,11 +24,7 @@ public class UserPetsService : IUserPetsService
 
         var lower = nombre.Trim().ToLowerInvariant();
 
-        var mascotas = await _context.Mascotas
-            .Include(m => m.Cliente)
-            .Include(m => m.Especie)
-            .Where(m => m.Cliente != null && m.Cliente.Nombre.ToLower() == lower)
-            .ToListAsync();
+        var mascotas = await _repository.GetByClientNameWithRelationsAsync(lower);
 
         return mascotas.Select(m => new MascotaResumenDTO
         {

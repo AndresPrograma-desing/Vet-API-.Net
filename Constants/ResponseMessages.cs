@@ -212,6 +212,7 @@ namespace vet_api_Net.Constants
         public const string StatusValid = "Estado no válido. Valores permitidos: completada, en_curso, cancelada, no_asistida";
         public const string CancelledCita = "CITA CANCELADA.";
         public const string NotCitasToday = "No hay citas programadas para el día de hoy.";
+        public const string NotAvailableSlots = "No se encontró ningún horario disponible para autoagendar este día.";
     }
     public static class TypeConsultas
     {

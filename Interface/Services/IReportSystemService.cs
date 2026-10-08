@@ -13,5 +13,8 @@ namespace vet_api_Net.Interfaze.Services
         Task<bool> DeleteAsync(int id);
         Task<Reporte> GenerateFullSystemReportAsync(string generadoPor);
         Task<object?> IsEnabledAsync();
+        Task UpdateRetentionDaysAsync(int days);
+        Task SetAutoDeleteEnabledAsync(bool enable);
+        Task SetAutoGenerateEnabledAsync(bool enable);
     }
 }
