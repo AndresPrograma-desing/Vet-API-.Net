@@ -17,6 +17,6 @@ public interface IReportRepository
     Task AddAsync(Reporte reporte);
     void Remove(Reporte reporte);
     void RemoveRange(IEnumerable<Reporte> reportes);
-    Task<(List<object> Clientes, List<object> Mascotas, List<object> Productos, List<object> Facturas, List<object> Usuarios)> GetSystemSnapshotAsync();
+    Task<(List<object> Clientes, List<object> Mascotas, List<object> Productos, List<object> Facturas, List<object> Usuarios, List<object> Appointments, List<object> Consultations, List<object> InventoryMovements, object Summary)> GetSystemSnapshotAsync();
     Task<bool> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

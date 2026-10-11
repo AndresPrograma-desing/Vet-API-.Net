@@ -51,7 +51,7 @@ namespace vet_api_Net.Services
 
 		public async Task<Reporte> GenerateFullSystemReportAsync(string generadoPor)
 		{
-			var (clientes, mascotas, productos, facturas, usuarios) = await _repository.GetSystemSnapshotAsync();
+			var (clientes, mascotas, productos, facturas, usuarios, appointments, consultations, inventoryMovements, summary) = await _repository.GetSystemSnapshotAsync();
 
 			var data = new
 			{
@@ -60,7 +60,11 @@ namespace vet_api_Net.Services
 				Mascotas = mascotas,
 				Productos = productos,
 				Facturas = facturas,
-				Usuarios = usuarios
+				Usuarios = usuarios,
+				Appointments = appointments,
+				Consultations = consultations,
+				InventoryMovements = inventoryMovements,
+				Summary = summary
 			};
 
 			string jsonData = System.Text.Json.JsonSerializer.Serialize(data);
@@ -72,7 +76,7 @@ namespace vet_api_Net.Services
 				Categoria = ResponseMessagesReport.ResportCategory,
 				Filtro = ResponseMessagesReport.Filtre,
 				Datos = jsonData,
-				GeneradoPor = string.IsNullOrWhiteSpace(generadoPor) ? "sistema" : generadoPor
+				GeneradoPor = string.IsNullOrWhiteSpace(generadoPor) ? ResponseMessagesReport.GeneratedBySystem : generadoPor
 			};
 
 			await _repository.AddAsync(reporte);

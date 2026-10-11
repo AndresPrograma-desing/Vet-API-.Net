@@ -338,6 +338,12 @@ namespace vet_api_Net.Constants
         public const string Productos = "Productos";
         public const string Facturas = "Recibo";
         public const string Usuarios = "Usuarios";
+        public const string Appointments = "Citas";
+        public const string Consultations = "Consultas";
+        public const string InventoryMovements = "Movimientos de Inventario";
+        public const string Summary = "Resumen";
+        public const string SummaryMetricColumn = "Métrica";
+        public const string SummaryValueColumn = "Valor";
         public const string InvalidReport = "Reporte inválido o sin datos.";
         public const string DeserializationError = "No se pudo deserializar el contenido del reporte.";
     }
@@ -417,6 +423,7 @@ namespace vet_api_Net.Constants
         public const string Filtre = "{}";
         public const string ReportgeneratedTittle = "Se ha generado un reporte del sistema";
         public const string ReportgeneratedDescription = "El reporte se ha generado correctamente. puedes descargarlo en Ajustes| Accesos Y Seguridad | Repor.";
+        public const string GeneratedBySystem = "sistema";
 
     }
     public static class ResponseMessagesAuthController
