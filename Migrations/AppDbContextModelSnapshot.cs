@@ -1561,6 +1561,11 @@ namespace vet_api_Net.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("email");
 
+                    b.Property<string>("ExternalAuthId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("external_auth_id");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1594,6 +1599,9 @@ namespace vet_api_Net.Migrations
                     b.HasIndex(new[] { "Email" }, "email")
                         .IsUnique()
                         .HasDatabaseName("email1");
+
+                    b.HasIndex(new[] { "ExternalAuthId" }, "idx_external_auth_id")
+                        .IsUnique();
 
                     b.HasIndex(new[] { "Rol" }, "idx_rol")
                         .HasDatabaseName("idx_rol1");

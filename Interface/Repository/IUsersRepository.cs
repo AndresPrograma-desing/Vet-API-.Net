@@ -8,6 +8,7 @@ public interface IUsersRepository
 {
     Task<Usuario?> GetByEmailAndRolAsync(string email, string rol);
     Task<Usuario?> GetByEmailAsync(string email);
+    Task<Usuario?> GetByExternalAuthIdAsync(string externalAuthId);
     Task<Usuario?> GetByNameAndApellidoAsync(string nombre, string apellido);
     Task<Usuario?> GetByIdAsync(int id);
     Task<CredencialUsuarioPdfDTO?> GetCredencialDataAsync(int id);

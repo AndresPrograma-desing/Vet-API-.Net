@@ -78,6 +78,42 @@ public class AuthController : ControllerBase
         }
     }
 
+    [HttpPost(Endpoints.Auth.LoginContextHub)]
+    [AllowAnonymous]
+    [EnableRateLimiting("auth")]
+    public async Task<IActionResult> LoginContextHub([FromBody] LoginContextHubRequest request)
+    {
+        try
+        {
+            var user = await _authService.LoginWithContextHubAsync(request.Ticket);
+            var token = _authService.GenerateToken(user!);
+
+            return Ok(new
+            {
+                success = true,
+                user = new
+                {
+                    id = user!.Id,
+                    email = user.Email,
+                    rol = user.Rol
+                },
+                token
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
+        }
+    }
+
     [HttpGet(Endpoints.Auth.Me)]
     [Authorize]
     public async Task<IActionResult> Me()

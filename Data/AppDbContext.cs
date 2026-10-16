@@ -1092,6 +1092,8 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => e.Rol, "idx_rol");
 
+            entity.HasIndex(e => e.ExternalAuthId, "idx_external_auth_id").IsUnique();
+
             entity.Property(e => e.Id)
 
                 .HasColumnName("id");
@@ -1116,6 +1118,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .HasColumnName("email");
+            entity.Property(e => e.ExternalAuthId)
+                .HasMaxLength(255)
+                .HasColumnName("external_auth_id");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(50)
                 .HasColumnName("nombre");

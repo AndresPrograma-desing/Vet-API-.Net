@@ -2,6 +2,7 @@ using System.Linq;
 using DTOs;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using vet_api_Net.Constants;
 using vet_api_Net.Data;
@@ -22,6 +23,8 @@ public class UserService : IUserService
     private readonly IEmailTemplateRepository _templateRepository;
     private readonly TemplatesHTML _templatesHTML;
     private readonly ApiSettingsOptions _apiSettings;
+    private readonly IContextHubClient _contextHubClient;
+    private readonly ILogger<UserService> _logger;
 
     public UserService(
         IPasswordResetTicketRepository ticketRepository,
@@ -30,7 +33,9 @@ public class UserService : IUserService
         IHubContext<NotificactionsPush> hubContext,
         IEmailTemplateRepository templateRepository,
         IOptions<TemplatesHTML> templatesHTML,
-        IOptions<ApiSettingsOptions> apiSettings)
+        IOptions<ApiSettingsOptions> apiSettings,
+        IContextHubClient contextHubClient,
+        ILogger<UserService> logger)
     {
         _ticketRepository = ticketRepository;
         _userRepository = userRepository;
@@ -39,6 +44,8 @@ public class UserService : IUserService
         _templateRepository = templateRepository;
         _templatesHTML = templatesHTML.Value;
         _apiSettings = apiSettings.Value;
+        _contextHubClient = contextHubClient;
+        _logger = logger;
     }
 
     public async Task<List<Usuario>> GetAllUserAsync()
@@ -148,6 +155,28 @@ public class UserService : IUserService
         {
             var detailMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
             throw new Exception(detailMessage, ex);
+        }
+
+        try
+        {
+            var contextHubResult = await _contextHubClient.CreateUserAsync(userDto.Email.Trim(), userDto.Password);
+
+            if (contextHubResult != null && contextHubResult.Ok && contextHubResult.User != null)
+            {
+                user.ExternalAuthId = contextHubResult.User.Id;
+                _userRepository.Update(user);
+                await _userRepository.SaveChangesAsync();
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "No se pudo provisionar el usuario {Email} en ContextHub: {Error}",
+                    userDto.Email, contextHubResult?.Error ?? "sin respuesta");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error al provisionar usuario {Email} en ContextHub.", userDto.Email);
         }
 
         return new UsuarioResponseDTO

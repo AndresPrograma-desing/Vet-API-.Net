@@ -44,6 +44,15 @@ public class UsersRepository : IUsersRepository
             .FirstOrDefaultAsync(u => u.Email.ToLower() == cleanEmail);
     }
 
+    public async Task<Usuario?> GetByExternalAuthIdAsync(string externalAuthId)
+    {
+        if (string.IsNullOrWhiteSpace(externalAuthId))
+            return null;
+
+        return await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.ExternalAuthId == externalAuthId);
+    }
+
     public async Task<Usuario?> GetByNameAndApellidoAsync(string nombre, string apellido)
     {
         if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(apellido))

@@ -19,6 +19,7 @@ public partial class Usuario
     public required string Password { get; set; } = null!;
     public string? PasswordRecoveryCode { get; set; }
     public string? AvatarUrl { get; set; }
+    public string? ExternalAuthId { get; set; }
     public DateTime? CodeRecoveryExpireDate { get; set; }
 
     public required string Rol { get; set; } = null!;

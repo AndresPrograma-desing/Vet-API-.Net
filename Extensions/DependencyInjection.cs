@@ -375,6 +375,11 @@ public static class DependencyInjection
             {
                 ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
             });
+        services.AddHttpClient<IContextHubClient, vet_api_Net.HttpServices.ContextHubClient>()
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            });
 
         //Utilities
         services.AddSingleton<IFailureTrackerUtilities, FailureTrackerUtilities>();
@@ -414,6 +419,7 @@ public static class DependencyInjection
         services.Configure<TemplatesHTML>(configuration.GetSection(TemplatesHTML.SectionName));
         services.Configure<SecurityOptions>(configuration.GetSection(SecurityOptions.SectionName));
         services.Configure<RateLimitingOptions>(configuration.GetSection(RateLimitingOptions.SectionName));
+        services.Configure<ContextHubOptions>(configuration.GetSection(ContextHubOptions.SectionName));
 
         return services;
     }
