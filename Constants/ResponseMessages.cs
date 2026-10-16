@@ -169,6 +169,9 @@ namespace vet_api_Net.Constants
         public const string UserNotExisting = "El usuario con ese correo electrónico no existe.";
         public const string NoRolForUser = "Rol seleccionado no valido para ese usuario";
         public const string TryAgainIntents = "Demasiados intentos fallidos, intenta en: ";
+        public const string ContextHubInvalidTicket = "El ticket de autenticación no es válido o ha expirado.";
+        public const string ContextHubUserNotProvisioned = "Tu cuenta no está habilitada en el sistema. Contacta a un administrador para que te dé acceso.";
+        public const string ContextHubUnavailable = "El servicio de autenticación externo no está disponible, intenta nuevamente.";
 
 
     }

@@ -7,6 +7,7 @@ namespace vet_api_Net.Interfaze.Services;
 public interface IAuthService
 {
     Task<Usuario?> LoginAsync(LoginRequest request);
+    Task<Usuario?> LoginWithContextHubAsync(string ticket);
     string GenerateToken(Usuario user);
     Task<Usuario?> UpdatePasswordAsync(UpdatePasswordRequest request);
     Task<Usuario?> GetUserByIdAsync(int id);

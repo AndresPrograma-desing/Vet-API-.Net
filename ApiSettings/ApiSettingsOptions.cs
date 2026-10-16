@@ -90,3 +90,12 @@ public class RateLimitingOptions
     public int AuthPermitLimit { get; set; } = 5;
     public int AuthWindowSeconds { get; set; } = 60;
 }
+
+public class ContextHubOptions
+{
+    public const string SectionName = "ContextHub";
+    public string BaseUrl { get; set; } = string.Empty;
+    public string ClientKey { get; set; } = string.Empty;
+    public string ClientSecret { get; set; } = string.Empty;
+    public string? AnonKey { get; set; }
+}

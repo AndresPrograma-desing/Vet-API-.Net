@@ -13,6 +13,7 @@ namespace vet_api_Net.Routes
         public static class Auth
         {
             public const string Login = "login";
+            public const string LoginContextHub = "login-contexthub";
             public const string Me = "me";
             public const string UpdatePassword = "update-password";
             public const string TempToken = "Token";
