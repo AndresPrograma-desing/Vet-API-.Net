@@ -32,13 +32,15 @@ public class SystemLogService : ISystemLogService
     {
         var log = new LogsSistema
         {
-            Accion = accion,
-            TablaAfectada = tablaAfectada,
+            // accion/tabla_afectada/ip_address tienen límite varchar en BD (100/50/45); se truncan
+            // aquí para que un mensaje de error largo no tumbe también el registro del log.
+            Accion = Truncate(accion, 100),
+            TablaAfectada = Truncate(tablaAfectada, 50),
             RegistroId = registroId,
             DatosPrevios = datosPrevios,
             DatosNuevos = datosNuevos,
             UsuarioId = usuarioId,
-            IpAddress = ipAddress,
+            IpAddress = Truncate(ipAddress, 45),
             UserAgent = userAgent,
             CreatedAt = DateTime.Now
         };
@@ -54,6 +56,12 @@ public class SystemLogService : ISystemLogService
             log.UsuarioId = null;
             await _repository.SaveChangesAsync();
         }
+    }
+
+    private static string? Truncate(string? value, int maxLength)
+    {
+        if (string.IsNullOrEmpty(value) || value.Length <= maxLength) return value;
+        return value.Substring(0, maxLength);
     }
 
     public async Task<List<LogsSistemaResponseDTO>> GetLogsAsync(int pageNumber, int pageSize)

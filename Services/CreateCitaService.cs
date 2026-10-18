@@ -13,12 +13,21 @@ public class CreateCitaService : ICreateCitaService
     private readonly ICitasRepository _citasRepository;
     private readonly IPetsRepository _petsRepository;
     private readonly IUsersRepository _usersRepository;
+    private readonly IEmailService _emailService;
+    private readonly INotificationService _notificationService;
 
-    public CreateCitaService(ICitasRepository citasRepository, IPetsRepository petsRepository, IUsersRepository usersRepository)
+    public CreateCitaService(
+        ICitasRepository citasRepository,
+        IPetsRepository petsRepository,
+        IUsersRepository usersRepository,
+        IEmailService emailService,
+        INotificationService notificationService)
     {
         _citasRepository = citasRepository;
         _petsRepository = petsRepository;
         _usersRepository = usersRepository;
+        _emailService = emailService;
+        _notificationService = notificationService;
     }
 
     public async Task<Cita> CreateCitaAsync(CreateCitaDTO dto)
@@ -183,7 +192,50 @@ public class CreateCitaService : ICreateCitaService
         await _citasRepository.AddAsync(cita);
         await _citasRepository.SaveChangesAsync();
 
-        var citaRecargada = await _citasRepository.GetByIdWithPaymentMethodAsync(cita.Id);
+        var citaRecargada = await _citasRepository.GetByIdWithRelationsAsync(cita.Id);
+
+        if (citaRecargada?.Mascota?.Cliente != null)
+        {
+            await NotifyClientOfNewCitaAsync(citaRecargada);
+        }
+
         return citaRecargada ?? cita;
+    }
+
+    private async Task NotifyClientOfNewCitaAsync(Cita cita)
+    {
+        var mascotaNombre = cita.Mascota.Nombre;
+        var doctorNombre = cita.Doctor != null ? $"{cita.Doctor.Nombre} {cita.Doctor.Apellido}".Trim() : string.Empty;
+
+        try
+        {
+            await _notificationService.CreateNotificationAsync(new DTOs.AlertNotificationDTO
+            {
+                Titulo = $"Nueva cita agendada - {mascotaNombre}",
+                Mensaje = $"Se agendó una cita para {mascotaNombre} el {cita.FechaCita:dd/MM/yyyy} a las {cita.HoraCita:HH:mm} con el Dr. {doctorNombre}.",
+                Tipo = "CitaCreadaPorDoctor",
+                Prioridad = "1",
+                Destino = $"cliente_{cita.Mascota.ClienteId}",
+                Origen = "citas",
+                ReferenciaId = cita.Id
+            }, creatorId: null);
+        }
+        catch (InvalidOperationException)
+        {
+            // Duplicado reciente (misma ventana de 5 min para el mismo título): no es un error fatal.
+        }
+        catch (Exception)
+        {
+            // Nunca debe impedir que la cita se haya creado.
+        }
+
+        try
+        {
+            await _emailService.DispatchEmailAsync(cita.Id, "Citas");
+        }
+        catch (Exception)
+        {
+            // Sin plantilla configurada o falla del proveedor de email: no debe impedir la creación de la cita.
+        }
     }
 }

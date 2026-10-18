@@ -15,7 +15,8 @@ using vet_api_Net.Interfaze.Utilities;
 using vet_api_Net.Infrastructure.Configuration;
 using vet_api_Net.Constants;
 
-//Describe: Analizador clínico experto que delega el procesamiento de historiales médicos en la API de NowGrod.ia.
+//Describe: Analizador clínico que delegaba el procesamiento de historiales médicos en la API de NowGrod.ia.
+//Mockeado temporalmente (devuelve un resumen placeholder sin red) porque NowGrod.ia va a dejar de usarse; ConsultarGroqApiAsync queda sin uso hasta removerlo junto con el servicio.
 namespace vet_api_Net.Utilities;
 
 public class HistoriaClinicaAnalizadorUtilities : IHistoriaClinicaAnalizadorUtilities
@@ -25,7 +26,7 @@ public class HistoriaClinicaAnalizadorUtilities : IHistoriaClinicaAnalizadorUtil
     private readonly ILogger<HistoriaClinicaAnalizadorUtilities> _logger;
 
     public HistoriaClinicaAnalizadorUtilities(
-        IHttpClientFactory httpClientFactory, 
+        IHttpClientFactory httpClientFactory,
         IOptions<ApiSettingsOptions> options,
         ILogger<HistoriaClinicaAnalizadorUtilities> logger)
     {
@@ -34,42 +35,18 @@ public class HistoriaClinicaAnalizadorUtilities : IHistoriaClinicaAnalizadorUtil
         _logger = logger;
     }
 
-    public async Task<ResumenClinicoIAResponseDTO> GenerarAnalisisClinicoAsync(Mascota mascota, List<Consulta> consultas, List<PetVaccination> vaccinations, string? resumenAnterior = null)
+    public Task<ResumenClinicoIAResponseDTO> GenerarAnalisisClinicoAsync(Mascota mascota, List<Consulta> consultas, List<PetVaccination> vaccinations, string? resumenAnterior = null)
     {
-        var apiKey = _options.GroqApiKey;
-        var apiUrl = _options.GroqApiUrl;
+        _logger.LogInformation("NowGrod.ia está mockeado: se devuelve un resumen placeholder sin consultar el servicio externo.");
 
-        if (string.IsNullOrEmpty(apiKey))
+        var mockResponse = new ResumenClinicoIAResponseDTO
         {
-            _logger.LogError("Groq API Key no está configurada en ApiSettings.");
-            throw new InvalidOperationException(ResponseMessagesGroqServices.ServiceUnavailable);
-        }
+            ResumenIa = "Resumen por IA no disponible en este momento.",
+            AlertasRiesgoIa = string.Empty,
+            SugerenciasIa = string.Empty
+        };
 
-        if (string.IsNullOrEmpty(apiUrl))
-        {
-            _logger.LogError("Groq API URL no está configurada en ApiSettings.");
-            throw new InvalidOperationException(ResponseMessagesGroqServices.ServiceUnavailable);
-        }
-
-        try
-        {
-            var response = await ConsultarGroqApiAsync(apiKey, apiUrl, mascota, consultas, vaccinations, resumenAnterior);
-            if (response == null)
-            {
-                throw new InvalidOperationException(ResponseMessagesGroqServices.ServiceUnavailable);
-            }
-            _logger.LogInformation("Análisis clínico generado con éxito mediante NowGrod.ia API.");
-            return response;
-        }
-        catch (InvalidOperationException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error al generar el análisis clínico con NowGrod.ia API.");
-            throw new InvalidOperationException(ResponseMessagesGroqServices.ServiceUnavailable, ex);
-        }
+        return Task.FromResult(mockResponse);
     }
 
     private async Task<ResumenClinicoIAResponseDTO?> ConsultarGroqApiAsync(

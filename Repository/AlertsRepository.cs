@@ -35,6 +35,8 @@ public class AlertsRepository : IAlertsRepository
                 Prioridad = n.Prioridad ?? "0",
                 Destino = n.DestinatarioRol ?? string.Empty,
                 Origen = n.ReferenciaTabla ?? string.Empty,
+                Referencia = n.ReferenciaId.HasValue ? n.ReferenciaId.Value.ToString() : string.Empty,
+                ReferenciaId = n.ReferenciaId,
                 Completada = n.Completada ?? false,
                 Leida = n.Leida ?? false,
                 FechaLectura = n.FechaLectura,
@@ -43,9 +45,9 @@ public class AlertsRepository : IAlertsRepository
             .ToListAsync();
     }
 
-    public async Task<bool> AnyRecentDuplicateAsync(string title, System.DateTime threshold)
+    public async Task<bool> AnyRecentDuplicateAsync(string title, System.DateTime threshold, string? destino = null)
     {
-        return await _context.AlertasInternas.AnyAsync(n => n.Titulo == title && n.CreatedAt > threshold);
+        return await _context.AlertasInternas.AnyAsync(n => n.Titulo == title && n.CreatedAt > threshold && n.DestinatarioRol == destino);
     }
 
     public void Add(AlertasInterna alert)

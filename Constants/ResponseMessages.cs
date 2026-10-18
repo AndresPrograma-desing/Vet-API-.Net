@@ -22,6 +22,7 @@ namespace vet_api_Net.Constants
         public const string Admin = "admin";
         public const string Secretaria = "secretaria";
         public const string Doctor = "doctor";
+        public const string Cliente = "cliente";
     }
     public static class RoleLabels
     {
@@ -191,6 +192,49 @@ namespace vet_api_Net.Constants
         public const string RequirePasswordChangeCode = "REQUIRE_PASSWORD_CHANGE";
         public const string PushNotificationChangePasswordTitle = "Cambio de Contraseña Sugerido";
         public const string PushNotificationChangePasswordMessage = "Iniciaste sesión con una contraseña temporal. Por tu seguridad, te sugerimos cambiarla lo antes posible desde tu perfil.";
+    }
+    public static class ResponseMessagesClientAuth
+    {
+        public const string RequiredIdentifier = "La cédula o el correo electrónico son requeridos.";
+        public const string ClientNotFound = "No se encontró un cliente con esos datos.";
+        public const string ErrorRequestingCode = "Hubo un error, intentalo mas tarde.";
+        public const string CodeSentSuccess = "Código de acceso enviado con éxito a su correo registrado.";
+        public const string RequiredCode = "El código de verificación es requerido.";
+        public const string InvalidCode = "Código de verificación inválido o expirado. Solicita uno nuevo.";
+        public const string DefaultSystemName = "Happy Pets";
+        public static string AccessCodeSubject(string systemName) => $"Código de Acceso al Portal de Clientes - {systemName}";
+        public const string DefaultAccessCodeHtml = "Su código de acceso al Portal de Clientes es: {{token_codigo}}";
+    }
+    public static class ResponseMessagesClientRequests
+    {
+        public const string RequiredMotivo = "El motivo es requerido.";
+        public const string RequiredNota = "La nota es requerida.";
+        public const string CitaNotFound = "Cita no encontrada.";
+        public const string CitaNotOwned = "Esta cita no pertenece a tu cuenta.";
+        public const string CitaNotCancellable = "Esta cita ya no se puede cancelar en su estado actual.";
+        public static string CitaNotRespondable(string estadoActual) =>
+            $"Esta cita ya no se puede confirmar porque su estado actual es '{estadoActual}'.";
+        public const string CitaCancelledSuccess = "Cita cancelada con éxito. Se notificó a la clínica.";
+        public const string MascotaNotOwned = "Esta mascota no pertenece a tu cuenta.";
+        public const string CitaRequestSentSuccess = "Tu solicitud de cita fue enviada a la clínica.";
+        public const string InvalidFechaPreferida = "La fecha/hora preferida no puede estar en el pasado.";
+        public const string ConsultaNotFound = "No se encontró la consulta asociada a esa receta.";
+        public const string RecetaRenewalRequestSentSuccess = "Tu solicitud de renovación fue enviada al doctor.";
+        public static string CancelNotificationTitle(string mascotaNombre) => $"Cita cancelada por el cliente - {mascotaNombre}";
+        public static string CancelNotificationMessage(string clienteNombre, string mascotaNombre, string motivo) =>
+            $"{clienteNombre} canceló la cita de {mascotaNombre}. Motivo: {motivo}";
+        public static string NewCitaNotificationTitle(string mascotaNombre) => $"Nueva solicitud de cita - {mascotaNombre}";
+        public static string NewCitaNotificationMessage(string clienteNombre, string mascotaNombre, string motivo, string preferencia) =>
+            $"{clienteNombre} solicitó una cita para {mascotaNombre}. Motivo: {motivo}.{preferencia}";
+        public static string RecetaRenewalNotificationTitle(string mascotaNombre) => $"Solicitud de renovación de receta - {mascotaNombre}";
+        public static string RecetaRenewalNotificationMessage(string clienteNombre, string mascotaNombre, string recetaOriginal, string nota) =>
+            $"{clienteNombre} solicitó renovar la receta de {mascotaNombre} ({recetaOriginal}). Nota: {nota}";
+        public const string CitaConfirmedSuccess = "Confirmaste tu asistencia. Se notificó a la clínica.";
+        public static string ConfirmNotificationTitle(string mascotaNombre) => $"Cita confirmada por el cliente - {mascotaNombre}";
+        public static string ConfirmNotificationMessage(string clienteNombre, string mascotaNombre, string mensaje) =>
+            string.IsNullOrWhiteSpace(mensaje)
+                ? $"{clienteNombre} confirmó su asistencia a la cita de {mascotaNombre}."
+                : $"{clienteNombre} confirmó su asistencia a la cita de {mascotaNombre}. Mensaje: {mensaje}";
     }
     public static class ResponseMessagesCitas
     {
@@ -460,6 +504,9 @@ namespace vet_api_Net.Constants
         public const string ErrorCreated = "Error al crear la consulta";
         public const string TemperaturaInvalid = "La temperatura no puede superar los 100 grados";
         public const string NotFound = "Consulta no encontrada.";
+        public const string PdfDataNotFound = "Consulta no encontrada para generar el PDF.";
+        public const string PdfGenerationError = "Error al generar el PDF de la consulta/receta.";
+        public const string PdfPersistenceError = "Error al guardar la URL del PDF generado. Sin embargo, el PDF se ha creado correctamente.";
     }
     public static class ResponseMessagesGroqServices
     {
@@ -592,8 +639,18 @@ namespace vet_api_Net.Constants
         public const string DuplicateNotification = "Ya existe una notificación idéntica enviada hace menos de 5 minutos.";
         public const string TitleRequired = "El título es obligatorio para crear una notificación.";
         public const string NotificationNotFound = "Notificación no encontrada.";
+        public const string AlertNotOwned = "Esta notificación no pertenece a tu cuenta.";
         public const string ErrorUpdatingNotification = "Ocurrió un error interno al actualizar la notificación de alerta interna.";
         public const string NotificationMarkedAsRead = "Notificación marcada como leída.";
+        public const string NotACitaRequest = "Esta notificación no corresponde a una solicitud de cita.";
+        public const string MissingClientReference = "Esta notificación no tiene un cliente asociado.";
+        public const string RejectionReasonRequired = "Debes indicar el motivo del rechazo.";
+        public const string CitaRequestAcceptedTitle = "Tu solicitud de cita fue aceptada";
+        public const string CitaRequestAcceptedMessage = "La clínica aceptó tu solicitud de cita y se pondrá en contacto para confirmar fecha y hora.";
+        public const string CitaRequestRejectedTitle = "Tu solicitud de cita fue rechazada";
+        public const string CitaRequestRejectedMessage = "La clínica no pudo aceptar tu solicitud de cita.";
+        public const string ClinicMessageSuffix = "Mensaje de la clínica: {0}";
+        public const string CitaRequestRespondedSuccess = "Se notificó tu respuesta al cliente.";
     }
 
     public static class ResponseMessagesWSMessageAPI

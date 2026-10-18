@@ -93,4 +93,14 @@ public class ClientRepository : IClientRepository
             .Where(m => m.ClienteId == clienteId)
             .ToListAsync();
     }
+
+    public async Task<Cliente?> GetByPortalLoginCodeAsync(string code)
+    {
+        return await _context.Clientes.FirstOrDefaultAsync(c => c.PortalLoginCode == code);
+    }
+
+    public async Task<EmailTemplate?> GetTemplateByTypeAsync(string typeEmail)
+    {
+        return await _context.EmailTemplates.FirstOrDefaultAsync(t => t.TypeEmail == typeEmail);
+    }
 }

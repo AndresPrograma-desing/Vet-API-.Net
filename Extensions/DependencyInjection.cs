@@ -347,6 +347,8 @@ public static class DependencyInjection
         services.AddScoped<IMessagingService, MessagingService>();
         services.AddScoped<IInvoiceService, InvoiceService>();
         services.AddScoped<IClientService, ClientService>();
+        services.AddScoped<IClientAuthService, ClientAuthService>();
+        services.AddScoped<IClientRequestsService, ClientRequestsService>();
         services.AddScoped<GeneratePdfUtilities>();
         services.AddScoped<IClientPetService, ClientPetService>();
         services.AddScoped<IReportSystemService, ReportSystemService>();
@@ -398,6 +400,7 @@ public static class DependencyInjection
         // Workers / Background Services
         services.AddHostedService<MessagePollerService>();
         services.AddHostedService<DeleteFacturaWorker>();
+        services.AddHostedService<DeleteConsultaPdfWorker>();
         services.AddHostedService<DeleteReportWorker>();
         services.AddHostedService<AutoGenerateReportWorker>();
         services.AddHostedService<BcvWorker>();

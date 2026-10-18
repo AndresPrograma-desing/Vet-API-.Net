@@ -61,6 +61,9 @@ public class EmailService : IEmailService
         int facturaId = 0;
         byte[]? pdfBytes = null;
         string? pdfName = null;
+        DateTime? citaFecha = null;
+        TimeOnly? citaHora = null;
+        string doctorName = string.Empty;
 
         try
         { 
@@ -87,6 +90,9 @@ public class EmailService : IEmailService
                 clientEmail = cliente.Email;
                 clientFullName = $"{cliente.Nombre} {cliente.Apellido}".Trim();
                 petName = consulta?.Mascota?.Nombre ?? cita.Mascota?.Nombre ?? petName;
+                citaFecha = cita.FechaCita;
+                citaHora = cita.HoraCita;
+                doctorName = cita.Doctor != null ? $"{cita.Doctor.Nombre} {cita.Doctor.Apellido}".Trim() : string.Empty;
 
                 if (typeEmail.Equals(_templatesHTML.Recibos, StringComparison.OrdinalIgnoreCase))
                 {
@@ -156,6 +162,13 @@ public class EmailService : IEmailService
                 string dummyCode = "123-456";
                 htmlBody = htmlBody.Replace("{{recovery_link}}", dummyLink);
                 htmlBody = htmlBody.Replace("{{recovery_code}}", dummyCode);
+            }
+            else if (typeEmail.Equals("Citas", StringComparison.OrdinalIgnoreCase))
+            {
+                subject = $"Cita confirmada - {_apiSettings.SystemName}";
+                htmlBody = htmlBody.Replace("{{fecha_cita}}", citaFecha?.ToString("dd/MM/yyyy") ?? string.Empty);
+                htmlBody = htmlBody.Replace("{{hora_cita}}", citaHora?.ToString("HH:mm") ?? string.Empty);
+                htmlBody = htmlBody.Replace("{{doctor_name}}", doctorName);
             }
             
             bool emailResult = await _emailSenderService.SendEmailAsync(clientEmail, subject, htmlBody, pdfBytes, pdfName);

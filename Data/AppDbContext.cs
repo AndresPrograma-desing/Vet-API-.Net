@@ -510,6 +510,10 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Tratamiento)
 
                 .HasColumnName("tratamiento");
+            entity.Property(e => e.UrlDocx)
+                .HasMaxLength(512)
+
+                .HasColumnName("url_docx");
 
             entity.HasOne(d => d.Cita).WithMany(p => p.Consulta)
                 .HasForeignKey(d => d.CitaId)

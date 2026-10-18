@@ -52,15 +52,13 @@ public class ContextHubClient : IContextHubClient
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("ContextHub verify-ticket falló con status {StatusCode}: {Body}", response.StatusCode, body);
                 return null;
             }
 
             return JsonSerializer.Deserialize<ContextHubVerifyResponseDTO>(body);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _logger.LogError(ex, "Error al conectar con ContextHub para verificar ticket.");
             return null;
         }
     }
@@ -81,7 +79,6 @@ public class ContextHubClient : IContextHubClient
 
             if (string.IsNullOrWhiteSpace(body))
             {
-                _logger.LogWarning("ContextHub create-user falló con status {StatusCode} y sin cuerpo de respuesta.", response.StatusCode);
                 return null;
             }
 
@@ -89,14 +86,12 @@ public class ContextHubClient : IContextHubClient
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("ContextHub create-user falló con status {StatusCode}: {Body}", response.StatusCode, body);
             }
 
             return result;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _logger.LogError(ex, "Error al conectar con ContextHub para crear usuario.");
             return null;
         }
     }

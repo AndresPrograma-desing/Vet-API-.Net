@@ -23,6 +23,10 @@ public partial class Cliente
 
     public string? ImageUrl { get; set; }
 
+    public string? PortalLoginCode { get; set; }
+
+    public DateTime? PortalLoginCodeExpireDate { get; set; }
+
     public DateTime Creado { get; set; }
 
     public DateTime Actualizado { get; set; }

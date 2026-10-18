@@ -688,3 +688,7 @@ En ambos casos con el formato `//Describe:` seguido de una descripción breve de
 ## 19. Planificación de Cambios
 
 **Regla:** Cuando se genere un plan de implementación (ej. con `EnterPlanMode`), el archivo del plan se guarda en la raíz del repositorio.
+
+## Sintaxis
+
+**Regla:** usar C# 12 con constructores mas limpios de C# 12 asi como lo usa `vet-api-Net\Services\CalendarService.cs`, sitaxis limpia escalable em general, [``]().

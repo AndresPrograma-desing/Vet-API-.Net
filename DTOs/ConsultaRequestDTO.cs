@@ -38,7 +38,10 @@ public record ConsultaRequestDTO
 
     [JsonPropertyName("receta")]
     public string? Receta { get; set; }
-    
+
+    [JsonPropertyName("url_docx")]
+    public string? UrlDocx { get; set; }
+
     [JsonPropertyName("consulta_price")]
     public decimal? ConsultaPrice { get; set; }
 
