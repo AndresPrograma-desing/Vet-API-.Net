@@ -111,6 +111,9 @@ public record HistoriaClinicaConsultaDTO
     [JsonPropertyName("receta")]
     public string? Receta { get; set; }
 
+    [JsonPropertyName("url_docx")]
+    public string? UrlDocx { get; set; }
+
     [JsonPropertyName("observaciones")]
     public string? Observaciones { get; set; }
 

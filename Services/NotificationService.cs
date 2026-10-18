@@ -27,7 +27,7 @@ public class NotificationService : INotificationService
     public async Task<IEnumerable<AlertNotificationDTO>> GetNotificationsByUserIdAsync(int userId)
     {
         var user = await _usersRepository.GetByIdAsync(userId);
-        if (user == null) 
+        if (user == null)
             throw new KeyNotFoundException(ResponseMessagesUsers.UserNotFound);
 
         var userRole = user.Rol ?? string.Empty;
@@ -35,7 +35,58 @@ public class NotificationService : INotificationService
         return await _alertsRepository.GetByDestinationAsync(userRole);
     }
 
-    public async Task<AlertNotificationDTO> CreateNotificationAsync(AlertNotificationDTO dto, int creatorId)
+    public async Task<IEnumerable<AlertNotificationDTO>> GetNotificationsByClienteIdAsync(int clienteId)
+    {
+        return await _alertsRepository.GetByDestinationAsync($"cliente_{clienteId}");
+    }
+
+    public async Task<bool> MarkClientAlertAsReadAsync(int alertId, int clienteId)
+    {
+        var alert = await _alertsRepository.GetByIdAsync(alertId);
+        if (alert == null)
+            throw new KeyNotFoundException(ResponseMessagesNotification.NotificationNotFound);
+
+        var expectedDestino = $"cliente_{clienteId}";
+        if (!string.Equals(alert.DestinatarioRol, expectedDestino, StringComparison.OrdinalIgnoreCase))
+            throw new UnauthorizedAccessException(ResponseMessagesNotification.AlertNotOwned);
+
+        return await _alertsRepository.MarkAsReadAsync(alertId);
+    }
+
+    public async Task RespondToCitaRequestAsync(int alertId, bool aceptar, string? mensaje)
+    {
+        var alert = await _alertsRepository.GetByIdAsync(alertId);
+        if (alert == null)
+            throw new KeyNotFoundException(ResponseMessagesNotification.NotificationNotFound);
+
+        if (!string.Equals(alert.Tipo, "SolicitudCitaCliente", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException(ResponseMessagesNotification.NotACitaRequest);
+
+        if (!alert.ReferenciaId.HasValue)
+            throw new InvalidOperationException(ResponseMessagesNotification.MissingClientReference);
+
+        if (!aceptar && string.IsNullOrWhiteSpace(mensaje))
+            throw new ArgumentException(ResponseMessagesNotification.RejectionReasonRequired);
+
+        var clienteId = alert.ReferenciaId.Value;
+        var titulo = aceptar ? ResponseMessagesNotification.CitaRequestAcceptedTitle : ResponseMessagesNotification.CitaRequestRejectedTitle;
+        var baseMensaje = aceptar ? ResponseMessagesNotification.CitaRequestAcceptedMessage : ResponseMessagesNotification.CitaRequestRejectedMessage;
+        var mensajeFinal = string.IsNullOrWhiteSpace(mensaje) ? baseMensaje : $"{baseMensaje} {string.Format(ResponseMessagesNotification.ClinicMessageSuffix, mensaje)}";
+
+        await CreateNotificationAsync(new AlertNotificationDTO
+        {
+            Titulo = titulo,
+            Mensaje = mensajeFinal,
+            Tipo = aceptar ? "SolicitudCitaAceptada" : "SolicitudCitaRechazada",
+            Prioridad = "1",
+            Destino = $"cliente_{clienteId}",
+            Origen = "citas"
+        }, creatorId: null);
+
+        await _alertsRepository.MarkAsReadAsync(alertId);
+    }
+
+    public async Task<AlertNotificationDTO> CreateNotificationAsync(AlertNotificationDTO dto, int? creatorId)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -43,7 +94,7 @@ public class NotificationService : INotificationService
             throw new ArgumentException(ResponseMessagesNotification.TitleRequired);
 
         var threshold = DateTime.Now.AddMinutes(-5);
-        if (await _alertsRepository.AnyRecentDuplicateAsync(dto.Titulo, threshold))
+        if (await _alertsRepository.AnyRecentDuplicateAsync(dto.Titulo, threshold, dto.Destino))
             throw new InvalidOperationException(ResponseMessagesNotification.DuplicateNotification);
 
         var nuevaAlerta = new AlertasInterna
@@ -53,9 +104,13 @@ public class NotificationService : INotificationService
             Tipo = dto.Tipo ?? string.Empty,
             Prioridad = dto.Prioridad ?? string.Empty,
             DestinatarioRol = dto.Destino,
-            DestinatarioId = creatorId,  
+            // DestinatarioId referencia a Usuario (FK) — solo se asigna cuando quien origina
+            // la notificación es un empleado real. Orígenes fuera de Usuario (ej. un Cliente
+            // desde el Portal) pasan null para no violar la FK.
+            DestinatarioId = creatorId,
             Completada = dto.Completada,
             ReferenciaTabla = dto.Origen,
+            ReferenciaId = dto.ReferenciaId,
             Leida = dto.Leida,
             FechaLectura = dto.FechaLectura,
             CreatedAt = DateTime.Now

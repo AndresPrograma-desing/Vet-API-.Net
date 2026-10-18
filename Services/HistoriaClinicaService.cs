@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DTOs;
+using Microsoft.Extensions.Logging;
 using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
@@ -16,11 +17,13 @@ public class HistoriaClinicaService : IHistoriaClinicaService
 {
     private readonly IHistoriaClinicaRepository _repository;
     private readonly IHistoriaClinicaAnalizadorUtilities _analizador;
+    private readonly ILogger<HistoriaClinicaService> _logger;
 
-    public HistoriaClinicaService(IHistoriaClinicaRepository repository, IHistoriaClinicaAnalizadorUtilities analizador)
+    public HistoriaClinicaService(IHistoriaClinicaRepository repository, IHistoriaClinicaAnalizadorUtilities analizador, ILogger<HistoriaClinicaService> logger)
     {
         _repository = repository;
         _analizador = analizador;
+        _logger = logger;
     }
 
     public async Task<HistoriaClinicaResponseDTO?> GetHistoriaClinicaByMascotaIdAsync(int mascotaId)
@@ -45,11 +48,7 @@ public class HistoriaClinicaService : IHistoriaClinicaService
                 Actualizado = DateTime.Now
             };
 
-            var iaResult = await _analizador.GenerarAnalisisClinicoAsync(mascota, consultas, vacunas, null);
-            hc.ResumenIa = iaResult.ResumenIa;
-            hc.AlertasRiesgoIa = iaResult.AlertasRiesgoIa;
-            hc.SugerenciasIa = iaResult.SugerenciasIa;
-            hc.UltimoAnalisisIa = DateTime.Now;
+            await TryGenerarAnalisisIaAsync(hc, mascota, consultas, vacunas, null);
 
             _repository.Add(hc);
             await _repository.SaveChangesAsync();
@@ -59,11 +58,7 @@ public class HistoriaClinicaService : IHistoriaClinicaService
         else if (hc.UltimoAnalisisIa == null)
         {
             // Caso borde: Existe el registro pero no tiene análisis generado
-            var iaResult = await _analizador.GenerarAnalisisClinicoAsync(mascota, consultas, vacunas, null);
-            hc.ResumenIa = iaResult.ResumenIa;
-            hc.AlertasRiesgoIa = iaResult.AlertasRiesgoIa;
-            hc.SugerenciasIa = iaResult.SugerenciasIa;
-            hc.UltimoAnalisisIa = DateTime.Now;
+            await TryGenerarAnalisisIaAsync(hc, mascota, consultas, vacunas, null);
             hc.Actualizado = DateTime.Now;
 
             _repository.Update(hc);
@@ -72,6 +67,25 @@ public class HistoriaClinicaService : IHistoriaClinicaService
 
         var versionesAnteriores = allHcs.Skip(1).ToList();
         return MapToResponse(hc, mascota, consultas, vacunas, versionesAnteriores);
+    }
+
+    // El análisis de IA es un valor agregado sobre los datos clínicos base (consultas, recetas, vacunas).
+    // Si el servicio externo (NowGrod.ia) falla, no debe bloquear el acceso a esos datos base
+    // (p.ej. el Portal de Clientes mostrando recetas depende de que este método no reviente).
+    private async Task TryGenerarAnalisisIaAsync(HistoriaClinica hc, Mascota mascota, List<Consulta> consultas, List<PetVaccination> vacunas, string? resumenAnterior)
+    {
+        try
+        {
+            var iaResult = await _analizador.GenerarAnalisisClinicoAsync(mascota, consultas, vacunas, resumenAnterior);
+            hc.ResumenIa = iaResult.ResumenIa;
+            hc.AlertasRiesgoIa = iaResult.AlertasRiesgoIa;
+            hc.SugerenciasIa = iaResult.SugerenciasIa;
+            hc.UltimoAnalisisIa = DateTime.Now;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "No se pudo generar el análisis de IA para la mascota {MascotaId}. Se devuelven los datos clínicos sin resumen de IA.", mascota.Id);
+        }
     }
 
     public async Task<HistoriaClinicaResponseDTO?> UpdateNotasClinicasAsync(int id, UpdateHistoriaClinicaDTO dto)
@@ -187,6 +201,7 @@ public class HistoriaClinicaService : IHistoriaClinicaService
                 Diagnostico = c.Diagnostico,
                 Tratamiento = c.Tratamiento,
                 Receta = c.Receta,
+                UrlDocx = c.UrlDocx,
                 Observaciones = c.Observaciones,
                 DoctorNombre = c.Doctor != null ? $"{c.Doctor.Nombre} {c.Doctor.Apellido}" : "Veterinario"
             }).ToList(),

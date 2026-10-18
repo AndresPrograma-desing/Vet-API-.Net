@@ -66,6 +66,26 @@ namespace vet_api_Net.Routes
             public const string GetMascotas = "{id}/mascotas";
             public const string ValidateClient = "Validate";
         }
+        public static class ClientAuth
+        {
+            public const string RequestCode = "request-code";
+            public const string VerifyCode = "verify-code";
+            public const string Me = "me";
+            public const string MeMascotas = "me/mascotas";
+            public const string MeCitas = "me/citas";
+            public const string MeHistorial = "me/mascotas/{mascotaId}/historial";
+            public const string MeImage = "me/image";
+            public const string MeMascotaImage = "me/mascotas/{mascotaId}/image";
+            public const string MeNotifications = "me/notifications";
+            public const string MeNotificationRead = "me/notifications/{alertId}/read";
+        }
+        public static class ClientRequests
+        {
+            public const string CancelCita = "citas/{citaId}/cancel";
+            public const string ConfirmCita = "citas/{citaId}/confirm";
+            public const string RequestCita = "citas";
+            public const string RequestRecetaRenewal = "recetas/{consultaId}/renovar";
+        }
         public static class Clients
         {
             public const string Update = "update/{id}";
@@ -84,6 +104,7 @@ namespace vet_api_Net.Routes
             public const string Create = "create";
             public const string GetById = "{id}";
             public const string UpdateReceta = "{id}/receta";
+            public const string GeneratePdf = "{id}/pdf";
         }
         public static class Facturas
         {
@@ -214,6 +235,7 @@ namespace vet_api_Net.Routes
             public const string Create = "Created";
             public const string MarkAsRead = "{alertId}/mark-as-read";
             public const string NotificactionByUser = "user/{userId}/notifications";
+            public const string RespondCitaRequest = "{alertId}/respond-cita-request";
         }
         public static class WSMessageController
         {

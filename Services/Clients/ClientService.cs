@@ -35,7 +35,8 @@ public class ClientService : IClientService
             Nombre = client.Nombre,
             Apellido = client.Apellido,
             Email = client.Email,
-            Telefono = client.Telefono
+            Telefono = client.Telefono,
+            ImageUrl = client.ImageUrl
         };
     }
 

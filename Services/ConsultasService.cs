@@ -145,8 +145,31 @@ public class ConsultasService : IConsultasService
         var consulta = await _repository.GetConsultaByIdEntityAsync(id)
             ?? throw new KeyNotFoundException(ResponseErrors.NotFound);
 
+        var recetaChanged = !string.Equals(consulta.Receta, dto.Receta, StringComparison.Ordinal);
+
         consulta.Receta = dto.Receta;
-        
+
+        // El PDF generado contiene el texto anterior de la receta; al cambiar el texto queda desactualizado,
+        // así que se invalida de inmediato (el archivo físico lo retira después DeleteConsultaPdfWorker).
+        if (recetaChanged)
+        {
+            consulta.UrlDocx = null;
+        }
+
+        await _repository.SaveChangesAsync();
+
+        return await _repository.GetConsultaDtoByIdAsync(id);
+    }
+
+    public async Task<ConsultaRequestDTO?> UpdateUrlDocxAsync(int id, string url)
+    {
+        ArgumentNullException.ThrowIfNull(url);
+
+        var consulta = await _repository.GetConsultaByIdEntityAsync(id)
+            ?? throw new KeyNotFoundException(ResponseErrors.NotFound);
+
+        consulta.UrlDocx = url;
+
         await _repository.SaveChangesAsync();
 
         return await _repository.GetConsultaDtoByIdAsync(id);

@@ -31,6 +31,8 @@ public partial class Consulta
 
     public decimal? ConsultaPrice { get; set; }
 
+    public string? UrlDocx { get; set; }
+
     public DateTime Creado { get; set; }
 
     public virtual Cita Cita { get; set; } = null!;

@@ -225,6 +225,14 @@ namespace vet_api_Net.Data.seeds
                     },
                     new WorkerConfig
                     {
+                        WorkerName = WorkerNames.DeleteConsultaPdfWorker,
+                        IsEnabled = false,
+                        RetentionValue = 30,
+                        RetentionUnit = "days",
+                        LastUpdated = DateTime.Now
+                    },
+                    new WorkerConfig
+                    {
                         WorkerName = WorkerNames.DeleteReportWorker,
                         IsEnabled = false,
                         RetentionValue = 30,

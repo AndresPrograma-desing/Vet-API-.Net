@@ -22,5 +22,6 @@ public interface IConsultasRepository
     Task<ConsultaPdfDTO?> GetConsultaPdfDataAsync(int id);
     Task<IEnumerable<ConsultaRequestDTO>> GetConsultasAsync(int? doctorId = null, int? secretariaId = null);
     Task<Consulta?> GetConsultaByIdEntityAsync(int id);
-    
+    Task<List<Consulta>> GetByDocumentFileNameAsync(string fileName, string escapedFileName);
+    void UpdateConsulta(Consulta consulta);
 }

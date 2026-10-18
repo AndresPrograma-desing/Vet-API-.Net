@@ -29,6 +29,9 @@ public record AlertNotificationDTO
     [JsonPropertyName("reference")]
     public string Referencia { get; set; } = string.Empty;
 
+    [JsonPropertyName("reference_id")]
+    public int? ReferenciaId { get; set; }
+
     [JsonPropertyName("completed")]
     public bool Completada { get; set; }
 
@@ -39,4 +42,13 @@ public record AlertNotificationDTO
 
     [JsonPropertyName("created_at")]
     public DateTime? CreatedAt { get; set; }
+}
+
+public record RespondCitaRequestDTO
+{
+    [JsonPropertyName("aceptar")]
+    public bool Aceptar { get; set; }
+
+    [JsonPropertyName("mensaje")]
+    public string? Mensaje { get; set; }
 }

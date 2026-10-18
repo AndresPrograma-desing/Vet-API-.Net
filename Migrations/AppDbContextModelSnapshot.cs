@@ -275,6 +275,12 @@ namespace vet_api_Net.Migrations
                         .HasColumnType("text")
                         .HasColumnName("nota");
 
+                    b.Property<string>("PortalLoginCode")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("PortalLoginCodeExpireDate")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<string>("Telefono")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
@@ -359,6 +365,11 @@ namespace vet_api_Net.Migrations
                     b.Property<string>("Tratamiento")
                         .HasColumnType("text")
                         .HasColumnName("tratamiento");
+
+                    b.Property<string>("UrlDocx")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("url_docx");
 
                     b.HasKey("Id");
 

@@ -25,6 +25,15 @@ public class ConsultasRepository : IConsultasRepository
     public async Task<MetodoPago?> GetMetodoPagoByIdAsync(int id) => await _context.MetodoPagos.FindAsync(id);
     public async Task<Consulta?> GetConsultaByIdEntityAsync(int id) => await _context.Consultas.FindAsync(id);
 
+    public async Task<List<Consulta>> GetByDocumentFileNameAsync(string fileName, string escapedFileName)
+    {
+        return await _context.Consultas
+            .Where(c => !string.IsNullOrEmpty(c.UrlDocx) && (EF.Functions.Like(c.UrlDocx, "%" + fileName + "%") || EF.Functions.Like(c.UrlDocx, "%" + escapedFileName + "%")))
+            .ToListAsync();
+    }
+
+    public void UpdateConsulta(Consulta consulta) => _context.Consultas.Update(consulta);
+
     public async Task<Consulta?> GetConsultaWithProductsAsync(int id)
     {
         return await _context.Consultas
@@ -59,6 +68,7 @@ public class ConsultasRepository : IConsultasRepository
                 Diagnostico = c.Diagnostico,
                 Tratamiento = c.Tratamiento,
                 Receta = c.Receta,
+                UrlDocx = c.UrlDocx,
                 Observaciones = c.Observaciones,
                 ConsultaPrice = c.ConsultaPrice,
                 MascotaNombre = c.Mascota != null ? c.Mascota.Nombre : null,
@@ -170,6 +180,7 @@ public class ConsultasRepository : IConsultasRepository
                 Diagnostico = c.Diagnostico,
                 Tratamiento = c.Tratamiento,
                 Receta = c.Receta,
+                UrlDocx = c.UrlDocx,
                 Observaciones = c.Observaciones,
                 ConsultaPrice = c.ConsultaPrice,
                 MascotaNombre = c.Mascota != null ? c.Mascota.Nombre : null,

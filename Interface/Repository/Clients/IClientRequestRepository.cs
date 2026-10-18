@@ -12,4 +12,6 @@ public interface IClientRepository
     Task<Cliente> UpdateClientAsync(Cliente client);
     Task<Cliente?> GetByIdentificacionOrEmailSimpleAsync(string identifier);
     Task<List<Mascota>> GetMascotasByClienteIdAsync(int clienteId);
+    Task<Cliente?> GetByPortalLoginCodeAsync(string code);
+    Task<EmailTemplate?> GetTemplateByTypeAsync(string typeEmail);
 }

@@ -23,6 +23,7 @@ namespace vet_api_Net.Constants
     public static class WorkerNames
     {
         public const string DeleteFacturaWorker = "DeleteFacturaWorker";
+        public const string DeleteConsultaPdfWorker = "DeleteConsultaPdfWorker";
         public const string DeleteReportWorker = "DeleteReportWorker";
         public const string AutoGenerateReportWorker = "AutoGenerateReportWorker";
         public const string VaccinationReminderWorker = "VaccinationReminderWorker";

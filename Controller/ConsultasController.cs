@@ -1,13 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using DTOs;
 using vet_api_Net.Routes;
 
 using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaze.Utilities;
 using vet_api_Net.Constants;
 
 namespace vet_api_Net.Controllers;
@@ -18,10 +22,23 @@ namespace vet_api_Net.Controllers;
 public class ConsultasController : ControllerBase
 {
     private readonly IConsultasService _consultasService;
+    private readonly IConsultaPdfUtilities _pdfUtilities;
+    private readonly IMoneyTypeService _moneyTypeService;
+    private readonly IWebHostEnvironment _env;
+    private readonly string? _externalBaseUrl;
 
-    public ConsultasController(IConsultasService consultasService)
+    public ConsultasController(
+        IConsultasService consultasService,
+        IConsultaPdfUtilities pdfUtilities,
+        IMoneyTypeService moneyTypeService,
+        IWebHostEnvironment env,
+        IConfiguration config)
     {
         _consultasService = consultasService;
+        _pdfUtilities = pdfUtilities;
+        _moneyTypeService = moneyTypeService;
+        _env = env;
+        _externalBaseUrl = config["ExternalBaseUrl"];
     }
 
     [HttpPost(Endpoints.Consultas.Create)]
@@ -114,5 +131,58 @@ public async Task<ActionResult<ConsultaRequestDTO>> Create([FromBody] CreateCons
         {
             return StatusCode(500, new { message = ResponseMessagesConsultas.ErrorCreated });
         }
+    }
+
+    [HttpPost(Endpoints.Consultas.GeneratePdf)]
+    public async Task<IActionResult> GeneratePdf([FromRoute] int id)
+    {
+        try
+        {
+            var pdfData = await _consultasService.GetConsultaPdfDataAsync(id);
+            if (pdfData == null) return NotFound(new { message = ResponseMessagesConsultas.PdfDataNotFound });
+
+            var webRoot = _env?.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+            var moneyType = await _moneyTypeService.GetMoneyTypeAsync();
+            string currencySymbol = "Bs.";
+            if (moneyType != null && moneyType.MoneyName.ToUpper() == "USD")
+                currencySymbol = "USD ";
+            else if (moneyType != null && moneyType.MoneyName.ToUpper() == "VES")
+                currencySymbol = "Bs. ";
+
+            var pdfBytes = _pdfUtilities.GenerateConsultaPdf(pdfData, webRoot, currencySymbol);
+            var fileName = _pdfUtilities.BuildFileName(pdfData);
+
+            var dir = Path.Combine(webRoot, "consultas");
+            Directory.CreateDirectory(dir);
+            var filePath = Path.Combine(dir, fileName);
+            await System.IO.File.WriteAllBytesAsync(filePath, pdfBytes);
+
+            var url = BuildFileUrl(fileName);
+
+            try
+            {
+                await _consultasService.UpdateUrlDocxAsync(id, url);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = ResponseMessagesConsultas.PdfPersistenceError });
+            }
+
+            return Ok(new { file = fileName, url });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { error = ResponseMessagesConsultas.PdfGenerationError });
+        }
+    }
+
+    private string BuildFileUrl(string fileName)
+    {
+        var baseUrl = !string.IsNullOrWhiteSpace(_externalBaseUrl)
+            ? _externalBaseUrl.TrimEnd('/')
+            : $"{Request.Scheme}://{Request.Host}";
+
+        return $"{baseUrl}/consultas/{Uri.EscapeDataString(fileName)}";
     }
 }
