@@ -277,6 +277,13 @@ namespace vet_api_Net.Routes
         {
             public const string GetLogs = "get-logs";
         }
+        public static class IntegrationCredential
+        {
+            public const string GetByProvider = "provider/{provider}";
+            public const string Create = "create";
+            public const string Update = "{id}";
+            public const string Delete = "{id}";
+        }
 
     }
 }

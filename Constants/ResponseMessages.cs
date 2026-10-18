@@ -866,4 +866,24 @@ namespace vet_api_Net.Constants
         public const string EspecieAlreadyExists = "Ya existe una especie con ese nombre.";
         public const string EspecieNotFound = "Especie no encontrada.";
     }
+    public static class ResponseMessagesGeminiServices
+    {
+        public const string NoCredentialsConfigured = "No hay credenciales de Gemini activas configuradas.";
+        public const string AllCredentialsExhausted = "Todas las credenciales de Gemini disponibles agotaron su cuota diaria.";
+        public const string RequestFailed = "La solicitud a Gemini falló.";
+        public const string ErrorFormat = "La respuesta de Gemini tiene un formato inesperado.";
+        public const string ServiceUnavailable = "El servicio de resúmenes por IA (Gemini) no está disponible en este momento.";
+
+        public static class GeminiPrompts
+        {
+            public const string BatchInstruction = "Eres un asistente veterinario experto. Recibirás un arreglo JSON llamado 'pacientes', donde cada elemento representa una mascota con sus datos clínicos (consultas, vacunas y, si existe, un resumen anterior). Para CADA paciente del arreglo, genera un análisis clínico y devuelve obligatoriamente un arreglo JSON (sin texto adicional fuera del JSON) donde cada elemento tiene los campos: 'mascota_id' (el mismo id recibido), 'resumen_ia' (resumen clínico fluido y profesional que evalúe la evolución respecto al resumen anterior si se provee), 'alertas_riesgo_ia' (alertas de riesgos de salud importantes separadas por ' | ') y 'sugerencias_ia' (sugerencias y recomendaciones veterinarias preventivas separadas por ' | '). El arreglo de salida debe tener exactamente un elemento por cada paciente recibido, en cualquier orden, identificado por 'mascota_id'.";
+        }
+    }
+    public static class ResponseMessagesIntegrationCredential
+    {
+        public const string NotFound = "Credencial no encontrada.";
+        public const string ProviderRequired = "El proveedor es requerido.";
+        public const string SecretValueRequired = "El valor secreto es requerido.";
+        public const string InvalidDailyLimit = "El límite diario debe ser mayor a cero.";
+    }
 }

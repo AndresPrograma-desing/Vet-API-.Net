@@ -79,6 +79,7 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<Models.UserPermission> UserPermissions { get; set; }
     public virtual DbSet<Models.PermissionModule> PermissionModules { get; set; }
     public virtual DbSet<Models.PermissionDefinition> PermissionDefinitions { get; set; }
+    public virtual DbSet<Models.IntegrationCredential> IntegrationCredentials { get; set; }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -918,6 +919,8 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Sexo)
 
                 .HasColumnName("sexo");
+            entity.Property(e => e.LastDataModifiedAt)
+                .HasColumnName("last_data_modified_at");
 
             entity.HasOne(d => d.Cliente).WithMany(p => p.Mascota)
                 .HasForeignKey(d => d.ClienteId)
@@ -1301,6 +1304,25 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.RetentionUnit).HasMaxLength(20).HasColumnName("retention_unit");
             entity.Property(e => e.GenerateEnabled).HasColumnName("generate_enabled");
             entity.Property(e => e.LastUpdated).HasColumnName("last_updated");
+        });
+
+        modelBuilder.Entity<Models.IntegrationCredential>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.ToTable("integration_credentials");
+
+            entity.HasIndex(e => e.Provider, "idx_integration_credentials_provider");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Provider).HasMaxLength(50).HasColumnName("provider");
+            entity.Property(e => e.SecretValue).HasMaxLength(512).HasColumnName("secret_value");
+            entity.Property(e => e.Label).HasMaxLength(100).HasColumnName("label");
+            entity.Property(e => e.DailyLimit).HasColumnName("daily_limit");
+            entity.Property(e => e.UsageCount).HasColumnName("usage_count");
+            entity.Property(e => e.UsageDate).HasColumnName("usage_date");
+            entity.Property(e => e.IsActive).HasColumnName("is_active");
+            entity.Property(e => e.Creado).HasColumnName("creado");
+            entity.Property(e => e.Actualizado).HasColumnName("actualizado");
         });
 
         modelBuilder.Entity<Mensaje>(entity =>

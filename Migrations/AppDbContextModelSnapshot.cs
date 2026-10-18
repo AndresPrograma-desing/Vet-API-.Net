@@ -537,7 +537,7 @@ namespace vet_api_Net.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EmailTemplates");
+                    b.ToTable("EmailTemplates", (string)null);
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.Especie", b =>
@@ -790,7 +790,64 @@ namespace vet_api_Net.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ia_conocimientos");
+                    b.ToTable("ia_conocimientos", (string)null);
+                });
+
+            modelBuilder.Entity("vet_api_Net.Models.IntegrationCredential", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Actualizado")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("actualizado");
+
+                    b.Property<DateTime>("Creado")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado");
+
+                    b.Property<int>("DailyLimit")
+                        .HasColumnType("integer")
+                        .HasColumnName("daily_limit");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Label")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("label");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("provider");
+
+                    b.Property<string>("SecretValue")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("secret_value");
+
+                    b.Property<int>("UsageCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("usage_count");
+
+                    b.Property<DateOnly>("UsageDate")
+                        .HasColumnType("date")
+                        .HasColumnName("usage_date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "Provider" }, "idx_integration_credentials_provider");
+
+                    b.ToTable("integration_credentials", (string)null);
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.LogsSistema", b =>
@@ -905,6 +962,10 @@ namespace vet_api_Net.Migrations
                     b.Property<string>("ImageUrl")
                         .HasColumnType("text")
                         .HasColumnName("image_url");
+
+                    b.Property<DateTime?>("LastDataModifiedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("last_data_modified_at");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -1036,7 +1097,7 @@ namespace vet_api_Net.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MoneyTypes");
+                    b.ToTable("MoneyTypes", (string)null);
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.MovimientosInventario", b =>
@@ -1448,7 +1509,7 @@ namespace vet_api_Net.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Reportes");
+                    b.ToTable("Reportes", (string)null);
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.SystemConfig", b =>
@@ -1496,7 +1557,7 @@ namespace vet_api_Net.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("system_configs");
+                    b.ToTable("system_configs", (string)null);
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.UserPermission", b =>
@@ -1787,7 +1848,7 @@ namespace vet_api_Net.Migrations
 
                     b.HasKey("ClientId");
 
-                    b.ToTable("WSMessageAPIData");
+                    b.ToTable("WSMessageAPIData", (string)null);
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.WorkerConfig", b =>

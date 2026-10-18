@@ -121,6 +121,7 @@ public class PetsService : IPetsService
 
         _repository.Update(pet);
         await _repository.SaveChangesAsync();
+        await _repository.TouchLastModifiedAsync(pet.Id);
 
         return new MascotaResumenDTO
         {

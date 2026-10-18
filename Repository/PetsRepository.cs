@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -109,6 +110,11 @@ public class PetsRepository : IPetsRepository
 
         return affected > 0;
     }
+
+    public async Task TouchLastModifiedAsync(int mascotaId)
+        => await _context.Mascotas
+            .Where(m => m.Id == mascotaId)
+            .ExecuteUpdateAsync(s => s.SetProperty(m => m.LastDataModifiedAt, DateTime.Now));
 
     public async Task<bool> SaveChangesAsync()
         => await _context.SaveChangesAsync() > 0;
