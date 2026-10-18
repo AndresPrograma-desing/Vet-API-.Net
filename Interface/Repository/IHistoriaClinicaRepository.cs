@@ -16,4 +16,5 @@ public interface IHistoriaClinicaRepository
     Task<Mascota?> GetMascotaWithDetailsAsync(int mascotaId);
     Task<List<Consulta>> GetConsultasByMascotaIdAsync(int mascotaId);
     Task<List<PetVaccination>> GetPetVaccinationsByMascotaIdAsync(int mascotaId);
+    Task<List<Mascota>> GetMascotasPendingSummaryAsync(int limit);
 }

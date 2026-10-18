@@ -19,12 +19,14 @@ public class ConsultasService : IConsultasService
     private readonly ApiSettingsOptions _apiSettings;
     private readonly IUserScopeResolver _userScopeResolver;
     private readonly IPetVaccinationService _petVaccinationService;
-    public ConsultasService(IConsultasRepository repository, IOptions<ApiSettingsOptions> apiSettingsOptions, IUserScopeResolver userScopeResolver, IPetVaccinationService petVaccinationService)
+    private readonly IPetsRepository _petsRepository;
+    public ConsultasService(IConsultasRepository repository, IOptions<ApiSettingsOptions> apiSettingsOptions, IUserScopeResolver userScopeResolver, IPetVaccinationService petVaccinationService, IPetsRepository petsRepository)
     {
         _repository = repository;
         _apiSettings = apiSettingsOptions.Value;
         _userScopeResolver = userScopeResolver;
         _petVaccinationService = petVaccinationService;
+        _petsRepository = petsRepository;
     }
 
 
@@ -66,6 +68,7 @@ public class ConsultasService : IConsultasService
 
         _repository.AddConsulta(medicalRecord);
         await _repository.SaveChangesAsync();
+        await _petsRepository.TouchLastModifiedAsync(dto.MascotaId);
 
         if (dto.Productos != null && dto.Productos.Any())
         {

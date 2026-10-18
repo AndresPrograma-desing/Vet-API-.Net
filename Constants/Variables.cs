@@ -27,6 +27,12 @@ namespace vet_api_Net.Constants
         public const string DeleteReportWorker = "DeleteReportWorker";
         public const string AutoGenerateReportWorker = "AutoGenerateReportWorker";
         public const string VaccinationReminderWorker = "VaccinationReminderWorker";
+        public const string HistoriaClinicaSummaryWorker = "HistoriaClinicaSummaryWorker";
+    }
+
+    public static class AiProviders
+    {
+        public const string Gemini = "gemini";
     }
 
     public static class VaccinationVariables

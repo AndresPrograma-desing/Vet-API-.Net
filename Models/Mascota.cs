@@ -37,6 +37,8 @@ public partial class Mascota
 
     public DateTime Actualizado { get; set; }
 
+    public DateTime? LastDataModifiedAt { get; set; }
+
     public virtual ICollection<Cita> Cita { get; set; } = new List<Cita>();
 
     public virtual Cliente Cliente { get; set; } = null!;

@@ -99,3 +99,17 @@ public class ContextHubOptions
     public string ClientSecret { get; set; } = string.Empty;
     public string? AnonKey { get; set; }
 }
+
+public class GeminiOptions
+{
+    public const string SectionName = "Gemini";
+    public string? ApiUrl { get; set; }
+    public string? Model { get; set; }
+    public int BatchMinSize { get; set; } = 8;
+}
+
+public class MocksOptions
+{
+    public const string SectionName = "Mocks";
+    public bool Gemini { get; set; } = false;
+}

@@ -13,5 +13,6 @@ public interface IPetsRepository
     Task<bool> ExistsAsync(int id);
     void Update(Mascota mascota);
     Task<bool> DeleteWithDependenciesAsync(int id);
+    Task TouchLastModifiedAsync(int mascotaId);
     Task<bool> SaveChangesAsync();
 }

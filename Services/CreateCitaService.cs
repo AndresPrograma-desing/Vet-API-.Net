@@ -191,6 +191,7 @@ public class CreateCitaService : ICreateCitaService
 
         await _citasRepository.AddAsync(cita);
         await _citasRepository.SaveChangesAsync();
+        await _petsRepository.TouchLastModifiedAsync(cita.MascotaId);
 
         var citaRecargada = await _citasRepository.GetByIdWithRelationsAsync(cita.Id);
 

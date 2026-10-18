@@ -58,4 +58,22 @@ public class HistoriaClinicaRepository : IHistoriaClinicaRepository
             .Include(v => v.Doctor)
             .OrderByDescending(v => v.ApplicationDate)
             .ToListAsync();
+
+    public async Task<List<Mascota>> GetMascotasPendingSummaryAsync(int limit)
+    {
+        var latestAnalysisByMascota = _context.HistoriasClinicas
+            .GroupBy(h => h.MascotaId)
+            .Select(g => new { MascotaId = g.Key, UltimoAnalisisIa = g.Max(h => h.UltimoAnalisisIa) });
+
+        var query = _context.Mascotas
+            .Include(m => m.Especie)
+            .GroupJoin(latestAnalysisByMascota, m => m.Id, l => l.MascotaId, (m, latest) => new { Mascota = m, Latest = latest.FirstOrDefault() })
+            .Where(x => x.Latest == null
+                || x.Latest.UltimoAnalisisIa == null
+                || (x.Mascota.LastDataModifiedAt != null && x.Mascota.LastDataModifiedAt > x.Latest.UltimoAnalisisIa))
+            .OrderBy(x => x.Mascota.Id)
+            .Select(x => x.Mascota);
+
+        return await query.Take(limit).ToListAsync();
+    }
 }
