@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MySqlConnector;
@@ -44,6 +45,7 @@ public static class DependencyInjection
     private static string? _cachedDbUrl = null;
     private static DateTime _lastChecked = DateTime.MinValue;
     private static readonly object _cacheLock = new object();
+    private static ILogger? _startupLogger;
 
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
@@ -81,16 +83,23 @@ public static class DependencyInjection
         // string localFallback = "http://localhost:5168,http://localhost:5173";
         string dbFrontendUrl = "";
 
+        _startupLogger ??= LoggerFactory.Create(loggingBuilder =>
+        {
+            loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
+            loggingBuilder.AddConsole();
+        }).CreateLogger("Startup");
+        var startupLogger = _startupLogger;
+
         try
         {
-            Console.WriteLine($"[DB CHECK] Verificando disponibilidad del servidor {dbProvider}...");
+            startupLogger.LogInformation("Verificando disponibilidad del servidor {DbProvider}...", dbProvider);
             using DbConnection testConnection = isPostgres
                 ? new NpgsqlConnection(connectionString)
                 : new MySqlConnection(connectionString);
 
             testConnection.Open();
 
-            Console.WriteLine($"[DB CHECK] Conexión exitosa a {dbProvider}. Intentando leer configuraciones...");
+            startupLogger.LogInformation("Conexión exitosa a {DbProvider}. Intentando leer configuraciones...", dbProvider);
             try
             {
                 using DbCommand cmd = testConnection.CreateCommand();
@@ -104,27 +113,17 @@ public static class DependencyInjection
                         _cachedDbUrl = dbFrontendUrl;
                         _lastChecked = DateTime.UtcNow;
                     }
-                    Console.WriteLine($"[CORS CONFIG] URL leída de la base de datos: {dbFrontendUrl}");
+                    startupLogger.LogInformation("URL de CORS leída de la base de datos: {DbFrontendUrl}", dbFrontendUrl);
                 }
             }
             catch (Exception exQuery)
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"[CORS CONFIG WARNING] No se pudo leer SystemConfigs (tal vez falte la migración): {exQuery.Message}");
-                Console.ResetColor();
+                startupLogger.LogWarning("No se pudo leer SystemConfigs (tal vez falte la migración): {Message}", exQuery.Message);
             }
-
-            Console.WriteLine($"[DB CHECK] Continuando con el arranque de la API.");
         }
         catch (Exception ex)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("\n==========================================================================");
-            Console.WriteLine($"[ERROR CRÍTICO DE ARRANQUE] No se pudo establecer conexión con {dbProvider}.");
-            Console.WriteLine($"Detalle del error: {ex.Message}");
-            Console.WriteLine("El arranque de la API ha sido abortado para prevenir fallos en cascada.");
-            Console.WriteLine("==========================================================================\n");
-            Console.ResetColor();
+            startupLogger.LogCritical(ex, "No se pudo establecer conexión con {DbProvider}. Arranque de la API abortado para prevenir fallos en cascada.", dbProvider);
 
             throw new Exception($"Arrancado cancelado: El servidor {dbProvider} no responde.", ex);
         }
@@ -158,11 +157,11 @@ public static class DependencyInjection
                                 var val = cmd.ExecuteScalar();
                                 _cachedDbUrl = val != DBNull.Value ? val?.ToString() : null;
                                 _lastChecked = DateTime.UtcNow;
-                                Console.WriteLine($"[CORS DYNAMIC] URL actualizada desde BD: {_cachedDbUrl}");
+                                startupLogger.LogDebug("CORS: URL actualizada desde BD: {CachedDbUrl}", _cachedDbUrl);
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine($"[CORS DYNAMIC WARNING] Fallo al consultar BD para CORS: {ex.Message}");
+                                startupLogger.LogWarning("CORS: fallo al consultar BD para refrescar el origen permitido: {Message}", ex.Message);
                             }
                         }
 
