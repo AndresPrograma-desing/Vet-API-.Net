@@ -90,3 +90,26 @@ public class RateLimitingOptions
     public int AuthPermitLimit { get; set; } = 5;
     public int AuthWindowSeconds { get; set; } = 60;
 }
+
+public class ContextHubOptions
+{
+    public const string SectionName = "ContextHub";
+    public string BaseUrl { get; set; } = string.Empty;
+    public string ClientKey { get; set; } = string.Empty;
+    public string ClientSecret { get; set; } = string.Empty;
+    public string? AnonKey { get; set; }
+}
+
+public class GeminiOptions
+{
+    public const string SectionName = "Gemini";
+    public string? ApiUrl { get; set; }
+    public string? Model { get; set; }
+    public int BatchMinSize { get; set; } = 8;
+}
+
+public class MocksOptions
+{
+    public const string SectionName = "Mocks";
+    public bool Gemini { get; set; } = false;
+}

@@ -67,42 +67,60 @@ public class NotificationController : ControllerBase
         }
     }
 
-    // --- ENDPOINT REFRACTORIZADO Y SEGURO ---
     [HttpPost(Endpoints.NotificationController.MarkAsRead)]
     public async Task<ActionResult> MarkAsRead([FromRoute] int alertId)
     {
         try
         {
-            // 1. Extraer el ID del usuario del Token de manera limpia usando ClaimTypes.NameIdentifier
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             
             if (!int.TryParse(userIdClaim, out int userId))
             {
-                // Si el token expiró, no es válido o está ausente
                 return Unauthorized(new { message = "Usuario no autenticado o sesión inválida." });
             }
 
-            // 2. Invocar el servicio único (este cambia el estado en DB y por dentro dispara SignalR de forma push)
             var success = await _notificationService.MarkAsReadAsync(alertId, userId);
             
             if (!success)
-            {
-                // Si el alertId no pertenece a ninguna notificación en el sistema (404)
+            { 
                 return NotFound(new { message = ResponseMessagesNotification.NotificationNotFound });
             }
-
-            // 3. Respuesta exitosa (200 OK)
+ 
             return Ok(new { message = ResponseMessagesNotification.NotificationMarkedAsRead });
         }
         catch (KeyNotFoundException ex)
         {
-            // Por si el usuario del token ya no existe físicamente en la DB
             return NotFound(new { message = ex.Message });
         }
         catch (Exception)
-        {
-            // Cualquier fallo inesperado del servidor se va por un 500 controlado
+        { 
             return StatusCode(500, new { message = ResponseMessagesNotification.ErrorUpdatingNotification });
+        }
+    }
+
+    [HttpPost(Endpoints.NotificationController.RespondCitaRequest)]
+    public async Task<IActionResult> RespondCitaRequest([FromRoute] int alertId, [FromBody] RespondCitaRequestDTO request)
+    {
+        try
+        {
+            await _notificationService.RespondToCitaRequestAsync(alertId, request?.Aceptar ?? false, request?.Mensaje);
+            return Ok(new { success = true, message = ResponseMessagesNotification.CitaRequestRespondedSuccess });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { success = false, error = ex.Message });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { success = false, error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { success = false, error = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { success = false, error = ResponseMessagesNotification.ErrorUpdatingNotification });
         }
     }
 }

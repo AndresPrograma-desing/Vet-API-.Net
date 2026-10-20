@@ -1,25 +1,23 @@
-using vet_api_Net.Data;
-using Microsoft.EntityFrameworkCore;
 using vet_api_Net.Models;
 using DTOs;
 using vet_api_Net.Constants;
+using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
 
 namespace vet_api_Net.Services;
 
 public class ProductCreateService : ICreateProductService
 {
-    private readonly AppDbContext _context;
+    private readonly IProductRepository _repository;
 
-    public ProductCreateService(AppDbContext context)
+    public ProductCreateService(IProductRepository repository)
     {
-        _context = context;
+        _repository = repository;
     }
 
    public async Task<Producto> CreateProductAsync(ProductCreateDTO productDto)
 {
-    bool exists = await _context.Productos.AnyAsync(p => 
-        p.Codigo == productDto.Codigo || p.Nombre == productDto.Nombre);
+    bool exists = await _repository.ExistsByCodeOrNameAsync(productDto.Codigo, productDto.Nombre);
 
     if (exists)
     {
@@ -28,7 +26,7 @@ public class ProductCreateService : ICreateProductService
 
     if (productDto.CategoriaId.HasValue)
     {
-        var categoryExists = await _context.CategoriasProductos.AnyAsync(c => c.Id == productDto.CategoriaId.Value);
+        var categoryExists = await _repository.CategoryExistsAsync(productDto.CategoriaId.Value);
         if (!categoryExists)
             throw new KeyNotFoundException(ResponseMessagesProduct.ResponseMessagesProductCreate.CategoryNotFound);
     }
@@ -54,8 +52,8 @@ if (productDto.Precio < 0 || productDto.PrecioVenta < 0)
         Proveedor = productDto.Proveedor
     };
 
-    _context.Productos.Add(product);
-    await _context.SaveChangesAsync();
+    _repository.AddProduct(product);
+    await _repository.SaveChangesAsync();
 
     return product;
 }

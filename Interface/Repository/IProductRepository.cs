@@ -10,6 +10,8 @@ public interface IProductRepository
     Task<List<Producto>> GetActiveProductsAsync(string noProductName, int? categoriaId, string searchTerm, decimal? maxPrice, int pageNumber, int pageSize);
     Task<Producto?> GetProductByIdAsync(int id);
     Task<List<CategoriasProducto>> GetCategoriesAsync();
+    Task<bool> ExistsByCodeOrNameAsync(string code, string name);
+    Task<bool> CategoryExistsAsync(int categoryId);
     void AddProduct(Producto product);
     void UpdateProduct(Producto product);
     void DeleteProduct(Producto product);

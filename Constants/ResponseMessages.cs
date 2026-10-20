@@ -22,6 +22,7 @@ namespace vet_api_Net.Constants
         public const string Admin = "admin";
         public const string Secretaria = "secretaria";
         public const string Doctor = "doctor";
+        public const string Cliente = "cliente";
     }
     public static class RoleLabels
     {
@@ -169,6 +170,9 @@ namespace vet_api_Net.Constants
         public const string UserNotExisting = "El usuario con ese correo electrónico no existe.";
         public const string NoRolForUser = "Rol seleccionado no valido para ese usuario";
         public const string TryAgainIntents = "Demasiados intentos fallidos, intenta en: ";
+        public const string ContextHubInvalidTicket = "El ticket de autenticación no es válido o ha expirado.";
+        public const string ContextHubUserNotProvisioned = "Tu cuenta no está habilitada en el sistema. Contacta a un administrador para que te dé acceso.";
+        public const string ContextHubUnavailable = "El servicio de autenticación externo no está disponible, intenta nuevamente.";
 
 
     }
@@ -188,6 +192,49 @@ namespace vet_api_Net.Constants
         public const string RequirePasswordChangeCode = "REQUIRE_PASSWORD_CHANGE";
         public const string PushNotificationChangePasswordTitle = "Cambio de Contraseña Sugerido";
         public const string PushNotificationChangePasswordMessage = "Iniciaste sesión con una contraseña temporal. Por tu seguridad, te sugerimos cambiarla lo antes posible desde tu perfil.";
+    }
+    public static class ResponseMessagesClientAuth
+    {
+        public const string RequiredIdentifier = "La cédula o el correo electrónico son requeridos.";
+        public const string ClientNotFound = "No se encontró un cliente con esos datos.";
+        public const string ErrorRequestingCode = "Hubo un error, intentalo mas tarde.";
+        public const string CodeSentSuccess = "Código de acceso enviado con éxito a su correo registrado.";
+        public const string RequiredCode = "El código de verificación es requerido.";
+        public const string InvalidCode = "Código de verificación inválido o expirado. Solicita uno nuevo.";
+        public const string DefaultSystemName = "Happy Pets";
+        public static string AccessCodeSubject(string systemName) => $"Código de Acceso al Portal de Clientes - {systemName}";
+        public const string DefaultAccessCodeHtml = "Su código de acceso al Portal de Clientes es: {{token_codigo}}";
+    }
+    public static class ResponseMessagesClientRequests
+    {
+        public const string RequiredMotivo = "El motivo es requerido.";
+        public const string RequiredNota = "La nota es requerida.";
+        public const string CitaNotFound = "Cita no encontrada.";
+        public const string CitaNotOwned = "Esta cita no pertenece a tu cuenta.";
+        public const string CitaNotCancellable = "Esta cita ya no se puede cancelar en su estado actual.";
+        public static string CitaNotRespondable(string estadoActual) =>
+            $"Esta cita ya no se puede confirmar porque su estado actual es '{estadoActual}'.";
+        public const string CitaCancelledSuccess = "Cita cancelada con éxito. Se notificó a la clínica.";
+        public const string MascotaNotOwned = "Esta mascota no pertenece a tu cuenta.";
+        public const string CitaRequestSentSuccess = "Tu solicitud de cita fue enviada a la clínica.";
+        public const string InvalidFechaPreferida = "La fecha/hora preferida no puede estar en el pasado.";
+        public const string ConsultaNotFound = "No se encontró la consulta asociada a esa receta.";
+        public const string RecetaRenewalRequestSentSuccess = "Tu solicitud de renovación fue enviada al doctor.";
+        public static string CancelNotificationTitle(string mascotaNombre) => $"Cita cancelada por el cliente - {mascotaNombre}";
+        public static string CancelNotificationMessage(string clienteNombre, string mascotaNombre, string motivo) =>
+            $"{clienteNombre} canceló la cita de {mascotaNombre}. Motivo: {motivo}";
+        public static string NewCitaNotificationTitle(string mascotaNombre) => $"Nueva solicitud de cita - {mascotaNombre}";
+        public static string NewCitaNotificationMessage(string clienteNombre, string mascotaNombre, string motivo, string preferencia) =>
+            $"{clienteNombre} solicitó una cita para {mascotaNombre}. Motivo: {motivo}.{preferencia}";
+        public static string RecetaRenewalNotificationTitle(string mascotaNombre) => $"Solicitud de renovación de receta - {mascotaNombre}";
+        public static string RecetaRenewalNotificationMessage(string clienteNombre, string mascotaNombre, string recetaOriginal, string nota) =>
+            $"{clienteNombre} solicitó renovar la receta de {mascotaNombre} ({recetaOriginal}). Nota: {nota}";
+        public const string CitaConfirmedSuccess = "Confirmaste tu asistencia. Se notificó a la clínica.";
+        public static string ConfirmNotificationTitle(string mascotaNombre) => $"Cita confirmada por el cliente - {mascotaNombre}";
+        public static string ConfirmNotificationMessage(string clienteNombre, string mascotaNombre, string mensaje) =>
+            string.IsNullOrWhiteSpace(mensaje)
+                ? $"{clienteNombre} confirmó su asistencia a la cita de {mascotaNombre}."
+                : $"{clienteNombre} confirmó su asistencia a la cita de {mascotaNombre}. Mensaje: {mensaje}";
     }
     public static class ResponseMessagesCitas
     {
@@ -212,6 +259,7 @@ namespace vet_api_Net.Constants
         public const string StatusValid = "Estado no válido. Valores permitidos: completada, en_curso, cancelada, no_asistida";
         public const string CancelledCita = "CITA CANCELADA.";
         public const string NotCitasToday = "No hay citas programadas para el día de hoy.";
+        public const string NotAvailableSlots = "No se encontró ningún horario disponible para autoagendar este día.";
     }
     public static class TypeConsultas
     {
@@ -337,6 +385,12 @@ namespace vet_api_Net.Constants
         public const string Productos = "Productos";
         public const string Facturas = "Recibo";
         public const string Usuarios = "Usuarios";
+        public const string Appointments = "Citas";
+        public const string Consultations = "Consultas";
+        public const string InventoryMovements = "Movimientos de Inventario";
+        public const string Summary = "Resumen";
+        public const string SummaryMetricColumn = "Métrica";
+        public const string SummaryValueColumn = "Valor";
         public const string InvalidReport = "Reporte inválido o sin datos.";
         public const string DeserializationError = "No se pudo deserializar el contenido del reporte.";
     }
@@ -416,6 +470,7 @@ namespace vet_api_Net.Constants
         public const string Filtre = "{}";
         public const string ReportgeneratedTittle = "Se ha generado un reporte del sistema";
         public const string ReportgeneratedDescription = "El reporte se ha generado correctamente. puedes descargarlo en Ajustes| Accesos Y Seguridad | Repor.";
+        public const string GeneratedBySystem = "sistema";
 
     }
     public static class ResponseMessagesAuthController
@@ -432,6 +487,8 @@ namespace vet_api_Net.Constants
     {
         public const string InvalidPayload = "Payload inválido";
         public const string InternalErrorCP = "Error interno al crear cliente y mascota";
+        public const string ErrorUploadingImage = "Ocurrió un error al subir la imagen.";
+        public const string PetNotFound = "Mascota no encontrada.";
     }
     public static class ResponseMessagesFacturaController
     {
@@ -447,6 +504,9 @@ namespace vet_api_Net.Constants
         public const string ErrorCreated = "Error al crear la consulta";
         public const string TemperaturaInvalid = "La temperatura no puede superar los 100 grados";
         public const string NotFound = "Consulta no encontrada.";
+        public const string PdfDataNotFound = "Consulta no encontrada para generar el PDF.";
+        public const string PdfGenerationError = "Error al generar el PDF de la consulta/receta.";
+        public const string PdfPersistenceError = "Error al guardar la URL del PDF generado. Sin embargo, el PDF se ha creado correctamente.";
     }
     public static class ResponseMessagesGroqServices
     {
@@ -579,8 +639,18 @@ namespace vet_api_Net.Constants
         public const string DuplicateNotification = "Ya existe una notificación idéntica enviada hace menos de 5 minutos.";
         public const string TitleRequired = "El título es obligatorio para crear una notificación.";
         public const string NotificationNotFound = "Notificación no encontrada.";
+        public const string AlertNotOwned = "Esta notificación no pertenece a tu cuenta.";
         public const string ErrorUpdatingNotification = "Ocurrió un error interno al actualizar la notificación de alerta interna.";
         public const string NotificationMarkedAsRead = "Notificación marcada como leída.";
+        public const string NotACitaRequest = "Esta notificación no corresponde a una solicitud de cita.";
+        public const string MissingClientReference = "Esta notificación no tiene un cliente asociado.";
+        public const string RejectionReasonRequired = "Debes indicar el motivo del rechazo.";
+        public const string CitaRequestAcceptedTitle = "Tu solicitud de cita fue aceptada";
+        public const string CitaRequestAcceptedMessage = "La clínica aceptó tu solicitud de cita y se pondrá en contacto para confirmar fecha y hora.";
+        public const string CitaRequestRejectedTitle = "Tu solicitud de cita fue rechazada";
+        public const string CitaRequestRejectedMessage = "La clínica no pudo aceptar tu solicitud de cita.";
+        public const string ClinicMessageSuffix = "Mensaje de la clínica: {0}";
+        public const string CitaRequestRespondedSuccess = "Se notificó tu respuesta al cliente.";
     }
 
     public static class ResponseMessagesWSMessageAPI
@@ -731,6 +801,8 @@ namespace vet_api_Net.Constants
         public static readonly string[] AllowedContentTypes = { "image/jpeg", "image/png", "image/webp", "image/gif" };
         public const long MaxFileSizeBytes = 5 * 1024 * 1024;
         public const string SaveAvatarError = "No se pudo guardar el avatar: no existe el usuario con id {0}";
+        public const string ClientImagesFolder = "clients";
+        public const string PetImagesFolder = "pets";
         // public const string
     }
     public static class ResponseMessagesCalendar
@@ -793,5 +865,25 @@ namespace vet_api_Net.Constants
         public const string EspecieMaxLength = "El nombre de la especie no puede exceder los 50 caracteres.";
         public const string EspecieAlreadyExists = "Ya existe una especie con ese nombre.";
         public const string EspecieNotFound = "Especie no encontrada.";
+    }
+    public static class ResponseMessagesGeminiServices
+    {
+        public const string NoCredentialsConfigured = "No hay credenciales de Gemini activas configuradas.";
+        public const string AllCredentialsExhausted = "Todas las credenciales de Gemini disponibles agotaron su cuota diaria.";
+        public const string RequestFailed = "La solicitud a Gemini falló.";
+        public const string ErrorFormat = "La respuesta de Gemini tiene un formato inesperado.";
+        public const string ServiceUnavailable = "El servicio de resúmenes por IA (Gemini) no está disponible en este momento.";
+
+        public static class GeminiPrompts
+        {
+            public const string BatchInstruction = "Eres un asistente veterinario experto. Recibirás un arreglo JSON llamado 'pacientes', donde cada elemento representa una mascota con sus datos clínicos (consultas, vacunas y, si existe, un resumen anterior). Para CADA paciente del arreglo, genera un análisis clínico y devuelve obligatoriamente un arreglo JSON (sin texto adicional fuera del JSON) donde cada elemento tiene los campos: 'mascota_id' (el mismo id recibido), 'resumen_ia' (resumen clínico fluido y profesional que evalúe la evolución respecto al resumen anterior si se provee), 'alertas_riesgo_ia' (alertas de riesgos de salud importantes separadas por ' | ') y 'sugerencias_ia' (sugerencias y recomendaciones veterinarias preventivas separadas por ' | '). El arreglo de salida debe tener exactamente un elemento por cada paciente recibido, en cualquier orden, identificado por 'mascota_id'.";
+        }
+    }
+    public static class ResponseMessagesIntegrationCredential
+    {
+        public const string NotFound = "Credencial no encontrada.";
+        public const string ProviderRequired = "El proveedor es requerido.";
+        public const string SecretValueRequired = "El valor secreto es requerido.";
+        public const string InvalidDailyLimit = "El límite diario debe ser mayor a cero.";
     }
 }

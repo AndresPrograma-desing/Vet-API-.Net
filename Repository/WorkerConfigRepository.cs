@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -17,8 +18,8 @@ public class WorkerConfigRepository : IWorkerConfigRepository
         _context = context;
     }
 
-    public async Task<WorkerConfig?> GetByWorkerNameAsync(string workerName)
-        => await _context.WorkerConfigs.FirstOrDefaultAsync(w => w.WorkerName == workerName);
+    public async Task<WorkerConfig?> GetByWorkerNameAsync(string workerName, CancellationToken cancellationToken = default)
+        => await _context.WorkerConfigs.FirstOrDefaultAsync(w => w.WorkerName == workerName, cancellationToken);
 
     public async Task<List<WorkerConfig>> GetAllAsync()
         => await _context.WorkerConfigs.OrderBy(w => w.WorkerName).ToListAsync();

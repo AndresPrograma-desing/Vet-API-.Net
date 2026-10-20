@@ -18,12 +18,12 @@ public class PetsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<ActionResult<MascotaListResponseDTO>> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? query = null)
     {
         try
         {
-            var mascotas = await _petsService.GetAllMascotasAsync();
-            return Ok(mascotas);
+            var result = await _petsService.GetAllMascotasAsync(pageNumber, pageSize, query);
+            return Ok(result);
         }
         catch (Exception)
         {

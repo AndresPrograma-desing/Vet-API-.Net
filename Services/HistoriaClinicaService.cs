@@ -6,21 +6,20 @@ using DTOs;
 using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
-using vet_api_Net.Interfaze.Utilities;
 using vet_api_Net.Models;
 
-//Describe: Servicio de negocio encargado de coordinar la gestión del historial clínico versionado (1-a-muchos) de las mascotas y su análisis comparativo con Groq.
+//Describe: Servicio de negocio encargado de coordinar la gestión del historial clínico versionado (1-a-muchos) de las mascotas. El análisis de IA ya no se genera aquí: lo mantiene HistoriaClinicaSummaryWorker en lote contra Gemini.
 namespace vet_api_Net.Services;
 
 public class HistoriaClinicaService : IHistoriaClinicaService
 {
     private readonly IHistoriaClinicaRepository _repository;
-    private readonly IHistoriaClinicaAnalizadorUtilities _analizador;
+    private readonly IPetsRepository _petsRepository;
 
-    public HistoriaClinicaService(IHistoriaClinicaRepository repository, IHistoriaClinicaAnalizadorUtilities analizador)
+    public HistoriaClinicaService(IHistoriaClinicaRepository repository, IPetsRepository petsRepository)
     {
         _repository = repository;
-        _analizador = analizador;
+        _petsRepository = petsRepository;
     }
 
     public async Task<HistoriaClinicaResponseDTO?> GetHistoriaClinicaByMascotaIdAsync(int mascotaId)
@@ -38,6 +37,7 @@ public class HistoriaClinicaService : IHistoriaClinicaService
 
         if (hc == null)
         {
+            // Sin resumen generado todavía: HistoriaClinicaSummaryWorker la tomará en su próximo ciclo (Mascota sin HistoriaClinica cuenta como pendiente).
             hc = new HistoriaClinica
             {
                 MascotaId = mascotaId,
@@ -45,29 +45,10 @@ public class HistoriaClinicaService : IHistoriaClinicaService
                 Actualizado = DateTime.Now
             };
 
-            var iaResult = await _analizador.GenerarAnalisisClinicoAsync(mascota, consultas, vacunas, null);
-            hc.ResumenIa = iaResult.ResumenIa;
-            hc.AlertasRiesgoIa = iaResult.AlertasRiesgoIa;
-            hc.SugerenciasIa = iaResult.SugerenciasIa;
-            hc.UltimoAnalisisIa = DateTime.Now;
-
             _repository.Add(hc);
             await _repository.SaveChangesAsync();
 
             allHcs = new List<HistoriaClinica> { hc };
-        }
-        else if (hc.UltimoAnalisisIa == null)
-        {
-            // Caso borde: Existe el registro pero no tiene análisis generado
-            var iaResult = await _analizador.GenerarAnalisisClinicoAsync(mascota, consultas, vacunas, null);
-            hc.ResumenIa = iaResult.ResumenIa;
-            hc.AlertasRiesgoIa = iaResult.AlertasRiesgoIa;
-            hc.SugerenciasIa = iaResult.SugerenciasIa;
-            hc.UltimoAnalisisIa = DateTime.Now;
-            hc.Actualizado = DateTime.Now;
-
-            _repository.Update(hc);
-            await _repository.SaveChangesAsync();
         }
 
         var versionesAnteriores = allHcs.Skip(1).ToList();
@@ -102,6 +83,8 @@ public class HistoriaClinicaService : IHistoriaClinicaService
         return MapToResponse(hc, mascota, consultas, vacunas, versionesAnteriores);
     }
 
+    // No llama a Gemini directamente: solo marca a la mascota como pendiente (LastDataModifiedAt = ahora)
+    // para que HistoriaClinicaSummaryWorker la tome y genere el resumen en su próximo ciclo por lote.
     public async Task<HistoriaClinicaResponseDTO?> RefrescarAnalisisIaAsync(int mascotaId)
     {
         var mascota = await _repository.GetMascotaWithDetailsAsync(mascotaId);
@@ -110,49 +93,30 @@ public class HistoriaClinicaService : IHistoriaClinicaService
             throw new KeyNotFoundException(ResponseMessagesHistoriaClinica.MascotaNotFound);
         }
 
+        await _petsRepository.TouchLastModifiedAsync(mascotaId);
+
         var allHcs = await _repository.GetAllByMascotaIdAsync(mascotaId);
         var latestHc = allHcs.FirstOrDefault();
-
         var consultas = await _repository.GetConsultasByMascotaIdAsync(mascotaId);
         var vacunas = await _repository.GetPetVaccinationsByMascotaIdAsync(mascotaId);
 
-        // Validar si hay nuevos datos clínicos creados después de la fecha del último análisis
-        bool hasNewData = latestHc == null || 
-                          latestHc.UltimoAnalisisIa == null ||
-                          consultas.Any(c => c.FechaConsulta > latestHc.UltimoAnalisisIa.Value) ||
-                          vacunas.Any(v => v.ApplicationDate > DateOnly.FromDateTime(latestHc.UltimoAnalisisIa.Value));
-
-        if (hasNewData)
+        if (latestHc == null)
         {
-            // Extraer resumen anterior para el análisis evolutivo de Groq
-            string? resumenAnterior = latestHc?.ResumenIa;
-
-            // Generar nuevo análisis por IA
-            var iaResult = await _analizador.GenerarAnalisisClinicoAsync(mascota, consultas, vacunas, resumenAnterior);
-            
-            // Crear nueva historia clínica independiente sin eliminar la anterior
-            var newHc = new HistoriaClinica
+            latestHc = new HistoriaClinica
             {
                 MascotaId = mascotaId,
-                ResumenIa = iaResult.ResumenIa,
-                AlertasRiesgoIa = iaResult.AlertasRiesgoIa,
-                SugerenciasIa = iaResult.SugerenciasIa,
-                UltimoAnalisisIa = DateTime.Now,
                 Creado = DateTime.Now,
-                Actualizado = DateTime.Now,
-                NotasVeterinario = latestHc?.NotasVeterinario // Mantenemos las últimas notas del veterinario
+                Actualizado = DateTime.Now
             };
 
-            _repository.Add(newHc);
+            _repository.Add(latestHc);
             await _repository.SaveChangesAsync();
 
-            // Recargar el listado histórico de historias clínicas
-            allHcs = await _repository.GetAllByMascotaIdAsync(mascotaId);
-            latestHc = allHcs.FirstOrDefault() ?? newHc;
+            allHcs = new List<HistoriaClinica> { latestHc };
         }
 
         var versionesAnteriores = allHcs.Skip(1).ToList();
-        return MapToResponse(latestHc!, mascota, consultas, vacunas, versionesAnteriores);
+        return MapToResponse(latestHc, mascota, consultas, vacunas, versionesAnteriores);
     }
 
     private HistoriaClinicaResponseDTO MapToResponse(HistoriaClinica hc, Mascota mascota, List<Consulta> consultas, List<PetVaccination> vacunas, List<HistoriaClinica> versionesAnteriores)
@@ -187,6 +151,7 @@ public class HistoriaClinicaService : IHistoriaClinicaService
                 Diagnostico = c.Diagnostico,
                 Tratamiento = c.Tratamiento,
                 Receta = c.Receta,
+                UrlDocx = c.UrlDocx,
                 Observaciones = c.Observaciones,
                 DoctorNombre = c.Doctor != null ? $"{c.Doctor.Nombre} {c.Doctor.Apellido}" : "Veterinario"
             }).ToList(),

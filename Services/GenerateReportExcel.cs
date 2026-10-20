@@ -28,7 +28,11 @@ namespace vet_api_Net.Services
                 AgregarHoja(workbook, Exceltext.Productos, data.Productos ?? new List<Dictionary<string, object>>());
                 AgregarHoja(workbook, Exceltext.Facturas, data.Facturas ?? new List<Dictionary<string, object>>());
                 AgregarHoja(workbook, Exceltext.Usuarios, data.Usuarios ?? new List<Dictionary<string, object>>());
- 
+                AgregarHoja(workbook, Exceltext.Appointments, data.Appointments ?? new List<Dictionary<string, object>>());
+                AgregarHoja(workbook, Exceltext.Consultations, data.Consultations ?? new List<Dictionary<string, object>>());
+                AgregarHoja(workbook, Exceltext.InventoryMovements, data.InventoryMovements ?? new List<Dictionary<string, object>>());
+                AgregarHojaResumen(workbook, Exceltext.Summary, data.Summary ?? new Dictionary<string, object>());
+
                 using (var stream = new MemoryStream())
                 {
                     workbook.SaveAs(stream);
@@ -60,6 +64,23 @@ namespace vet_api_Net.Services
             ws.Columns().AdjustToContents();
         }
 
+        private void AgregarHojaResumen(XLWorkbook workbook, string nombre, Dictionary<string, object> resumen)
+        {
+            var ws = workbook.Worksheets.Add(nombre);
+            ws.Cell(1, 1).Value = Exceltext.SummaryMetricColumn;
+            ws.Cell(1, 2).Value = Exceltext.SummaryValueColumn;
+
+            var row = 2;
+            foreach (var (metrica, valor) in resumen)
+            {
+                ws.Cell(row, 1).Value = metrica;
+                ws.Cell(row, 2).Value = valor?.ToString() ?? string.Empty;
+                row++;
+            }
+
+            ws.Columns().AdjustToContents();
+        }
+
         public class ReportData
         {
             public DateTime FechaGeneracion { get; set; }
@@ -68,6 +89,10 @@ namespace vet_api_Net.Services
             public List<Dictionary<string, object>>? Productos { get; set; }
             public List<Dictionary<string, object>>? Facturas { get; set; }
             public List<Dictionary<string, object>>? Usuarios { get; set; }
+            public List<Dictionary<string, object>>? Appointments { get; set; }
+            public List<Dictionary<string, object>>? Consultations { get; set; }
+            public List<Dictionary<string, object>>? InventoryMovements { get; set; }
+            public Dictionary<string, object>? Summary { get; set; }
         }
     }
 }

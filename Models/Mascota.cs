@@ -31,9 +31,13 @@ public partial class Mascota
 
     public bool? Esterilizado { get; set; }
 
+    public string? ImageUrl { get; set; }
+
     public DateTime Creado { get; set; }
 
     public DateTime Actualizado { get; set; }
+
+    public DateTime? LastDataModifiedAt { get; set; }
 
     public virtual ICollection<Cita> Cita { get; set; } = new List<Cita>();
 

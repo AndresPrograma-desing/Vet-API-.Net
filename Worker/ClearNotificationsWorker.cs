@@ -43,6 +43,8 @@ public class ClearNotificationsWorker : BackgroundService
     {
         if (!_isEnabled) return;
 
+               _logger.LogInformation("Worker ClearNotificationsWorker initialized.");   
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -53,17 +55,17 @@ public class ClearNotificationsWorker : BackgroundService
                 _totalDeleted = await alertsRepository.ExecutePurgeReadAlertsAsync();
                 _nextExecution = DateTime.Now.Add(_interval);
 
-                _logger.LogInformation(
-                    "Eliminacion de notificaciones completada a las {Time}. Intervalo: {Interval}. Total eliminadas: {TotalDeleted}. \n \t Proxima ejecucion: {NextExecution}.", 
-                    DateTimeOffset.Now, 
-                    _interval, 
-                    _totalDeleted, 
-                    _nextExecution.ToString("yyyy-MM-dd HH:mm:ss")
-                );
+                // _logger.LogInformation(
+                //     "Eliminacion de notificaciones completada a las {Time}. Intervalo: {Interval}. Total eliminadas: {TotalDeleted}. \n \t Proxima ejecucion: {NextExecution}.", 
+                //     DateTimeOffset.Now, 
+                //     _interval, 
+                //     _totalDeleted, 
+                //     _nextExecution.ToString("yyyy-MM-dd HH:mm:ss")
+                // );
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while clearing notifications.");   
+                _logger.LogInformation(ex, "Error occurred while clearing notifications.");   
             }
 
             await Task.Delay(_interval, stoppingToken);

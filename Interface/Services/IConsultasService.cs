@@ -11,4 +11,5 @@ public interface IConsultasService
     Task<ConsultaPdfDTO?> GetConsultaPdfDataAsync(int id);
     Task<IEnumerable<ConsultaRequestDTO>> GetConsultasAsync(string? currentUserRole = null, int? currentUserId = null, int? requestedDoctorId = null, int? requestedSecretariaId = null);
     Task<ConsultaRequestDTO?> UpdateRecetaAsync(int id, UpdateConsultaRecetaDTO dto);
+    Task<ConsultaRequestDTO?> UpdateUrlDocxAsync(int id, string url);
 }

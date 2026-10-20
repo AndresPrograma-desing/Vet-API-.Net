@@ -14,10 +14,12 @@ namespace vet_api_Net.Services;
 public class PetVaccinationService : IPetVaccinationService
 {
     private readonly IPetVaccinationRepository _repository;
+    private readonly IPetsRepository _petsRepository;
 
-    public PetVaccinationService(IPetVaccinationRepository repository)
+    public PetVaccinationService(IPetVaccinationRepository repository, IPetsRepository petsRepository)
     {
         _repository = repository;
+        _petsRepository = petsRepository;
     }
 
     public async Task<PetVaccinationStatusResponseDTO> GetVaccinationStatusForMascotaAsync(int mascotaId)
@@ -105,6 +107,7 @@ public class PetVaccinationService : IPetVaccinationService
         _repository.UpdateBatch(batch);
         _repository.AddPetVaccination(petVaccination);
         await _repository.SaveChangesAsync();
+        await _petsRepository.TouchLastModifiedAsync(dto.MascotaId);
 
         return MapToDto(petVaccination, vaccine, batch, doctor);
     }

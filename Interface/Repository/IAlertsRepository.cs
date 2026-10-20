@@ -8,7 +8,7 @@ namespace vet_api_Net.Interfaze.Repositories;
 public interface IAlertsRepository
 {
     Task<List<AlertNotificationDTO>> GetByDestinationAsync(string destination);
-    Task<bool> AnyRecentDuplicateAsync(string title, System.DateTime threshold);
+    Task<bool> AnyRecentDuplicateAsync(string title, System.DateTime threshold, string? destino = null);
     void Add(AlertasInterna alert);
     Task<bool> SaveChangesAsync();
     Task<bool> MarkAsReadAsync(int alertId);

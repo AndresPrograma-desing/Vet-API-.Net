@@ -27,6 +27,7 @@ using vet_api_Net.Interfaze.Repositories.Clients;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Interfaze.Services.Clients;
 using vet_api_Net.Interfaze.Utilities;
+using vet_api_Net.Mocks;
 using vet_api_Net.Repositories;
 using vet_api_Net.Services;
 using vet_api_Net.Services.Supabase;
@@ -325,7 +326,12 @@ public static class DependencyInjection
         services.AddScoped<IEspecieRepository, EspecieRepository>();
         services.AddScoped<IPetVaccinationRepository, PetVaccinationRepository>();
         services.AddScoped<IWorkerConfigRepository, WorkerConfigRepository>();
+        services.AddScoped<IMessagingRepository, MessagingRepository>();
+        services.AddScoped<IMoneyTypeRepository, MoneyTypeRepository>();
+        services.AddScoped<IReportRepository, ReportRepository>();
+        services.AddScoped<IPetsRepository, PetsRepository>();
         services.AddScoped<IPermissionDefinitionRepository, PermissionDefinitionRepository>();
+        services.AddScoped<IIntegrationCredentialRepository, IntegrationCredentialRepository>();
 
         // Servicios de la Aplicación
         services.AddScoped<IUserService, UserService>();
@@ -342,6 +348,8 @@ public static class DependencyInjection
         services.AddScoped<IMessagingService, MessagingService>();
         services.AddScoped<IInvoiceService, InvoiceService>();
         services.AddScoped<IClientService, ClientService>();
+        services.AddScoped<IClientAuthService, ClientAuthService>();
+        services.AddScoped<IClientRequestsService, ClientRequestsService>();
         services.AddScoped<GeneratePdfUtilities>();
         services.AddScoped<IClientPetService, ClientPetService>();
         services.AddScoped<IReportSystemService, ReportSystemService>();
@@ -365,7 +373,23 @@ public static class DependencyInjection
         services.AddScoped<IEspecieService, EspecieService>();
         services.AddScoped<IPetVaccinationService, PetVaccinationService>();
         services.AddScoped<IWorkerConfigService, WorkerConfigService>();
+        services.AddScoped<IIntegrationCredentialService, IntegrationCredentialService>();
+
+        var mocksOptions = configuration.GetSection(MocksOptions.SectionName).Get<MocksOptions>() ?? new MocksOptions();
+        if (mocksOptions.Gemini)
+        {
+            services.AddScoped<IGeminiService, GeminiMock>();
+        }
+        else
+        {
+            services.AddScoped<IGeminiService, GeminiService>();
+        }
         services.AddHttpClient<IEmailSenderService, vet_api_Net.HttpServices.ResendEmailService>()
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            });
+        services.AddHttpClient<IContextHubClient, vet_api_Net.HttpServices.ContextHubClient>()
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {
                 ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
@@ -373,7 +397,7 @@ public static class DependencyInjection
 
         //Utilities
         services.AddSingleton<IFailureTrackerUtilities, FailureTrackerUtilities>();
-        services.AddScoped<IHistoriaClinicaAnalizadorUtilities, HistoriaClinicaAnalizadorUtilities>();
+        services.AddScoped<IGeminiApiKeySelector, GeminiApiKeySelector>();
         services.AddScoped<ICurrencyUtilities, CurrencyUtilities>();
         services.AddScoped<IExcelGeneratorUtilities, ExcelGeneratorUtilities>();
         services.AddScoped<IConsultaPdfUtilities, ConsultaPdfUtilities>();
@@ -388,11 +412,13 @@ public static class DependencyInjection
         // Workers / Background Services
         services.AddHostedService<MessagePollerService>();
         services.AddHostedService<DeleteFacturaWorker>();
+        services.AddHostedService<DeleteConsultaPdfWorker>();
         services.AddHostedService<DeleteReportWorker>();
         services.AddHostedService<AutoGenerateReportWorker>();
         services.AddHostedService<BcvWorker>();
         services.AddHostedService<ClearNotificationsWorker>();
         services.AddHostedService<VaccinationReminderWorker>();
+        services.AddHostedService<HistoriaClinicaSummaryWorker>();
 
         // Clientes HTTP Externos (BCV)
         services.AddHttpClient("BcvClient", client =>
@@ -409,6 +435,9 @@ public static class DependencyInjection
         services.Configure<TemplatesHTML>(configuration.GetSection(TemplatesHTML.SectionName));
         services.Configure<SecurityOptions>(configuration.GetSection(SecurityOptions.SectionName));
         services.Configure<RateLimitingOptions>(configuration.GetSection(RateLimitingOptions.SectionName));
+        services.Configure<ContextHubOptions>(configuration.GetSection(ContextHubOptions.SectionName));
+        services.Configure<GeminiOptions>(configuration.GetSection(GeminiOptions.SectionName));
+        services.Configure<MocksOptions>(configuration.GetSection(MocksOptions.SectionName));
 
         return services;
     }

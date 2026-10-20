@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
-using vet_api_Net.Data;
-using Microsoft.EntityFrameworkCore;
+using vet_api_Net.Interfaze.Repositories;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
@@ -104,9 +104,10 @@ namespace vet_api_Net.Worker
                 {
                     using (var scope = _services.CreateScope())
                     {
-                        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                        var workerConfigRepository = scope.ServiceProvider.GetRequiredService<IWorkerConfigRepository>();
+                        var reportRepository = scope.ServiceProvider.GetRequiredService<IReportRepository>();
                         
-                        var dbSetting = await db.WorkerConfigs.FirstOrDefaultAsync(w => w.WorkerName == WorkerNames.DeleteReportWorker, stoppingToken);
+                        var dbSetting = await workerConfigRepository.GetByWorkerNameAsync(WorkerNames.DeleteReportWorker, stoppingToken);
 
                         DateTime deadline;
 
@@ -120,9 +121,7 @@ namespace vet_api_Net.Worker
                             deadline = DateTime.UtcNow - _threshold;
                         }
 
-                        var expireReports = await db.Reportes
-                            .Where(r => r.FechaCreacion <= deadline)
-                            .ToListAsync(stoppingToken);
+                        var expireReports = await reportRepository.GetExpiredAsync(deadline, stoppingToken);
 
                         if (expireReports.Any())
                         {
@@ -151,8 +150,8 @@ namespace vet_api_Net.Worker
                                 }
                             }
  
-                            db.Reportes.RemoveRange(expireReports);
-                            await db.SaveChangesAsync(stoppingToken);
+                            reportRepository.RemoveRange(expireReports);
+                            await reportRepository.SaveChangesAsync(stoppingToken);
                         }
                     }
                 }

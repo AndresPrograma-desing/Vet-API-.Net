@@ -15,6 +15,10 @@ public interface ICitasRepository
     Task<List<Cita>> GetByStatusAsync(string estado);
     Task<List<Cita>> GetByDateAsync(DateTime fecha);
     Task<List<Cita>> GetByClienteIdAsync(int clienteId);
+    Task<List<Cita>> GetByDoctorAndDateAsync(int doctorId, DateTime date);
+    Task<Cita?> GetByIdWithPaymentMethodAsync(int id);
+    Task<MetodoPago?> GetPaymentMethodByNameAsync(string name);
+    void AddPaymentMethod(MetodoPago metodoPago);
     Task AddAsync(Cita cita);
     void Update(Cita cita);
     void Delete(Cita cita);

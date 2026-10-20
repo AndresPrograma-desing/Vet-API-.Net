@@ -21,12 +21,18 @@ public class AuthService : IAuthService
     private readonly IUsersRepository _usersRepository;
     private readonly IConfiguration _configuration;
     private readonly ILoginSecurity _loginSecurity;
+    private readonly IContextHubClient _contextHubClient;
 
-    public AuthService(IUsersRepository usuariosRepository, IConfiguration configuration, ILoginSecurity loginSecurity)
+    public AuthService(
+        IUsersRepository usuariosRepository,
+        IConfiguration configuration,
+        ILoginSecurity loginSecurity,
+        IContextHubClient contextHubClient)
     {
         _usersRepository = usuariosRepository;
         _configuration = configuration;
         _loginSecurity = loginSecurity;
+        _contextHubClient = contextHubClient;
     }
 
     public async Task<Usuario?> LoginAsync(LoginRequest request)
@@ -98,6 +104,50 @@ public class AuthService : IAuthService
             await _loginSecurity.ResetAttemptsAsync(request.Email);
         }
         catch { }
+
+        return user;
+    }
+
+    public async Task<Usuario?> LoginWithContextHubAsync(string ticket)
+    {
+        if (string.IsNullOrWhiteSpace(ticket))
+        {
+            throw new ArgumentException(ResponseMessagesLogin.ContextHubInvalidTicket);
+        }
+
+        var verifyResult = await _contextHubClient.VerifyTicketAsync(ticket);
+        if (verifyResult == null)
+        {
+            throw new InvalidOperationException(ResponseMessagesLogin.ContextHubUnavailable);
+        }
+
+        if (!verifyResult.Ok || verifyResult.User == null || string.IsNullOrWhiteSpace(verifyResult.User.Email))
+        {
+            throw new InvalidOperationException(ResponseMessagesLogin.ContextHubInvalidTicket);
+        }
+
+        var externalId = verifyResult.User.Id;
+        var email = verifyResult.User.Email;
+
+        var user = await _usersRepository.GetByExternalAuthIdAsync(externalId)
+                   ?? await _usersRepository.GetByEmailAsync(email);
+
+        if (user == null)
+        {
+            throw new InvalidOperationException(ResponseMessagesLogin.ContextHubUserNotProvisioned);
+        }
+
+        if (await _usersRepository.IsUserDisabledAsync(user.Email))
+        {
+            throw new InvalidOperationException(ResponseMessagesLogin.IsDisabled);
+        }
+
+        if (string.IsNullOrWhiteSpace(user.ExternalAuthId))
+        {
+            user.ExternalAuthId = externalId;
+            _usersRepository.Update(user);
+            await _usersRepository.SaveChangesAsync();
+        }
 
         return user;
     }

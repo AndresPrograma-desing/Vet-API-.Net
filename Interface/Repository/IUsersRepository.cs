@@ -8,6 +8,7 @@ public interface IUsersRepository
 {
     Task<Usuario?> GetByEmailAndRolAsync(string email, string rol);
     Task<Usuario?> GetByEmailAsync(string email);
+    Task<Usuario?> GetByExternalAuthIdAsync(string externalAuthId);
     Task<Usuario?> GetByNameAndApellidoAsync(string nombre, string apellido);
     Task<Usuario?> GetByIdAsync(int id);
     Task<CredencialUsuarioPdfDTO?> GetCredencialDataAsync(int id);
@@ -17,6 +18,8 @@ public interface IUsersRepository
     Task<string?> GetRoleByEmailAsync(string email);
     Task<List<Usuario>> GetAllUsersAsync();
     Task<List<Usuario>> GetUsersByRoleAsync(string role);
+    Task<Usuario?> GetBotAsync();
+    Task<List<Usuario>> GetActiveUsersByRoleAsync(string role);
     Task AddUserAsync(Usuario user);
     Task DeleteUserAsync(Usuario user);
     Task<ChangeNameUsersDTO?> ChangeNameUsersAsync(int id, string newName, string newLastName, string newEmail, string newPhone);

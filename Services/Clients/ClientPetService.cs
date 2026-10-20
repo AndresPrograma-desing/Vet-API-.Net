@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DTOs;
+using Microsoft.AspNetCore.Http;
 using vet_api_Net.Models;
 using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Repositories.Clients;
@@ -15,11 +16,37 @@ public class ClientPetService : IClientPetService
 {
     private readonly IClientPetRepository _repository;
     private readonly IEspecieService _especieService;
+    private readonly ISupabaseService _supabaseService;
 
-    public ClientPetService(IClientPetRepository repository, IEspecieService especieService)
+    public ClientPetService(IClientPetRepository repository, IEspecieService especieService, ISupabaseService supabaseService)
     {
         _repository = repository;
         _especieService = especieService;
+        _supabaseService = supabaseService;
+    }
+
+    public async Task<string> UploadClientImageAsync(int clientId, IFormFile file)
+    {
+        if (!await _repository.ClientExistsAsync(clientId))
+        {
+            throw new KeyNotFoundException(ResponseMessagesClient.ClientNotFound);
+        }
+
+        var imageUrl = await _supabaseService.UploadImageAsync(file, ResponseMessagesSupabase.ClientImagesFolder, clientId);
+        await _repository.SetClientImageUrlAsync(clientId, imageUrl);
+        return imageUrl;
+    }
+
+    public async Task<string> UploadPetImageAsync(int petId, IFormFile file)
+    {
+        if (!await _repository.PetExistsAsync(petId))
+        {
+            throw new KeyNotFoundException(ResponseMessagesClientPetController.PetNotFound);
+        }
+
+        var imageUrl = await _supabaseService.UploadImageAsync(file, ResponseMessagesSupabase.PetImagesFolder, petId);
+        await _repository.SetPetImageUrlAsync(petId, imageUrl);
+        return imageUrl;
     }
 
     public async Task<CreateClientWithPetResponseDTO> CreateClientWithPetAsync(CreateClientWithPetDTO dto)
