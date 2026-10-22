@@ -74,6 +74,7 @@ namespace vet_api_Net.Routes
             public const string MeMascotas = "me/mascotas";
             public const string MeCitas = "me/citas";
             public const string MeHistorial = "me/mascotas/{mascotaId}/historial";
+            public const string MeHistorialPdf = "me/mascotas/{mascotaId}/historial/pdf";
             public const string MeImage = "me/image";
             public const string MeMascotaImage = "me/mascotas/{mascotaId}/image";
             public const string MeNotifications = "me/notifications";
@@ -172,6 +173,7 @@ namespace vet_api_Net.Routes
             public const string DownloadConsulta = "consulta/{id}";
             public const string DownloadCredencial = "credencial/{id}";
             public const string DownloadCarnet = "mascota/{mascotaId}/carnet";
+            public const string DownloadHistoriaClinica = "mascota/{mascotaId}/historial";
         }
         public static class Vaccine
         {

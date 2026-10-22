@@ -49,23 +49,28 @@ public class ClearNotificationsWorker : BackgroundService
         {
             try
             {
+                _logger.LogInformation("ClearNotificationsWorker started.");
+
                 using var scope = _serviceProvider.CreateScope();
                 var alertsRepository = scope.ServiceProvider.GetRequiredService<IAlertsRepository>();
-                
+
                 _totalDeleted = await alertsRepository.ExecutePurgeReadAlertsAsync();
                 _nextExecution = DateTime.Now.Add(_interval);
 
                 // _logger.LogInformation(
-                //     "Eliminacion de notificaciones completada a las {Time}. Intervalo: {Interval}. Total eliminadas: {TotalDeleted}. \n \t Proxima ejecucion: {NextExecution}.", 
-                //     DateTimeOffset.Now, 
-                //     _interval, 
-                //     _totalDeleted, 
+                //     "Eliminacion de notificaciones completada a las {Time}. Intervalo: {Interval}. Total eliminadas: {TotalDeleted}. \n \t Proxima ejecucion: {NextExecution}.",
+                //     DateTimeOffset.Now,
+                //     _interval,
+                //     _totalDeleted,
                 //     _nextExecution.ToString("yyyy-MM-dd HH:mm:ss")
                 // );
+
+                _logger.LogInformation("ClearNotificationsWorker finished.");
             }
             catch (Exception ex)
             {
-                _logger.LogInformation(ex, "Error occurred while clearing notifications.");   
+                _logger.LogInformation(ex, "Error occurred while clearing notifications.");
+                _logger.LogInformation("ClearNotificationsWorker finished.");
             }
 
             await Task.Delay(_interval, stoppingToken);

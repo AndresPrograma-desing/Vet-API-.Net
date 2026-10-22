@@ -121,6 +121,8 @@ namespace vet_api_Net.Worker
             {
                 try
                 {
+                    _logger.LogInformation("DeleteConsultaPdfWorker started.");
+
                     var webRoot = _env?.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
                     var dir = Path.Combine(webRoot, "consultas");
 
@@ -180,6 +182,8 @@ namespace vet_api_Net.Worker
                             }
                         }
                     }
+
+                    _logger.LogInformation("DeleteConsultaPdfWorker finished.");
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
@@ -187,6 +191,7 @@ namespace vet_api_Net.Worker
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error al escanear y eliminar PDFs de consultas expirados.");
+                    _logger.LogInformation("DeleteConsultaPdfWorker finished.");
                 }
 
                 try
