@@ -92,6 +92,8 @@ public class VaccinationReminderWorker : BackgroundService
 
     private async Task ProcessRemindersAsync(CancellationToken stoppingToken)
     {
+        _logger.LogInformation("VaccinationReminderWorker started.");
+
         using var scope = _serviceProvider.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPetVaccinationRepository>();
         var emailSenderService = scope.ServiceProvider.GetRequiredService<IEmailSenderService>();
@@ -113,7 +115,11 @@ public class VaccinationReminderWorker : BackgroundService
             ? await repository.GetDueForDayBeforeReminderAsync(dayBeforeTarget)
             : [];
 
-        if (due.Count == 0 && dueDayBefore.Count == 0) return;
+        if (due.Count == 0 && dueDayBefore.Count == 0)
+        {
+            _logger.LogInformation("VaccinationReminderWorker finished.");
+            return;
+        }
 
         var emailTemplate = await templateRepository.GetTemplateByTypeAsync(templatesHTML.VaccinePets ?? "VaccinePets");
 
@@ -169,6 +175,8 @@ public class VaccinationReminderWorker : BackgroundService
         }
 
         await repository.SaveChangesAsync();
+
+        _logger.LogInformation("VaccinationReminderWorker finished.");
     }
 
     private static async Task SendVaccinationReminderAsync(

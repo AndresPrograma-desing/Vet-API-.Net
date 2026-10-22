@@ -102,6 +102,8 @@ namespace vet_api_Net.Worker
             {
                 try
                 {
+                    _logger.LogInformation("DeleteReportWorker started.");
+
                     using (var scope = _services.CreateScope())
                     {
                         var workerConfigRepository = scope.ServiceProvider.GetRequiredService<IWorkerConfigRepository>();
@@ -154,14 +156,17 @@ namespace vet_api_Net.Worker
                             await reportRepository.SaveChangesAsync(stoppingToken);
                         }
                     }
+
+                    _logger.LogInformation("DeleteReportWorker finished.");
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
- 
+
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error crítico en el ciclo de DeleteReportWorker");
+                    _logger.LogInformation("DeleteReportWorker finished.");
                 }
  
                 try
