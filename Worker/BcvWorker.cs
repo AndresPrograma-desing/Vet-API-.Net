@@ -57,6 +57,8 @@ public class BcvWorker : BackgroundService
 
             try
             {
+                _logger.LogInformation("BcvWorker started.");
+
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     var scraper = scope.ServiceProvider.GetRequiredService<IBcvScraper>();
@@ -119,10 +121,13 @@ public class BcvWorker : BackgroundService
                         _logger.LogWarning("El scraper devolvió un valor inválido o nulo. No se actualizará la base de datos. Verifique la conexión o el sitio del BCV.");
                     }
                 }
+
+                _logger.LogInformation("BcvWorker finished.");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error crítico en el BcvWorker.");
+                _logger.LogInformation("BcvWorker finished.");
             }
 
             string cronExpression = settings.GetValue<string>("CronExpression", "0 9,17 * * *");

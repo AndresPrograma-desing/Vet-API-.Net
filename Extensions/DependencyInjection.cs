@@ -404,6 +404,7 @@ public static class DependencyInjection
         services.AddScoped<IImageConversionUtilities, ImageConversionUtilities>();
         services.AddHttpClient<IProfilePdfUtilities, ProfilePdfUtilities>();
         services.AddScoped<IVaccinationCertificatePdfUtilities, VacunaCertifyPdfUtilities>();
+        services.AddScoped<IHistoriaClinicaPdfUtilities, HistoriaClinicaPdfUtilities>();
         services.AddScoped<IUserScopeResolver, UserScopeResolver>();
 
         // Seguridad de datos

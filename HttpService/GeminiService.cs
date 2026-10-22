@@ -20,6 +20,9 @@ namespace vet_api_Net.HttpServices;
 
 public class GeminiService : IGeminiService
 {
+    private const int MaxUnavailableRetries = 3;
+    private static readonly TimeSpan UnavailableRetryDelay = TimeSpan.FromSeconds(5);
+
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IGeminiApiKeySelector _keySelector;
     private readonly GeminiOptions _options;
@@ -49,6 +52,7 @@ public class GeminiService : IGeminiService
         var prompt = BuildPrompt(pacientes);
 
         var attemptedKeyIds = new HashSet<int>();
+        var unavailableRetries = 0;
 
         while (true)
         {
@@ -93,6 +97,15 @@ public class GeminiService : IGeminiService
             {
                 _logger.LogWarning("Credencial de Gemini {CredentialId} agotó su cuota, se intentará con la siguiente disponible.", credential.Id);
                 await _keySelector.MarkExhaustedAsync(credential.Id);
+                continue;
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable && unavailableRetries < MaxUnavailableRetries)
+            {
+                unavailableRetries++;
+                attemptedKeyIds.Remove(credential.Id);
+                _logger.LogWarning("Gemini respondió 503 (sobrecarga), reintento {Retry}/{MaxRetries} en {DelaySeconds}s.", unavailableRetries, MaxUnavailableRetries, UnavailableRetryDelay.TotalSeconds);
+                await Task.Delay(UnavailableRetryDelay);
                 continue;
             }
 

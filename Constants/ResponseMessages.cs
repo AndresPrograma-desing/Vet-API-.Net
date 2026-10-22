@@ -196,7 +196,7 @@ namespace vet_api_Net.Constants
     public static class ResponseMessagesClientAuth
     {
         public const string RequiredIdentifier = "La cédula o el correo electrónico son requeridos.";
-        public const string ClientNotFound = "No se encontró un cliente con esos datos.";
+        public const string ClientNotFound = "Revisa que el dato enviado sea correcto.";
         public const string ErrorRequestingCode = "Hubo un error, intentalo mas tarde.";
         public const string CodeSentSuccess = "Código de acceso enviado con éxito a su correo registrado.";
         public const string RequiredCode = "El código de verificación es requerido.";

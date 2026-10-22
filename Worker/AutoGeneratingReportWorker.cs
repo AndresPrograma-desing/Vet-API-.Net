@@ -42,6 +42,7 @@ namespace vet_api_Net.Worker
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error en AutoGenerateReportWorker");
+                    _logger.LogInformation("AutoGenerateReportWorker finished.");
                 }
 
                 try
@@ -67,6 +68,8 @@ namespace vet_api_Net.Worker
 
         private async Task GenerateReportAsync()
         {
+            _logger.LogInformation("AutoGenerateReportWorker started.");
+
             using var scope = _services.CreateScope();
             var reportService = scope.ServiceProvider.GetRequiredService<IReportSystemService>();
             var notificationsPushService = scope.ServiceProvider.GetRequiredService<INotificationsPushService>();
@@ -84,6 +87,7 @@ namespace vet_api_Net.Worker
             };
             await notificationsPushService.SendNotificationAsync(data);
             _logger.LogInformation("Reporte automático generado con éxito.");
+            _logger.LogInformation("AutoGenerateReportWorker finished.");
         }
 
         private static TimeSpan? ParseInterval(int value, string? unit)

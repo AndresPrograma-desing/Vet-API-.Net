@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -11,6 +13,7 @@ using vet_api_Net.Constants;
 using vet_api_Net.Routes;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Interfaze.Services.Clients;
+using vet_api_Net.Interfaze.Utilities;
 
 namespace vet_api_Net.Controllers;
 
@@ -23,23 +26,29 @@ public class ClientAuthController : ControllerBase
     private readonly IClientService _clientService;
     private readonly ICitasRequestService _citasRequestService;
     private readonly IHistoriaClinicaService _historiaClinicaService;
+    private readonly IHistoriaClinicaPdfUtilities _historiaClinicaPdfUtilities;
     private readonly IClientPetService _clientPetService;
     private readonly INotificationService _notificationService;
+    private readonly IWebHostEnvironment _env;
 
     public ClientAuthController(
         IClientAuthService clientAuthService,
         IClientService clientService,
         ICitasRequestService citasRequestService,
         IHistoriaClinicaService historiaClinicaService,
+        IHistoriaClinicaPdfUtilities historiaClinicaPdfUtilities,
         IClientPetService clientPetService,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IWebHostEnvironment env)
     {
         _clientAuthService = clientAuthService;
         _clientService = clientService;
         _citasRequestService = citasRequestService;
         _historiaClinicaService = historiaClinicaService;
+        _historiaClinicaPdfUtilities = historiaClinicaPdfUtilities;
         _clientPetService = clientPetService;
         _notificationService = notificationService;
+        _env = env;
     }
 
     private int? GetClientId()
@@ -270,5 +279,39 @@ public class ClientAuthController : ControllerBase
         }
 
         return Ok(result);
+    }
+
+    [HttpGet(Endpoints.ClientAuth.MeHistorialPdf)]
+    [Authorize(Roles = Roles.Cliente)]
+    public async Task<IActionResult> MeHistorialPdf([FromRoute] int mascotaId)
+    {
+        var clientId = GetClientId();
+        if (clientId == null) return Unauthorized();
+
+        var mascotas = await _clientService.GetClientMascotasAsync(clientId.Value);
+        if (!mascotas.Exists(m => m.Id == mascotaId))
+        {
+            return Forbid();
+        }
+
+        try
+        {
+            var historia = await _historiaClinicaService.GetHistoriaClinicaByMascotaIdAsync(mascotaId);
+            if (historia == null)
+            {
+                return NotFound(new { message = ResponseMessagesHistoriaClinica.HistoriaClinicaNotFound });
+            }
+
+            var webRoot = _env?.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+            var fileBytes = _historiaClinicaPdfUtilities.GenerateHistoriaClinicaPdf(historia, webRoot);
+            var fileName = _historiaClinicaPdfUtilities.BuildFileName(historia);
+
+            return File(fileBytes, "application/pdf", fileName);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
+        }
     }
 }

@@ -94,6 +94,8 @@ public class HistoriaClinicaSummaryWorker : BackgroundService
 
     private async Task ProcessPendingSummariesAsync(CancellationToken stoppingToken)
     {
+        _logger.LogInformation("HistoriaClinicaSummaryWorker started.");
+
         using var scope = _serviceProvider.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IHistoriaClinicaRepository>();
         var geminiService = scope.ServiceProvider.GetRequiredService<IGeminiService>();
@@ -105,6 +107,7 @@ public class HistoriaClinicaSummaryWorker : BackgroundService
         if (pendingMascotas.Count < batchMinSize)
         {
             _logger.LogInformation("Resúmenes clínicos pendientes: {Count}/{BatchMinSize}. Se espera al próximo ciclo para acumular el lote mínimo.", pendingMascotas.Count, batchMinSize);
+            _logger.LogInformation("HistoriaClinicaSummaryWorker finished.");
             return;
         }
 
@@ -154,6 +157,7 @@ public class HistoriaClinicaSummaryWorker : BackgroundService
         catch (Exception ex)
         {
             _logger.LogError(ex, "No se pudo generar el lote de resúmenes clínicos con Gemini. Se reintentará en el próximo ciclo.");
+            _logger.LogInformation("HistoriaClinicaSummaryWorker finished.");
             return;
         }
 
@@ -190,5 +194,7 @@ public class HistoriaClinicaSummaryWorker : BackgroundService
         }
 
         await repository.SaveChangesAsync();
+
+        _logger.LogInformation("HistoriaClinicaSummaryWorker finished.");
     }
 }

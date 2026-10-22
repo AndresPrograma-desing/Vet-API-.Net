@@ -24,6 +24,8 @@ public class PdfController : ControllerBase
     private readonly IWebHostEnvironment _env;
     private readonly IPetVaccinationService _petVaccinationService;
     private readonly IVaccinationCertificatePdfUtilities _vaccinationCertificatePdfUtilities;
+    private readonly IHistoriaClinicaService _historiaClinicaService;
+    private readonly IHistoriaClinicaPdfUtilities _historiaClinicaPdfUtilities;
 
     public PdfController(
         IConsultasService consultasService,
@@ -33,7 +35,9 @@ public class PdfController : ControllerBase
         IMoneyTypeService moneyTypeService,
         IWebHostEnvironment env,
         IPetVaccinationService petVaccinationService,
-        IVaccinationCertificatePdfUtilities vaccinationCertificatePdfUtilities)
+        IVaccinationCertificatePdfUtilities vaccinationCertificatePdfUtilities,
+        IHistoriaClinicaService historiaClinicaService,
+        IHistoriaClinicaPdfUtilities historiaClinicaPdfUtilities)
     {
         _consultasService = consultasService;
         _consultaPdfUtilities = consultaPdfUtilities;
@@ -43,6 +47,8 @@ public class PdfController : ControllerBase
         _env = env;
         _petVaccinationService = petVaccinationService;
         _vaccinationCertificatePdfUtilities = vaccinationCertificatePdfUtilities;
+        _historiaClinicaService = historiaClinicaService;
+        _historiaClinicaPdfUtilities = historiaClinicaPdfUtilities;
     }
 
     [HttpGet(Endpoints.PdfController.DownloadConsulta)]
@@ -106,6 +112,27 @@ public class PdfController : ControllerBase
 
             var fileBytes = _vaccinationCertificatePdfUtilities.GenerateCarnetPdf(carnet, webRoot);
             var fileName = _vaccinationCertificatePdfUtilities.BuildFileName(carnet);
+
+            return File(fileBytes, "application/pdf", fileName);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
+        }
+    }
+
+    [HttpGet(Endpoints.PdfController.DownloadHistoriaClinica)]
+    public async Task<IActionResult> DownloadHistoriaClinicaPdf(int mascotaId)
+    {
+        try
+        {
+            var historia = await _historiaClinicaService.GetHistoriaClinicaByMascotaIdAsync(mascotaId);
+            if (historia == null) return NotFound(new { message = ResponseMessagesHistoriaClinica.NotFound });
+
+            var webRoot = _env?.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+            var fileBytes = _historiaClinicaPdfUtilities.GenerateHistoriaClinicaPdf(historia, webRoot);
+            var fileName = _historiaClinicaPdfUtilities.BuildFileName(historia);
 
             return File(fileBytes, "application/pdf", fileName);
         }
