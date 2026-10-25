@@ -332,6 +332,7 @@ public static class DependencyInjection
         services.AddScoped<IPetsRepository, PetsRepository>();
         services.AddScoped<IPermissionDefinitionRepository, PermissionDefinitionRepository>();
         services.AddScoped<IIntegrationCredentialRepository, IntegrationCredentialRepository>();
+        services.AddScoped<IWorkerProcessEventRepository, WorkerProcessEventRepository>();
 
         // Servicios de la Aplicación
         services.AddScoped<IUserService, UserService>();
@@ -374,6 +375,7 @@ public static class DependencyInjection
         services.AddScoped<IPetVaccinationService, PetVaccinationService>();
         services.AddScoped<IWorkerConfigService, WorkerConfigService>();
         services.AddScoped<IIntegrationCredentialService, IntegrationCredentialService>();
+        services.AddScoped<IWorkerProcessEventService, WorkerProcessEventService>();
 
         var mocksOptions = configuration.GetSection(MocksOptions.SectionName).Get<MocksOptions>() ?? new MocksOptions();
         if (mocksOptions.Gemini)
@@ -384,7 +386,7 @@ public static class DependencyInjection
         {
             services.AddScoped<IGeminiService, GeminiService>();
         }
-        services.AddHttpClient<IEmailSenderService, vet_api_Net.HttpServices.ResendEmailService>()
+        services.AddHttpClient<IEmailSenderService, vet_api_Net.HttpServices.ContextHubEmailService>()
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {
                 ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
@@ -406,6 +408,7 @@ public static class DependencyInjection
         services.AddScoped<IVaccinationCertificatePdfUtilities, VacunaCertifyPdfUtilities>();
         services.AddScoped<IHistoriaClinicaPdfUtilities, HistoriaClinicaPdfUtilities>();
         services.AddScoped<IUserScopeResolver, UserScopeResolver>();
+        services.AddScoped<IProcessEventUtilities, ProcessEventUtilities>();
 
         // Seguridad de datos
         services.AddScoped<ILoginSecurity, LoginSecurity>();
@@ -420,6 +423,7 @@ public static class DependencyInjection
         services.AddHostedService<ClearNotificationsWorker>();
         services.AddHostedService<VaccinationReminderWorker>();
         services.AddHostedService<HistoriaClinicaSummaryWorker>();
+        services.AddHostedService<ProcessEventsWorker>();
 
         // Clientes HTTP Externos (BCV)
         services.AddHttpClient("BcvClient", client =>

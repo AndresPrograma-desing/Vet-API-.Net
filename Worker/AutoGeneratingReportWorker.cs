@@ -2,6 +2,7 @@ using DTOs;
 using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaze.Utilities;
 
 //Describe: Background service que genera periódicamente el reporte completo del sistema (clientes, mascotas, productos, facturas, usuarios, citas, consultas, movimientos de inventario y un resumen de KPIs) y notifica al staff admin. La habilitación y el intervalo de ejecución son configurables desde la tabla worker_configs (fila "AutoGenerateReportWorker", editable desde el front vía WorkerConfigController), con appsettings.json como valores por defecto si no hay fila en la BD.
 namespace vet_api_Net.Worker
@@ -42,6 +43,19 @@ namespace vet_api_Net.Worker
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error en AutoGenerateReportWorker");
+
+                    using (var errorScope = _services.CreateScope())
+                    {
+                        var processEventUtilities = errorScope.ServiceProvider.GetRequiredService<IProcessEventUtilities>();
+                        await processEventUtilities.RegisterErrorAsync(new RegisterProcessEventDTO
+                        {
+                            NameEvent = WorkerNames.AutoGenerateReportWorker,
+                            TypeEvent = ProcessEventTypes.Error,
+                            Title = "Fallo al generar el reporte automático del sistema",
+                            ErrorMessage = ex.Message
+                        });
+                    }
+
                     _logger.LogInformation("AutoGenerateReportWorker finished.");
                 }
 

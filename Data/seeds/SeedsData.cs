@@ -1028,9 +1028,9 @@ namespace vet_api_Net.Data.seeds
                     FrontendUrl = "https://happy-pets-web.vercel.app",
                     BackendExternalUrl = "https://g27frlv5-5168.use2.devtunnels.ms/",
                     BcvApiUrl = "https://www.bcv.org.ve",
-                    ResendApiUrl = "https://api.resend.com/emails",
-                    ResendApiKey = "re_8ihXsxrL_NRxgtRcoyqjou3J75MjbJdFo",// Ya no esta funcional
-                    ResendFromEmail = "HappyPets <[EMAIL_ADDRESS]>",
+                    EmailProviderApiUrl = "https://context-hub-memory.vercel.app",
+                    EmailProviderApiKey = string.Empty,
+                    EmailProviderFromEmail = "HappyPets <[EMAIL_ADDRESS]>",
                     LastUpdated = DateTime.UtcNow
                 };
                 context.SystemConfigs.Add(systemConfig);

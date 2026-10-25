@@ -64,7 +64,7 @@ public class TemplatesHTML
     public string? ConfirmChangePassPage { get; set; }
     public string? BirthdayPets { get; set; }
     public string? VaccinePets { get; set; }
-    
+    public string? Receta { get; set; }
 }
 
 public class SupabaseSettingsOptions
@@ -98,6 +98,7 @@ public class ContextHubOptions
     public string ClientKey { get; set; } = string.Empty;
     public string ClientSecret { get; set; } = string.Empty;
     public string? AnonKey { get; set; }
+    public string MailsApiKey { get; set; } = string.Empty;
 }
 
 public class GeminiOptions

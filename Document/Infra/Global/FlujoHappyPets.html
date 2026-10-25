@@ -1,0 +1,950 @@
+<title>Visión General Happy Pets</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: cuaderno de campo con lomo de pestañas fijo a la izquierda (desktop) / barra horizontal pegajosa arriba (mobile); cada pestaña abre una "hoja" con el contenido completo de esa sección del documento */
+:root {
+  --bg: #f6f3ec;
+  --surface: #ffffff;
+  --surface-sunken: #ece6d8;
+  --ink: #1f2a22;
+  --ink-soft: #52614f;
+  --accent: #0f6b4c;
+  --accent-soft: #d8ecd9;
+  --rail: #c9bfa2;
+  --warn: #b5541f;
+  --code-bg: #182018;
+  --code-fg: #d9e8d4;
+  --code-dim: #6f8a6a;
+  --shadow: 0 1px 2px rgba(31,42,34,0.06), 0 8px 24px -12px rgba(31,42,34,0.18);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11140f; --surface: #1a1f17; --surface-sunken: #20271c;
+    --ink: #eef1e8; --ink-soft: #a9b8a3; --accent: #5fd39a; --accent-soft: #1d3328;
+    --rail: #3a4232; --warn: #e08a56; --code-bg: #0c100b; --code-fg: #c9e2c2; --code-dim: #5c7355;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px -12px rgba(0,0,0,0.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11140f; --surface: #1a1f17; --surface-sunken: #20271c;
+  --ink: #eef1e8; --ink-soft: #a9b8a3; --accent: #5fd39a; --accent-soft: #1d3328;
+  --rail: #3a4232; --warn: #e08a56; --code-bg: #0c100b; --code-fg: #c9e2c2; --code-dim: #5c7355;
+  --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px -12px rgba(0,0,0,0.6);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { background: var(--bg); }
+body {
+  color: var(--ink);
+  font-family: 'Public Sans', system-ui, -apple-system, sans-serif;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0;
+  min-height: 100%;
+}
+h1, h2, h3 { font-family: 'Fraunces', serif; font-weight: 600; text-wrap: balance; letter-spacing: -0.01em; margin: 0; }
+p { line-height: 1.6; margin: 0; }
+code { font-family: 'JetBrains Mono', monospace; font-size: 0.86em; background: var(--surface-sunken); padding: 0.1em 0.4em; border-radius: 5px; }
+a { color: var(--accent); }
+
+/* ---- shell ---- */
+.shell {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 28px;
+  padding-block: 20px 60px;
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; }
+}
+
+/* ---- masthead (inside content, shown once at top) ---- */
+.masthead {
+  display: flex; flex-direction: column; gap: 6px;
+  padding-bottom: 18px; margin-bottom: 18px;
+  border-bottom: 1px solid var(--rail);
+}
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 8px;
+}
+h1 { font-size: clamp(1.5rem, 4.5vw, 2.1rem); }
+.sub { color: var(--ink-soft); font-size: 0.92rem; max-width: 68ch; }
+
+/* ---- nav (desktop sidebar / mobile horizontal) ---- */
+nav.toc {
+  position: sticky;
+  top: max(16px, env(safe-area-inset-top, 0px));
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 10px;
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+nav.toc .toc-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-soft); padding: 6px 10px 8px;
+}
+nav.toc button {
+  all: unset;
+  display: flex; align-items: center; gap: 9px;
+  font-family: 'Public Sans', sans-serif; font-size: 0.85rem; font-weight: 500;
+  color: var(--ink-soft);
+  padding: 9px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+}
+nav.toc button .num {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--ink-soft);
+  width: 20px; flex-shrink: 0;
+}
+nav.toc button:hover { background: var(--surface-sunken); }
+nav.toc button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+nav.toc button.active { background: var(--accent-soft); color: var(--ink); font-weight: 700; }
+nav.toc button.active .num { color: var(--accent); }
+
+@media (max-width: 860px) {
+  nav.toc {
+    position: sticky;
+    top: 0;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 4px;
+    padding: 8px;
+    margin-left: calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
+    margin-right: calc(-1 * max(16px, env(safe-area-inset-right, 0px)));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    border-radius: 0;
+    z-index: 20;
+    scrollbar-width: thin;
+  }
+  nav.toc .toc-label { display: none; }
+  nav.toc button { white-space: nowrap; flex-shrink: 0; }
+}
+
+/* ---- sheets (sections) ---- */
+.sheet { display: none; flex-direction: column; gap: 18px; animation: fadeIn 0.25s ease; }
+.sheet.active { display: flex; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .sheet { animation: none; } }
+
+.card {
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 18px 20px;
+}
+.card h2 {
+  font-size: 1.15rem;
+  margin-bottom: 10px;
+  display: flex; align-items: baseline; gap: 10px;
+}
+.card h2 .tag {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--accent); background: var(--accent-soft);
+  padding: 2px 8px; border-radius: 999px; flex-shrink: 0;
+}
+.card h3 { font-size: 0.98rem; margin: 14px 0 6px; }
+.card p + p, .card p + h3, .card ul + p { margin-top: 10px; }
+.card ul { margin: 6px 0 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 6px; }
+.card li { line-height: 1.55; }
+.card .muted { color: var(--ink-soft); font-size: 0.92rem; }
+
+.badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.role-pill {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--surface-sunken); border-radius: 999px;
+  padding: 6px 12px 6px 8px; font-size: 0.82rem; font-weight: 600;
+}
+.role-pill .ic { font-size: 1rem; }
+
+pre {
+  margin: 0; background: var(--code-bg); border-radius: 10px; padding: 12px 14px;
+  overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+  line-height: 1.55; color: var(--code-fg); white-space: pre;
+}
+pre .cmt { color: var(--code-dim); }
+.file-tag {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--ink-soft);
+  margin-bottom: 4px; display: block;
+}
+
+.diagram {
+  background: var(--surface-sunken); border-radius: 12px; padding: 14px;
+  overflow-x: auto;
+}
+.diagram pre { background: transparent; padding: 0; color: var(--ink); font-size: 0.74rem; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .diagram pre { color: var(--code-fg); } }
+:root[data-theme="dark"] .diagram pre { color: var(--code-fg); }
+
+.note {
+  font-size: 0.85rem; color: var(--warn);
+  background: color-mix(in srgb, var(--warn) 14%, transparent);
+  border-radius: 8px; padding: 9px 11px; line-height: 1.45;
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rail); vertical-align: top; }
+th { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
+.table-wrap { overflow-x: auto; }
+
+.chips { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.chip {
+  display: flex; gap: 10px; align-items: flex-start;
+  background: var(--surface-sunken); border-radius: 10px; padding: 9px 12px;
+  font-size: 0.86rem; line-height: 1.5;
+}
+.chip .ic { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+.chip code { background: none; padding: 0; }
+
+.linkgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin-top: 8px; }
+.linkgrid .item {
+  background: var(--surface-sunken); border-radius: 10px; padding: 10px 12px;
+  font-size: 0.82rem; line-height: 1.4;
+}
+.linkgrid .item .q { font-weight: 700; display: block; margin-bottom: 3px; }
+.linkgrid .item code { display: inline-block; margin-top: 2px; }
+
+/* ---- combo (summary + detail) used across sections ---- */
+.combo { display: flex; flex-direction: column; gap: 6px; }
+.combo-head { display: flex; align-items: center; gap: 10px; }
+.combo-ic { width: 32px; height: 32px; border-radius: 9px; background: var(--accent-soft); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+
+/* ---- simulator (section "4. flujo") ---- */
+.deck { display: flex; flex-direction: column; gap: 14px; }
+.scenario-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.scenario-icon {
+  width: 42px; height: 42px; border-radius: 12px; background: var(--accent-soft);
+  display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+}
+.scenario-text { flex: 1; min-width: 0; }
+.scenario-text .who { font-weight: 700; font-size: 0.98rem; }
+.scenario-text .what { color: var(--ink-soft); font-size: 0.86rem; }
+.transport { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.btn {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; border: none; border-radius: 10px;
+  padding: 9px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+.btn:active { transform: scale(0.97); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn-primary { background: var(--accent); color: var(--surface); font-weight: 700; }
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-ghost { background: var(--surface-sunken); color: var(--ink); }
+.btn-ghost:hover { filter: brightness(0.96); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn-ghost:hover { filter: brightness(1.15); } }
+:root[data-theme="dark"] .btn-ghost:hover { filter: brightness(1.15); }
+.progress-track { flex: 1; min-width: 120px; height: 6px; border-radius: 999px; background: var(--surface-sunken); position: relative; overflow: hidden; }
+.progress-fill { position: absolute; inset: 0 auto 0 0; width: 0%; background: var(--accent); border-radius: 999px; transition: width 0.4s cubic-bezier(.4,0,.2,1); }
+.step-counter { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; color: var(--ink-soft); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.rail-outer { position: relative; padding-left: 34px; }
+.rail-line { position: absolute; left: 15px; top: 10px; bottom: 10px; width: 3px; background: var(--rail); border-radius: 999px; }
+.rail-line-fill { position: absolute; left: 15px; top: 10px; width: 3px; background: var(--accent); border-radius: 999px; height: 0%; transition: height 0.5s cubic-bezier(.4,0,.2,1); }
+.station { position: relative; margin-bottom: 10px; }
+.station:last-child { margin-bottom: 0; }
+.station-dot {
+  position: absolute; left: -34px; top: 18px; width: 17px; height: 17px; border-radius: 50%;
+  background: var(--surface); border: 3px solid var(--rail);
+  transition: border-color 0.3s ease, background 0.3s ease, transform 0.3s ease; z-index: 2;
+}
+.station.done .station-dot { border-color: var(--accent); background: var(--accent); }
+.station.active .station-dot { border-color: var(--accent); background: var(--surface); transform: scale(1.25); box-shadow: 0 0 0 5px var(--accent-soft); }
+.station-card {
+  background: var(--surface); border-radius: 14px; box-shadow: var(--shadow); padding: 14px 16px;
+  cursor: pointer; border: 1.5px solid transparent;
+  transition: border-color 0.25s ease, opacity 0.25s ease, transform 0.25s ease; opacity: 0.55;
+}
+.station.done .station-card { opacity: 0.82; }
+.station.active .station-card { opacity: 1; border-color: var(--accent); transform: translateX(2px); }
+.station-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.station-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.station-layer {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-soft); padding: 2px 8px; border-radius: 999px; flex-shrink: 0;
+}
+.station-side { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--ink-soft); margin-left: auto; }
+.station-title { font-weight: 700; font-size: 0.95rem; margin: 4px 0 2px; }
+.station-file { font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: var(--ink-soft); }
+.station-desc { display: none; color: var(--ink-soft); font-size: 0.86rem; line-height: 1.5; margin-top: 8px; }
+.station.active .station-desc { display: block; }
+.code-panel { display: none; margin-top: 10px; }
+.station.active .code-panel { display: block; }
+.rule-note { display: none; margin-top: 10px; }
+.station.active .rule-note.show { display: block; }
+
+.finale { background: var(--accent-soft); border-radius: 16px; padding: 18px 20px; display: none; gap: 4px; flex-direction: column; }
+.finale.show { display: flex; }
+.finale .title { font-weight: 700; font-size: 1rem; }
+.finale .body { color: var(--ink-soft); font-size: 0.88rem; line-height: 1.5; }
+
+footer { text-align: center; font-size: 0.74rem; color: var(--ink-soft); padding: 18px 0 10px; }
+footer a { text-decoration: none; }
+
+@media (max-width: 480px) {
+  .scenario-row { gap: 10px; }
+  .station-side { margin-left: 0; }
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Public+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<div class="shell">
+
+  <nav class="toc" id="toc" aria-label="Secciones del documento">
+    <div class="toc-label">En este documento</div>
+    <button data-target="s1"><span class="num">01</span>Qué es Happy Pets</button>
+    <button data-target="s2"><span class="num">02</span>Cómo se hablan</button>
+    <button data-target="s3"><span class="num">03</span>Capas y el ORM</button>
+    <button data-target="s4"><span class="num">04</span>Flujo paso a paso</button>
+    <button data-target="s5"><span class="num">05</span>Frontend: UI y componentes</button>
+    <button data-target="s6"><span class="num">06</span>Otros flujos</button>
+    <button data-target="s7"><span class="num">07</span>Dónde seguir leyendo</button>
+  </nav>
+
+  <main>
+    <div class="masthead">
+      <div class="eyebrow">🐾 happy pets &middot; visión general del sistema</div>
+      <h1>Cómo está hecho Happy Pets, de punta a punta</h1>
+      <p class="sub">Para alguien que nunca tocó este código: qué hace el sistema, cómo se hablan el backend (<code>vet-api-Net</code>) y el frontend (<code>vet-system-WEB</code>), y cómo viaja un dato real desde que se pide hasta que se pinta en pantalla. No es referencia exhaustiva — al final hay un mapa a la documentación completa de cada módulo.</p>
+    </div>
+
+    <!-- ============ SECCIÓN 1 ============ -->
+    <section class="sheet" id="s1">
+      <div class="card">
+        <h2><span class="tag">01</span>Qué es Happy Pets</h2>
+        <p>Happy Pets es el sistema de gestión de una clínica veterinaria, dividido en <strong>dos proyectos separados</strong> que se comunican por HTTP/JSON:</p>
+        <div class="chips">
+          <div class="chip"><span class="ic">⚙️</span><span><code>vet-api-Net</code> — el backend. API REST en ASP.NET Core (.NET 10) que contiene toda la lógica de negocio y la base de datos.</span></div>
+          <div class="chip"><span class="ic">🖥️</span><span><code>vet-system-WEB</code> — el frontend. Aplicación React (Vite) que consume esa API y la presenta como un panel según el rol del usuario.</span></div>
+        </div>
+        <p class="muted" style="margin-top:12px">No hay lógica de negocio real en el frontend: calcula, valida formularios y pinta pantallas, pero las reglas (¿se puede agendar esta cita?, ¿hay stock?, ¿cuánto es la factura?) viven siempre en el backend.</p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Roles del sistema</h3>
+        <div class="badge-row">
+          <div class="role-pill"><span class="ic">🛠️</span>Administrador</div>
+          <div class="role-pill"><span class="ic">🩺</span>Doctor</div>
+          <div class="role-pill"><span class="ic">🗂️</span>Secretaria</div>
+          <div class="role-pill"><span class="ic">🐶</span>Portal de Clientes</div>
+        </div>
+        <ul style="margin-top:14px">
+          <li><strong>Administrador:</strong> usuarios, métricas financieras, inventario, configuración global.</li>
+          <li><strong>Doctor:</strong> agenda, consultas médicas, recetas, historial clínico, mensajería.</li>
+          <li><strong>Secretaria:</strong> agenda, alta rápida de clientes/mascotas, facturación, mensajería.</li>
+          <li><strong>Portal de Clientes</strong> (<code>/portal-cliente</code>): acceso público para que el dueño de la mascota consulte su información, sin rol operativo.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECCIÓN 2 ============ -->
+    <section class="sheet" id="s2">
+      <div class="card">
+        <h2><span class="tag">02</span>Las dos piezas y cómo se hablan</h2>
+        <div class="diagram">
+<pre>┌────────────────────────┐        HTTP (fetch) / JSON        ┌────────────────────────────┐
+│   vet-system-WEB        │ ───────────────────────────────▶ │       vet-api-Net            │
+│   (React + Vite)        │                                   │   (ASP.NET Core API)         │
+│   http://localhost:5173 │ ◀─────────────────────────────── │   http://localhost:5168       │
+└────────────────────────┘      respuesta JSON / archivo      └────────────────────────────┘
+                                                                        │
+                                                                        ▼
+                                                               PostgreSQL / MySQL</pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Puntos clave de esa comunicación</h3>
+        <div class="chips">
+          <div class="chip"><span class="ic">🔌</span><span><strong>Un único cliente HTTP en el frontend:</strong> todas las llamadas pasan por <code>request()</code> en <code>client.js</code>. Está prohibido usar <code>fetch</code> directo en componentes — siempre se agrega una función nueva en <code>src/services/api/index.js</code> y se consume desde un hook.</span></div>
+          <div class="chip"><span class="ic">🔑</span><span><strong>Autenticación JWT:</strong> al iniciar sesión, el backend devuelve un token. El frontend lo guarda (sessionStorage + localStorage, vía <code>storage.js</code>) y <code>client.js</code> lo inyecta como header <code>Authorization: Bearer ...</code>. Si el backend responde <code>401</code>, el cliente dispara <code>logout()</code> automáticamente.</span></div>
+          <div class="chip"><span class="ic">🌐</span><span><strong>Mismo contrato, dos idiomas:</strong> el backend modela el dominio en <strong>español</strong> (<code>Mascota</code>, <code>Cita</code>, <code>Factura</code>) pero serializa los DTOs en <strong>snake_case</strong> vía <code>[JsonPropertyName]</code>. El frontend además tolera inconsistencias heredadas (<code>rol</code>/<code>role</code>, <code>contenido</code>/<code>content</code>) normalizándolas en la capa de servicios/hooks.</span></div>
+          <div class="chip"><span class="ic">📡</span><span><strong>Tiempo real:</strong> mensajería y notificaciones usan SignalR (WebSockets); varias pantallas (citas, facturación) además refrescan por <strong>polling</strong> periódico (<code>usePolling.js</code>).</span></div>
+          <div class="chip"><span class="ic">🧪</span><span><strong>Modo sin backend (Dummy Mode):</strong> el frontend puede simular todas las respuestas desde <code>src/dummy/db.json</code> sin tocar la red. Se activa con una clave en <code>localStorage</code> (<code>USE_DUMMY_DATA</code>).</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECCIÓN 3 ============ -->
+    <section class="sheet" id="s3">
+      <div class="card">
+        <h2><span class="tag">03</span>El flujo dentro de cada lado</h2>
+        <h3 style="margin-top:0">Backend: 3 capas estrictas</h3>
+        <div class="diagram"><pre>Controller  →  Service  →  Repository  →  AppDbContext (EF Core)  →  Base de datos</pre></div>
+        <ul style="margin-top:12px">
+          <li><strong>Controller:</strong> recibe el HTTP request, lee rutas desde <code>Constants/EndpointRoutes.cs</code>, delega al Service, traduce el resultado o la excepción a un código HTTP. Nunca toca la base de datos ni contiene reglas de negocio.</li>
+          <li><strong>Service:</strong> toda la lógica de negocio (¿el horario está libre?, ¿hay stock?, ¿cómo se calcula la factura?). Si algo viola una regla, lanza una excepción tipada que el Controller atrapa.</li>
+          <li><strong>Repository:</strong> el único lugar que conoce <code>AppDbContext</code>. Ahí van los <code>Where</code>/<code>OrderBy</code>/<code>Skip</code>/<code>Take</code> reales sobre <code>IQueryable</code>, para que EF Core los traduzca a SQL en vez de traer toda la tabla a memoria.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Cómo se consulta realmente la base: el ORM</h3>
+        <p>El Repository nunca escribe SQL a mano. Usa <strong>Entity Framework Core</strong>, un <strong>ORM</strong> (<em>Object-Relational Mapper</em>): traduce código C# (LINQ sobre <code>IQueryable&lt;T&gt;</code>) a SQL, y las filas que vuelven de la base en objetos C# otra vez. EF Core decide el SQL exacto según el motor configurado (PostgreSQL vía Npgsql, o MySQL vía Pomelo).</p>
+        <h3>Ejemplo real — <code>CitaRepository.GetPagedWithRelationsAsync</code></h3>
+        <span class="file-tag">vet-api-Net/Repository/CitaRepository.cs</span>
+        <pre>var query = _context.Citas
+    .Include(c => c.Mascota).ThenInclude(m => m.Cliente)
+    .Include(c => c.Mascota).ThenInclude(m => m.Especie)
+    .Include(c => c.Doctor)
+    .Include(c => c.Secretaria)
+    .Include(c => c.MetodoPago)
+    .AsQueryable();
+
+if (doctorId.HasValue)
+    query = query.Where(c => c.DoctorId == doctorId.Value);
+
+if (!allDates)
+{
+    var targetDate = (date ?? DateTime.Today).Date;
+    query = query.Where(c => c.FechaCita.Date == targetDate);
+}
+
+if (!string.IsNullOrWhiteSpace(status))
+    query = query.Where(c => c.Estado != null &amp;&amp; c.Estado.ToLower() == status.ToLower());
+
+return await query
+    .OrderByDescending(c => c.FechaCita)
+    .ThenByDescending(c => c.HoraCita)
+    .ToPagedResultAsync(pageNumber, pageSize); <span class="cmt">// aplica Skip/Take internamente</span></pre>
+        <ul style="margin-top:12px">
+          <li><strong><code>_context.Citas</code></strong> es un <code>DbSet&lt;Cita&gt;</code> — EF Core lo mapea a la tabla <code>Citas</code>. Todavía no toca la base: solo está <em>armando</em> la consulta (<code>IQueryable&lt;Cita&gt;</code>).</li>
+          <li><strong><code>.Include()</code> / <code>.ThenInclude()</code></strong> traen de una sola vez las relaciones (mascota, dueño, doctor...) — en SQL se traduce en <code>JOIN</code>, evitando el problema clásico de "N+1 queries".</li>
+          <li><strong><code>.Where(...)</code> encadenado</strong> se combina en una sola cláusula <code>WHERE ... AND ...</code> del SQL final.</li>
+          <li><strong><code>.OrderByDescending(...).ThenByDescending(...)</code></strong> se traduce a <code>ORDER BY fecha_cita DESC, hora_cita DESC</code>.</li>
+          <li><strong><code>ToPagedResultAsync(...)</code></strong> aplica <code>Skip</code>/<code>Take</code> (<code>OFFSET</code>/<code>LIMIT</code>) y calcula el <code>COUNT(*)</code> total. Recién ahí EF Core <em>ejecuta</em> la consulta.</li>
+        </ul>
+        <h3>El SQL que efectivamente se dispara (simplificado)</h3>
+        <pre>SELECT c.*, m.*, cl.*, e.*, d.*, s.*, mp.*
+FROM "Citas" c
+LEFT JOIN "Mascotas" m ON m."Id" = c."MascotaId"
+LEFT JOIN "Clientes" cl ON cl."Id" = m."ClienteId"
+LEFT JOIN "Especies" e ON e."Id" = m."EspecieId"
+LEFT JOIN "Usuarios" d ON d."Id" = c."DoctorId"
+LEFT JOIN "Usuarios" s ON s."Id" = c."SecretariaId"
+LEFT JOIN "MetodosPago" mp ON mp."Id" = c."MetodoPagoId"
+WHERE c."DoctorId" = @doctorId
+  AND c."Estado" ILIKE @status
+ORDER BY c."FechaCita" DESC, c."HoraCita" DESC
+OFFSET @skip LIMIT @pageSize;</pre>
+        <div class="note" style="margin-top:12px">⚠ <strong>Por qué esto va en el Repository y no en el Service:</strong> mientras la consulta sea un <code>IQueryable</code> (no "materializada" con <code>.ToListAsync()</code>), todo el filtrado se resuelve en la base de datos. Si se hiciera sobre una <code>List&lt;Cita&gt;</code> ya cargada en memoria, se estaría descargando toda la tabla para filtrarla en C# — mucho más lento a medida que crece. Regla del proyecto: <em>Where/OrderBy/Skip/Take siempre en el Repository sobre IQueryable</em> (CLAUDE.md §4.9).</div>
+        <p class="muted" style="margin-top:10px">Las migraciones (<code>Migrations/</code>) son la otra mitad del ORM: generan el <code>CREATE TABLE</code>/<code>ALTER TABLE</code> automáticamente a partir de los cambios en <code>Models/</code>, con <code>dotnet ef migrations add</code> + <code>dotnet ef database update</code>.</p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">El mismo ejemplo, sin ORM (SQL directo con ADO.NET)</h3>
+        <p class="muted">Así se vería la misma consulta escrita a mano con <code>NpgsqlCommand</code> — tal como se hacía antes de los ORMs. Nadie en este proyecto escribe código así; es solo referencia.</p>
+        <pre>using var connection = new NpgsqlConnection(connectionString);
+await connection.OpenAsync();
+
+var sql = @"
+    SELECT c.""Id"", c.""FechaCita"", c.""Estado"",
+           m.""Id"" AS mascota_id, m.""Nombre"" AS mascota_nombre,
+           cl.""Nombre"" AS cliente_nombre, d.""Nombre"" AS doctor_nombre
+    FROM ""Citas"" c
+    LEFT JOIN ""Mascotas"" m ON m.""Id"" = c.""MascotaId""
+    LEFT JOIN ""Clientes"" cl ON cl.""Id"" = m.""ClienteId""
+    LEFT JOIN ""Usuarios"" d ON d.""Id"" = c.""DoctorId""
+    WHERE (@doctorId IS NULL OR c.""DoctorId"" = @doctorId)
+    ORDER BY c.""FechaCita"" DESC
+    OFFSET @skip LIMIT @pageSize;
+";
+
+using var command = new NpgsqlCommand(sql, connection);
+command.Parameters.AddWithValue("doctorId", doctorId.HasValue ? (object)doctorId.Value : DBNull.Value);
+command.Parameters.AddWithValue("skip", (pageNumber - 1) * pageSize);
+
+var citas = new List&lt;Cita&gt;();
+using var reader = await command.ExecuteReaderAsync();
+while (await reader.ReadAsync())
+{
+    <span class="cmt">// Hay que mapear cada columna a mano, campo por campo</span>
+    citas.Add(new Cita {
+        Id = reader.GetInt32(reader.GetOrdinal("Id")),
+        Estado = reader.IsDBNull(reader.GetOrdinal("Estado")) ? null : reader.GetString(reader.GetOrdinal("Estado")),
+        Mascota = new Mascota { Nombre = reader.GetString(reader.GetOrdinal("mascota_nombre")) }
+    });
+}
+<span class="cmt">// Y aparte, otra query completa solo para el COUNT(*) del total...</span></pre>
+        <div class="table-wrap" style="margin-top:14px">
+          <table>
+            <tr><th></th><th>Sin ORM (ADO.NET)</th><th>Con ORM (EF Core)</th></tr>
+            <tr><td>El SQL</td><td>Se escribe a mano, como texto</td><td>Lo genera EF Core desde <code>.Where()</code>, <code>.Include()</code>, <code>.OrderBy()</code></td></tr>
+            <tr><td>Mapeo fila → objeto</td><td>Manual, columna por columna</td><td>Automático: devuelve <code>List&lt;Cita&gt;</code> con relaciones pobladas</td></tr>
+            <tr><td>Relaciones (JOIN)</td><td>Hay que escribirlos y mapear cada tabla</td><td><code>.Include().ThenInclude()</code> — EF Core arma el JOIN solo</td></tr>
+            <tr><td>Cambiar Postgres ↔ MySQL</td><td>Revisar sintaxis específica de cada motor</td><td>Automático según el proveedor configurado</td></tr>
+            <tr><td>Riesgo de SQL injection</td><td>Alto si se concatenan strings</td><td>Bajo por diseño: LINQ siempre parametriza</td></tr>
+            <tr><td>Cantidad de código</td><td>Mucho código repetitivo por entidad</td><td>Una línea de LINQ por consulta</td></tr>
+          </table>
+        </div>
+        <p class="muted" style="margin-top:10px">El ORM no es "magia": automatiza exactamente ese trabajo (escribir el SQL, enviarlo, leer el resultado, mapearlo a objetos) para no repetirlo a mano en cada Repository.</p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Frontend: hook → servicio API → componente</h3>
+        <div class="diagram"><pre>Componente (JSX)  →  Hook (src/hooks/*.js)  →  src/services/api/index.js  →  client.js  →  (red)</pre></div>
+        <ul style="margin-top:12px">
+          <li>El <strong>componente</strong> solo pinta UI y delega el fetch de datos a un <strong>hook</strong>.</li>
+          <li>El <strong>hook</strong> (ej. <code>useGetCitas</code>) maneja estado de carga/error y llama a una función de <strong>servicio</strong> (ej. <code>getCitas()</code>).</li>
+          <li>La función de <strong>servicio</strong>, en <code>src/services/api/index.js</code>, sabe el endpoint y los query params, pero delega el fetch real a <code>request()</code>.</li>
+          <li><code>client.js</code> es la única pieza que sabe de tokens, prefijos de ruta, manejo de 401 y parseo de la respuesta.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECCIÓN 4 — SIMULADOR ============ -->
+    <section class="sheet" id="s4">
+      <div class="card deck">
+        <h2 style="margin-bottom:0"><span class="tag">04</span>Ejemplo end-to-end: listar las citas de hoy</h2>
+        <p class="muted">Para que el flujo no quede abstracto, se recorre un caso real del código.</p>
+        <div class="scenario-row">
+          <div class="scenario-icon">📋</div>
+          <div class="scenario-text">
+            <div class="who">La secretaria abre la agenda del día</div>
+            <div class="what">La pantalla necesita la lista de citas — y dispara este viaje por ocho capas reales.</div>
+          </div>
+        </div>
+        <div class="transport">
+          <button class="btn btn-primary" id="playBtn" type="button">▶ Reproducir</button>
+          <button class="btn btn-ghost" id="prevBtn" type="button">◀ Atrás</button>
+          <button class="btn btn-ghost" id="nextBtn" type="button">Siguiente ▶</button>
+          <button class="btn btn-ghost" id="resetBtn" type="button">↺ Reiniciar</button>
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+          <div class="step-counter" id="stepCounter">0 / 8</div>
+        </div>
+      </div>
+
+      <div class="rail-outer">
+        <div class="rail-line"></div>
+        <div class="rail-line-fill" id="railFill"></div>
+        <div id="stations"></div>
+      </div>
+
+      <div class="finale" id="finale">
+        <div class="title">🏁 Llegada: la tabla de citas se pinta en pantalla</div>
+        <div class="body">Ocho capas, un solo viaje. El componente nunca supo de JWT, SQL ni JOINs — y el Repository nunca supo qué botón se tocó. Cada capa resolvió exactamente una cosa.</div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Resumen visual del ciclo completo</h3>
+        <div class="diagram"><pre>[Secretaria abre la agenda]
+        │
+        ▼
+Componente React ── useGetCitas() ──▶ api.getCitas() ──▶ client.js request()
+        │                                                        │
+        │                                             GET /api/Citas/requests
+        │                                                        ▼
+        │                                              CitasController (JWT, rol)
+        │                                                        │
+        │                                              CitasRequestService
+        │                                       (resuelve scope por rol, vence citas vencidas)
+        │                                                        │
+        │                                              CitasRepository (EF Core → SQL)
+        │                                                        │
+        │                                                    PostgreSQL
+        │                                                        │
+        │                                          JSON de vuelta (snake_case)
+        ▼                                                        │
+Hook normaliza nombres heterogéneos  ◀─────────────────────────────
+        │
+        ▼
+Tabla de citas en pantalla</pre></div>
+      </div>
+    </section>
+
+    <!-- ============ SECCIÓN 5 ============ -->
+    <section class="sheet" id="s5">
+      <div class="card">
+        <h2><span class="tag">05</span>Cómo arma la pantalla el frontend</h2>
+        <p>Más allá de llamar a la API, cada pantalla se construye combinando varias fuentes separadas — nunca escritas "a mano" dentro del JSX.</p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Colores y estilos → variables CSS + módulos CSS</h3>
+        <p>Todos los colores, sombras, radios y gradientes están centralizados como <strong>variables CSS</strong> en un único archivo:</p>
+        <span class="file-tag">vet-system-WEB/src/styles/variables.css</span>
+        <pre>:root {
+  --button-blue: linear-gradient(135deg, #0284c7, #0369a1);
+  --color-primary: rgb(23, 23, 255);
+  --color-danger: #ea1f1f;
+  --radius-md: 0.5rem;
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}</pre>
+        <p style="margin-top:10px">Ningún componente escribe un color literal en su JSX. Cada componente tiene su <strong><code>index.module.css</code></strong> que <em>consume</em> esas variables:</p>
+        <pre><span class="cmt">/* ejemplo de un .module.css cualquiera */</span>
+.button {
+  background: var(--button-blue);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}</pre>
+        <pre>import styles from './index.module.css';
+&lt;button className={styles.button}&gt;Guardar&lt;/button&gt;</pre>
+        <div class="note" style="margin-top:10px">⚠ Regla dura del proyecto: "no se permite CSS inline ni hardcodeado en JSX". Un color nuevo primero se define en <code>variables.css</code>.</div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Textos → archivos de constantes</h3>
+        <p>Ningún label, placeholder o mensaje se escribe como string literal en el JSX. Se centralizan en <code>src/constants/</code>:</p>
+        <span class="file-tag">vet-system-WEB/src/constants/TEXT.js</span>
+        <pre>export const TEXT_INVOICES_GESTION = {
+  gestioPagos: "Gestion de pagos",
+  paidtTotal: "Total pagado",
+  refreshButton: "Refrescar",
+  searchPlaceholder: "Buscar...",
+};</pre>
+        <pre>import { TEXT_INVOICES_GESTION } from '../../constants/TEXT';
+&lt;h2&gt;{TEXT_INVOICES_GESTION.gestioPagos}&lt;/h2&gt;</pre>
+        <p class="muted" style="margin-top:10px">Esto permite cambiar la redacción de toda la app desde un solo lugar, sin buscar el texto componente por componente.</p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Componentes → librería interna <code>anteriority-ui</code> primero</h3>
+        <p>Antes de construir un botón, input o modal desde cero, la regla es revisar el catálogo de <strong><code>anteriority-ui</code></strong> — la librería de diseño interna con ~50 componentes listos. Ejemplos reales:</p>
+        <pre><span class="cmt">// vet-system-WEB/src/pages/DoctorSystem/CreateCustomerAndPets/CustomerAndPets.jsx</span>
+import { Input, ProfileAvatar } from 'anteriority-ui';
+
+<span class="cmt">// vet-system-WEB/src/pages/AdminSystem/.../CurrencySelector.jsx</span>
+import { Loading, PlaceholderButton, Checks } from 'anteriority-ui';</pre>
+        <p class="muted" style="margin-top:10px">Solo si la librería no tiene un equivalente, se cae al set local en <code>src/components/screens/components/</code>, siguiendo las mismas convenciones.</p>
+        <h3>En resumen, una pantalla combina:</h3>
+        <div class="diagram"><pre>JSX del componente
+ ├─ Texto      → import desde src/constants/TEXT.js (o constansts.js)
+ ├─ Estilo     → import styles from './index.module.css' (usa var(--algo) de variables.css)
+ ├─ Componente → import { Boton, Input, ... } from 'anteriority-ui' (o local si no existe)
+ └─ Datos      → hook propio (src/hooks/*.js) que llama a src/services/api/index.js</pre></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Anatomía de un componente real: <code>Filter</code></h3>
+        <p class="muted">El panel de filtros reutilizable que aparece en varias pantallas de listados.</p>
+        <span class="file-tag">vet-system-WEB/src/components/screens/components/Filter/Index.jsx</span>
+        <pre>import React, { useState } from 'react';
+import { Filter as FilterIcon, Trash2, Search } from 'lucide-react';
+import DrawPanel from '../DrawPanel/index';
+import Button from '../Button/index';
+import styles from './Index.module.css';
+import ModalTooltip from '../../../ModalTooltip/ModalTooltip';
+
+const Filter = ({
+    children, onClear, onApply,
+    searchTerm = '', width = '350px', title = 'Filtros', activeFiltersCount = 0
+}) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    const handleApply = () => {
+        setIsOpen(false);
+        if (onApply) onApply();
+    };
+
+    return (
+        &lt;div className={styles.filterWrapper}&gt;
+            &lt;Button onClick={() => setIsOpen(true)} variant={Button.VARIANTS.PRIMARY}&gt;
+                &lt;FilterIcon size={18} /&gt; Filtrar
+            &lt;/Button&gt;
+            {activeFiltersCount > 0 &amp;&amp; (
+                &lt;span className={styles.filterBadge}&gt;{activeFiltersCount}&lt;/span&gt;
+            )}
+            &lt;DrawPanel isOpen={isOpen} onClose={() => setIsOpen(false)} title={title} width={width}&gt;
+                &lt;div className={styles.fields}&gt;{children}&lt;/div&gt;
+                &lt;Button onClick={handleApply}&gt;Aplicar&lt;/Button&gt;
+            &lt;/DrawPanel&gt;
+        &lt;/div&gt;
+    );
+};
+
+export default Filter;</pre>
+
+        <h3>Importaciones</h3>
+        <p>Un componente nunca trae su propia lógica o estilos sueltos: importa todo lo que necesita.</p>
+        <ul>
+          <li><code>useState</code> de <code>'react'</code> → el hook para manejar estado local.</li>
+          <li><code>lucide-react</code> → librería de íconos.</li>
+          <li><code>DrawPanel</code> y <code>Button</code> → otros componentes locales del mismo catálogo — uno complejo se construye combinando otros más simples.</li>
+          <li><code>styles from './Index.module.css'</code> → el CSS Module propio de este componente.</li>
+          <li><code>ModalTooltip</code> → otro componente compartido, importado con ruta relativa.</li>
+        </ul>
+
+        <h3>Props — los "parámetros" del componente</h3>
+        <p><code>Filter</code> recibe un único objeto, desestructurado en la firma. Son las <strong>props</strong>: valores que quien lo usa le pasa desde afuera.</p>
+        <pre>&lt;Filter title="Filtrar facturas" activeFiltersCount={2} onApply={handleApplyFilters}&gt;
+  &lt;input ... /&gt;
+&lt;/Filter&gt;</pre>
+        <ul style="margin-top:10px">
+          <li><code>title</code>, <code>width</code>, <code>activeFiltersCount</code> tienen <strong>valores por defecto</strong>: si no se pasan, el componente usa esos.</li>
+          <li><code>onApply</code> y <code>onClear</code> son <strong>callbacks</strong>: el padre decide qué pasa; el hijo solo ejecuta la función en el momento correcto.</li>
+          <li><code>children</code> es una prop especial: todo lo que va <em>entre</em> las etiquetas de apertura y cierre — así <code>Filter</code> envuelve cualquier formulario sin conocer sus campos.</li>
+        </ul>
+
+        <h3><code>useState</code> — estado local</h3>
+        <pre>const [isOpen, setIsOpen] = useState(false);</pre>
+        <p>Crea una variable <code>isOpen</code> y una función <code>setIsOpen</code> para cambiarla. Cada <code>setIsOpen(true)</code> hace que React vuelva a renderizar con el nuevo valor — así se abre o cierra el panel sin tocar el DOM a mano. Es estado <em>local</em>: vive solo en este componente.</p>
+
+        <h3><code>useEffect</code> — código que reacciona a cambios</h3>
+        <p class="muted">No está en <code>Filter</code>, pero sí en otros componentes del proyecto, ej. <code>CountdownBar</code>:</p>
+        <pre><span class="cmt">// vet-system-WEB/src/components/screens/components/CountdownBar/utils.js</span>
+useEffect(() => {
+  if (!active) {
+    setState({ progress: 100, remainingSeconds: durationRef.current / 1000 });
+    return;
+  }
+  const timer = setInterval(() => { /* recalcula progreso cada 50ms */ }, 50);
+  return () => clearInterval(timer); <span class="cmt">// limpieza al desmontar o cambiar "active"</span>
+}, [active]); <span class="cmt">// ← dependencias: solo re-corre si "active" cambió</span></pre>
+        <p>Un array vacío <code>[]</code> significa "correr solo una vez, al montar" — el patrón típico para un fetch inicial, como en <code>useGetCitas</code>: <code>useEffect(() => { if (autoFetch) fetchCitas(); }, [fetchCitas, autoFetch])</code>.</p>
+
+        <h3>Constantes dentro del componente</h3>
+        <p class="muted">Valores derivados calculados en cada render, por ejemplo en <code>CurrencySelector.jsx</code>:</p>
+        <pre>const isGlobalLoading = currencyLoading || bcvLoading;
+const currencies = [
+  { code: 'USD', icon: DollarSign, label: getText('moneySettings.dollar') },
+  { code: 'VES', icon: Wallet, label: getText('moneySettings.bolivares') }
+];</pre>
+        <p>No se centralizan en <code>constants/</code> porque dependen de datos en tiempo de ejecución — lo que sí va ahí son los <strong>textos fijos</strong>.</p>
+
+        <h3>Render (el <code>return</code>)</h3>
+        <p>Es la única parte que describe <em>qué se ve</em>: JSX que combina props, estado y componentes importados. No contiene lógica compleja — regla de "separar lógica de presentación".</p>
+      </div>
+    </section>
+
+    <!-- ============ SECCIÓN 6 ============ -->
+    <section class="sheet" id="s6">
+      <div class="card">
+        <h2><span class="tag">06</span>Otros flujos importantes</h2>
+        <div class="chips">
+          <div class="chip"><span class="ic">🧾</span><span><strong>Facturación:</strong> una cita completada genera una consulta médica, que descuenta stock de productos usados y calcula el total (con conversión Bolívares/Dólares vía la tasa BCV que un Worker actualiza a diario). La factura se genera como PDF con QuestPDF y se guarda en <code>wwwroot/</code>.</span></div>
+          <div class="chip"><span class="ic">💬</span><span><strong>Mensajería y notificaciones:</strong> en tiempo real vía SignalR (<code>MessageHub</code>, <code>NotificactionsPush</code>), agrupando conexiones por <code>userId</code> y rol.</span></div>
+          <div class="chip"><span class="ic">🛟</span><span><strong>Tolerancia a fallos:</strong> el frontend chequea la salud de la API cada 10s (<code>useHealthCheck</code>) y redirige a <code>/espera</code> si detecta que el backend o internet están caídos, restaurando la vista anterior al reconectar.</span></div>
+          <div class="chip"><span class="ic">⏱️</span><span><strong>Workers en segundo plano:</strong> tareas programadas del backend (actualizar tasa BCV, limpiar PDFs/reportes viejos, generar reportes automáticos) corren independientes de cualquier request HTTP.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECCIÓN 7 ============ -->
+    <section class="sheet" id="s7">
+      <div class="card">
+        <h2><span class="tag">07</span>Dónde seguir leyendo</h2>
+        <div class="linkgrid">
+          <div class="item"><span class="q">Todos los endpoints y módulos del backend</span><code>BACKEND_DOCUMENTATION.md</code> · <code>Document/Infra/Controller.md</code></div>
+          <div class="item"><span class="q">Arquitectura detallada por capas del backend</span><code>Document/Infra/Infraestructura_y_Flujo.md</code></div>
+          <div class="item"><span class="q">Facturación a fondo</span><code>Document/FacturationSystem.md</code></div>
+          <div class="item"><span class="q">Mensajería/notificaciones a fondo</span><code>Document/MessagingSystem.md</code></div>
+          <div class="item"><span class="q">Seguridad y autenticación</span><code>Document/SecurityAndAuthentication.md</code></div>
+          <div class="item"><span class="q">Estructura completa del frontend</span><code>FRONTEND_STRUCTURE.md</code></div>
+          <div class="item"><span class="q">Reglas de desarrollo del frontend</span><code>vet-system-WEB/CLAUDE.md</code></div>
+          <div class="item"><span class="q">Reglas de arquitectura del backend</span><code>vet-api-Net/CLAUDE.md</code></div>
+        </div>
+      </div>
+    </section>
+
+    <footer>Documentación viva de <strong>Happy Pets</strong> — generada a partir del código real de <code>vet-api-Net</code> y <code>vet-system-WEB</code>.</footer>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---- tabs ---- */
+  var sections = ['s1','s2','s3','s4','s5','s6','s7'];
+  var tocButtons = Array.prototype.slice.call(document.querySelectorAll('nav.toc button'));
+
+  function showSection(id) {
+    sections.forEach(function (s) {
+      var el = document.getElementById(s);
+      if (el) el.classList.toggle('active', s === id);
+    });
+    tocButtons.forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-target') === id);
+    });
+    try { localStorage.setItem('hp_active_section', id); } catch (e) {}
+  }
+
+  tocButtons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      showSection(b.getAttribute('data-target'));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  var initial = 's1';
+  try {
+    var saved = localStorage.getItem('hp_active_section');
+    if (saved && sections.indexOf(saved) !== -1) initial = saved;
+  } catch (e) {}
+  showSection(initial);
+
+  /* ---- simulator (section 4) ---- */
+  var STATIONS = [
+    {
+      layer: "Componente", side: "FRONTEND",
+      title: "La pantalla de agenda pide sus datos",
+      file: "src/hooks/GetCitas.js",
+      desc: "El componente no sabe nada de endpoints ni tokens: solo invoca un hook. El hook es quien decide qué pedir y cómo entregarlo ya listo para pintar.",
+      code: "<span class=\"cmt\">// vet-system-WEB/src/hooks/GetCitas.js</span>\nconst res = await api.getCitas({\n  allDates: true,\n  pageNumber,\n  pageSize\n});",
+      note: null
+    },
+    {
+      layer: "Servicio API", side: "FRONTEND",
+      title: "Se traduce a un endpoint y query string",
+      file: "src/services/api/index.js",
+      desc: "Esta es la única función del proyecto que sabe que las citas viven en /Citas/requests. Nadie más en el frontend escribe esa ruta a mano.",
+      code: "<span class=\"cmt\">// vet-system-WEB/src/services/api/index.js</span>\nexport async function getCitas(params = {}) {\n  const query = new URLSearchParams();\n  if (params.allDates !== undefined) query.append('allDates', params.allDates);\n  if (params.pageNumber) query.append('pageNumber', params.pageNumber);\n  if (params.pageSize) query.append('pageSize', params.pageSize);\n\n  const url = `/Citas/requests?${query}`;\n  return request(url, { method: 'GET' });\n}",
+      note: "Regla del proyecto: ningún componente usa <code>fetch</code> directo — todo endpoint nuevo se agrega acá primero."
+    },
+    {
+      layer: "Cliente HTTP", side: "FRONTEND",
+      title: "Se inyecta el token y sale el request",
+      file: "src/services/api/client.js",
+      desc: "El único lugar que toca el token JWT guardado en el login. Si la API devuelve 401, esta misma pieza cierra la sesión y redirige al login.",
+      code: "<span class=\"cmt\">// vet-system-WEB/src/services/api/client.js</span>\nconst token = getStorageValue(TOKEN_KEY);\nif (token) {\n  opts.headers['Authorization'] = `Bearer ${token}`;\n}\nres = await fetch(url, opts);\n\n<span class=\"cmt\">// → sale como: GET /api/Citas/requests?allDates=true&pageNumber=1&pageSize=10</span>",
+      note: null
+    },
+    {
+      layer: "Controller", side: "BACKEND",
+      title: "La API recibe la petición y lee quién la hizo",
+      file: "Controller/CitasController.cs",
+      desc: "Protegido con [Authorize]: si el token no es válido, nunca llega hasta aquí. Lee el rol y el id del propio token — no decide reglas, solo delega.",
+      code: "<span class=\"cmt\">// vet-api-Net/Controller/CitasController.cs</span>\n[HttpGet(Endpoints.Citas.GetAllRequests)]\npublic async Task&lt;ActionResult&lt;CitasListResponseDTO&gt;&gt; GetAllCitasRequests(...)\n{\n    var role = User.FindFirst(ClaimTypes.Role)?.Value;\n    int? currentUserId = int.TryParse(\n        User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : null;\n\n    var (items, totalCount) = await _citasRequestService\n        .GetAllCitasRequestsAsync(status, date, allDates, role, currentUserId, ...);\n\n    return Ok(new CitasListResponseDTO { Items = items, TotalCount = totalCount });\n}",
+      note: "Regla del proyecto: el Controller jamás toca <code>AppDbContext</code> ni contiene lógica de negocio."
+    },
+    {
+      layer: "Service", side: "BACKEND",
+      title: "Se aplican las reglas de negocio reales",
+      file: "Services/CitasRequestService.cs",
+      desc: "Antes de devolver nada, resuelve qué puede ver ese rol, y de paso vence automáticamente cualquier cita cuya hora ya pasó.",
+      code: "<span class=\"cmt\">// vet-api-Net/Services/CitasRequestService.cs</span>\nvar (doctorId, secretariaId) = _userScopeResolver\n    .ResolveDoctorSecretariaScope(role, currentUserId, reqDoctorId, reqSecretariaId);\n\nforeach (var a in await _citasRepository.GetActiveForExpirationCheckAsync(doctorId, secretariaId))\n{\n    if (appointmentDateTime &lt; now) {\n        a.Estado = Status.NotAssisted;   <span class=\"cmt\">// se vence sola</span>\n        _citasRepository.Update(a);\n    }\n}\nawait _citasRepository.SaveChangesAsync();",
+      note: "Si esto se filtrara en el Controller, estaría mezclando HTTP con reglas de negocio — por eso vive acá."
+    },
+    {
+      layer: "Repository", side: "BACKEND",
+      title: "Se arma la consulta — y el ORM la traduce a SQL",
+      file: "Repository/CitaRepository.cs",
+      desc: "Único lugar que conoce AppDbContext. EF Core (el ORM) traduce este LINQ a un SELECT con JOIN, WHERE y OFFSET/LIMIT reales — nadie escribe SQL a mano.",
+      code: "<span class=\"cmt\">// vet-api-Net/Repository/CitaRepository.cs</span>\nvar query = _context.Citas\n    .Include(c => c.Mascota).ThenInclude(m => m.Cliente)\n    .Include(c => c.Doctor);\n\nif (doctorId.HasValue)\n    query = query.Where(c => c.DoctorId == doctorId.Value);\n\nreturn await query\n    .OrderByDescending(c => c.FechaCita)\n    .ToPagedResultAsync(pageNumber, pageSize); <span class=\"cmt\">// Skip/Take → OFFSET/LIMIT</span>",
+      note: null
+    },
+    {
+      layer: "Base de datos", side: "BACKEND",
+      title: "PostgreSQL ejecuta el SQL generado",
+      file: "PostgreSQL (Supabase)",
+      desc: "Recién acá se toca disco. El filtrado, el orden y la paginación los resuelve el motor de base de datos.",
+      code: "<span class=\"cmt\">-- SQL generado por EF Core, simplificado</span>\nSELECT c.*, m.*, cl.*, d.*\nFROM \"Citas\" c\nLEFT JOIN \"Mascotas\" m ON m.\"Id\" = c.\"MascotaId\"\nLEFT JOIN \"Clientes\" cl ON cl.\"Id\" = m.\"ClienteId\"\nLEFT JOIN \"Usuarios\" d ON d.\"Id\" = c.\"DoctorId\"\nWHERE c.\"DoctorId\" = @doctorId\nORDER BY c.\"FechaCita\" DESC\nOFFSET @skip LIMIT @pageSize;",
+      note: "Si este filtro se hiciera en el Service sobre una lista ya cargada, sería \"traer todo y filtrar en memoria\" — mucho más lento al crecer la tabla."
+    },
+    {
+      layer: "Hook (normaliza)", side: "FRONTEND",
+      title: "El JSON vuelve y se limpia antes de pintarse",
+      file: "src/hooks/GetCitas.js",
+      desc: "El backend puede devolver nombres heterogéneos. El hook los normaliza acá — el componente nunca ve ese desorden.",
+      code: "<span class=\"cmt\">// vet-system-WEB/src/hooks/GetCitas.js</span>\nconst normalized = list.map((cita) => {\n  const cliente = cita?.Mascotum?.Cliente || {};\n  const doctor = cita?.doctor || {};\n  return {\n    ...cita,\n    paciente_nombre: [cliente?.nombre, cliente?.apellido].filter(Boolean).join(' '),\n    doctor_nombre: [doctor?.nombre, doctor?.apellido].filter(Boolean).join(' '),\n  };\n});\nsetCitas(normalized); <span class=\"cmt\">// useState → dispara el re-render</span>",
+      note: null
+    }
+  ];
+
+  var current = -1;
+  var playing = false;
+  var timer = null;
+  var PLAY_INTERVAL = 2600;
+
+  var stationsEl = document.getElementById('stations');
+  var railFillEl = document.getElementById('railFill');
+  var progressFillEl = document.getElementById('progressFill');
+  var stepCounterEl = document.getElementById('stepCounter');
+  var finaleEl = document.getElementById('finale');
+  var playBtn = document.getElementById('playBtn');
+
+  function buildStations() {
+    STATIONS.forEach(function (s, i) {
+      var card = document.createElement('div');
+      card.className = 'station';
+      card.setAttribute('data-index', i);
+      var noteHtml = s.note ? ('<div class="rule-note show">⚠ ' + s.note + '</div>') : '';
+      card.innerHTML =
+        '<div class="station-dot" aria-hidden="true"></div>' +
+        '<div class="station-card" tabindex="0" role="button" aria-expanded="false">' +
+          '<div class="station-head">' +
+            '<span class="station-layer">' + s.layer + '</span>' +
+            '<span class="station-side">' + s.side + '</span>' +
+          '</div>' +
+          '<div class="station-title">' + s.title + '</div>' +
+          '<div class="station-file">' + s.file + '</div>' +
+          '<div class="station-desc">' + s.desc + '</div>' +
+          '<div class="code-panel"><pre>' + s.code + '</pre></div>' +
+          noteHtml +
+        '</div>';
+
+      var cardEl = card.querySelector('.station-card');
+      cardEl.addEventListener('click', function () { goTo(i); pause(); });
+      cardEl.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goTo(i); pause(); }
+      });
+      stationsEl.appendChild(card);
+    });
+  }
+
+  function render() {
+    var cards = stationsEl.querySelectorAll('.station');
+    cards.forEach(function (card, i) {
+      card.classList.remove('active', 'done');
+      if (i < current) card.classList.add('done');
+      if (i === current) card.classList.add('active');
+      card.querySelector('.station-card').setAttribute('aria-expanded', i === current ? 'true' : 'false');
+    });
+    var total = STATIONS.length;
+    var pct = current < 0 ? 0 : ((current + 1) / total) * 100;
+    railFillEl.style.height = pct + '%';
+    progressFillEl.style.width = pct + '%';
+    stepCounterEl.textContent = (current < 0 ? 0 : current + 1) + ' / ' + total;
+    finaleEl.classList.toggle('show', current === total - 1);
+    if (current === total - 1 && playing) pause();
+  }
+
+  function goTo(i) {
+    if (i < 0) i = 0;
+    if (i > STATIONS.length - 1) i = STATIONS.length - 1;
+    current = i;
+    render();
+    var activeCard = stationsEl.querySelector('.station[data-index="' + i + '"]');
+    if (activeCard) activeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function step() {
+    if (current >= STATIONS.length - 1) { pause(); return; }
+    goTo(current + 1);
+  }
+
+  function play() {
+    if (current >= STATIONS.length - 1) current = -1;
+    playing = true;
+    playBtn.textContent = '⏸ Pausar';
+    step();
+    timer = setInterval(step, PLAY_INTERVAL);
+  }
+
+  function pause() {
+    playing = false;
+    playBtn.textContent = '▶ Reproducir';
+    if (timer) { clearInterval(timer); timer = null; }
+  }
+
+  playBtn.addEventListener('click', function () { if (playing) pause(); else play(); });
+  document.getElementById('nextBtn').addEventListener('click', function () { pause(); step(); });
+  document.getElementById('prevBtn').addEventListener('click', function () { pause(); goTo(current - 1); });
+  document.getElementById('resetBtn').addEventListener('click', function () {
+    pause(); current = -1; render();
+  });
+
+  buildStations();
+  goTo(0);
+  pause();
+})();
+</script>

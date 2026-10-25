@@ -28,6 +28,16 @@ namespace vet_api_Net.Constants
         public const string AutoGenerateReportWorker = "AutoGenerateReportWorker";
         public const string VaccinationReminderWorker = "VaccinationReminderWorker";
         public const string HistoriaClinicaSummaryWorker = "HistoriaClinicaSummaryWorker";
+        public const string ProcessEventsWorker = "ProcessEventsWorker";
+        public const string BcvWorker = "BcvWorker";
+        public const string ClearNotificationsWorker = "ClearNotificationsWorker";
+    }
+
+    public static class ProcessEventTypes
+    {
+        public const string Error = "Error";
+        public const string Warning = "Warning";
+        public const string Success = "Success";
     }
 
     public static class AiProviders

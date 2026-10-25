@@ -61,23 +61,33 @@ public class MoneyController : ControllerBase
     [HttpGet(Endpoints.MoneyController.TasaDollarBcv)]
     public async Task<IActionResult> GetDirectoDeBcv()
     {
-        decimal? precio = await _scraper.ObtenerPrecioBcvAsync();
- 
-        if (!precio.HasValue || precio.Value <= 0)
+        try
+        {
+            decimal? precio = await _scraper.ObtenerPrecioBcvAsync();
+
+            if (!precio.HasValue || precio.Value <= 0)
+            {
+                return StatusCode(503, new
+                {
+                    mensaje = ResponseMessagesMoneyTypes.GetTasaBcvError
+                });
+            }
+
+            return Ok(new
+            {
+                moneda = "USD",
+                precio_bs = precio.Value,
+                fecha_consulta = DateTime.Now,
+                fuente = ResponseMessagesMoneyTypes.fuente
+            });
+        }
+        catch (Exception)
         {
             return StatusCode(503, new
             {
                 mensaje = ResponseMessagesMoneyTypes.GetTasaBcvError
             });
         }
- 
-        return Ok(new
-        {
-            moneda = "USD",
-            precio_bs = precio.Value,
-            fecha_consulta = DateTime.Now,
-            fuente = ResponseMessagesMoneyTypes.fuente
-        });
     }
     [HttpGet(Endpoints.MoneyController.TasaDollarBcvToDb)]
     public async Task<IActionResult> GetTasaBcvAndSaveToDb()

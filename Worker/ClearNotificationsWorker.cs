@@ -1,11 +1,14 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using DTOs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
+using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Repositories;
+using vet_api_Net.Interfaze.Utilities;
 
 namespace vet_api_Net.Workers;
 
@@ -70,6 +73,19 @@ public class ClearNotificationsWorker : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogInformation(ex, "Error occurred while clearing notifications.");
+
+                using (var errorScope = _serviceProvider.CreateScope())
+                {
+                    var processEventUtilities = errorScope.ServiceProvider.GetRequiredService<IProcessEventUtilities>();
+                    await processEventUtilities.RegisterErrorAsync(new RegisterProcessEventDTO
+                    {
+                        NameEvent = WorkerNames.ClearNotificationsWorker,
+                        TypeEvent = ProcessEventTypes.Error,
+                        Title = "Fallo al purgar notificaciones leídas",
+                        ErrorMessage = ex.Message
+                    });
+                }
+
                 _logger.LogInformation("ClearNotificationsWorker finished.");
             }
 

@@ -46,6 +46,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<LogsSistema> LogsSistemas { get; set; }
 
+    public virtual DbSet<WorkerProcessEvent> WorkerProcessEvents { get; set; }
+
     public virtual DbSet<Mascota> Mascotas { get; set; }
 
     public virtual DbSet<MovimientosInventario> MovimientosInventarios { get; set; }
@@ -855,6 +857,31 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.UsuarioId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("logs_sistema_ibfk_1");
+        });
+
+        modelBuilder.Entity<WorkerProcessEvent>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("worker_process_events");
+
+            entity.HasIndex(e => e.NameEvent, "idx_name_event_worker_process");
+            entity.HasIndex(e => e.TypeEvent, "idx_type_event_worker_process");
+            entity.HasIndex(e => e.Created, "idx_created_worker_process");
+            entity.HasIndex(e => e.IsResolved, "idx_is_resolved_worker_process");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.NameEvent).HasMaxLength(150).HasColumnName("name_event");
+            entity.Property(e => e.TypeEvent).HasMaxLength(50).HasColumnName("type_event");
+            entity.Property(e => e.Title).HasMaxLength(200).HasColumnName("title");
+            entity.Property(e => e.ErrorMessage).HasColumnName("error_message");
+            entity.Property(e => e.VinculationData).HasColumnName("vinculation_data");
+            entity.Property(e => e.Snapshot).HasColumnName("snapshot");
+            entity.Property(e => e.Intents).HasColumnName("intents");
+            entity.Property(e => e.IsResolved).HasColumnName("is_resolved");
+            entity.Property(e => e.Created).HasColumnName("created");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.ResolvedAt).HasColumnName("resolved_at");
         });
 
         modelBuilder.Entity<Mascota>(entity =>
