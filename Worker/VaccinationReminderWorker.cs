@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using DTOs;
@@ -11,6 +12,7 @@ using vet_api_Net.Constants;
 using vet_api_Net.Infrastructure.Configuration;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaze.Utilities;
 using vet_api_Net.Models;
 
 //Describe: Background service que detecta vacunas por vencer a 7 días, 3 días y el día anterior (a partir de las 5pm) a la fecha acordada, envía recordatorios por correo al cliente y notifica al staff interno para seguimiento telefónico. Su habilitación e intervalo son configurables desde la tabla worker_configs (fila "VaccinationReminderWorker"), con appsettings.json como valores por defecto si no hay fila en la BD.
@@ -99,6 +101,7 @@ public class VaccinationReminderWorker : BackgroundService
         var emailSenderService = scope.ServiceProvider.GetRequiredService<IEmailSenderService>();
         var notificationsPushService = scope.ServiceProvider.GetRequiredService<INotificationsPushService>();
         var templateRepository = scope.ServiceProvider.GetRequiredService<IEmailTemplateRepository>();
+        var processEventUtilities = scope.ServiceProvider.GetRequiredService<IProcessEventUtilities>();
         var apiSettings = scope.ServiceProvider.GetRequiredService<IOptions<ApiSettingsOptions>>().Value;
         var templatesHTML = scope.ServiceProvider.GetRequiredService<IOptions<TemplatesHTML>>().Value;
         var systemName = apiSettings.SystemName ?? PdfText.HappyPets;
@@ -144,10 +147,13 @@ public class VaccinationReminderWorker : BackgroundService
                     petVaccination.ReminderThreeSentAt = DateTime.Now;
 
                 repository.UpdatePetVaccination(petVaccination);
+                await processEventUtilities.ResolveAsync(WorkerNames.VaccinationReminderWorker, VinculationKey(petVaccination.Id));
+                await RegisterReminderSuccessAsync(processEventUtilities, petVaccination, isSevenDayReminder ? "7 días antes" : "3 días antes");
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Error al enviar el recordatorio de vacunación {Id}.", petVaccination.Id);
+                await RegisterReminderErrorAsync(processEventUtilities, petVaccination, ex);
             }
         }
 
@@ -167,10 +173,13 @@ public class VaccinationReminderWorker : BackgroundService
 
                 petVaccination.ReminderDayBeforeSentAt = DateTime.Now;
                 repository.UpdatePetVaccination(petVaccination);
+                await processEventUtilities.ResolveAsync(WorkerNames.VaccinationReminderWorker, VinculationKey(petVaccination.Id));
+                await RegisterReminderSuccessAsync(processEventUtilities, petVaccination, "1 día antes");
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Error al enviar el recordatorio de un día antes de vacunación {Id}.", petVaccination.Id);
+                await RegisterReminderErrorAsync(processEventUtilities, petVaccination, ex);
             }
         }
 
@@ -215,5 +224,60 @@ public class VaccinationReminderWorker : BackgroundService
             NameUser = ResponseMessageNotificactionPush.Admin
         };
         await notificationsPushService.SendNotificationAsync(pushData);
+    }
+
+    private static string VinculationKey(int petVaccinationId) => $"PetVaccination:{petVaccinationId}";
+
+    private static string BuildPetVaccinationSnapshot(PetVaccination petVaccination)
+    {
+        var cliente = petVaccination.Mascota?.Cliente;
+
+        return JsonSerializer.Serialize(new
+        {
+            petVaccination.Id,
+            petVaccination.MascotaId,
+            MascotaNombre = petVaccination.Mascota?.Nombre,
+            petVaccination.VaccineId,
+            VaccineName = petVaccination.Vaccine?.Name,
+            petVaccination.NextDoseDate,
+            petVaccination.ReminderSevenSentAt,
+            petVaccination.ReminderThreeSentAt,
+            petVaccination.ReminderDayBeforeSentAt,
+            ClienteId = cliente?.Id,
+            ClienteNombre = cliente != null ? $"{cliente.Nombre} {cliente.Apellido}".Trim() : null,
+            ClienteEmail = cliente?.Email
+        });
+    }
+
+    private static async Task RegisterReminderErrorAsync(
+        IProcessEventUtilities processEventUtilities, PetVaccination petVaccination, Exception ex)
+    {
+        await processEventUtilities.RegisterErrorAsync(new RegisterProcessEventDTO
+        {
+            NameEvent = WorkerNames.VaccinationReminderWorker,
+            TypeEvent = ProcessEventTypes.Error,
+            Title = $"Fallo al enviar recordatorio de vacunación (PetVaccination {petVaccination.Id})",
+            ErrorMessage = ex.Message,
+            VinculationData = VinculationKey(petVaccination.Id),
+            Snapshot = BuildPetVaccinationSnapshot(petVaccination)
+        });
+    }
+
+    private static async Task RegisterReminderSuccessAsync(
+        IProcessEventUtilities processEventUtilities, PetVaccination petVaccination, string reminderStage)
+    {
+        var petName = petVaccination.Mascota?.Nombre ?? string.Empty;
+        var clienteNombre = petVaccination.Mascota?.Cliente != null
+            ? $"{petVaccination.Mascota.Cliente.Nombre} {petVaccination.Mascota.Cliente.Apellido}".Trim()
+            : string.Empty;
+
+        await processEventUtilities.RegisterSuccessAsync(new RegisterProcessEventDTO
+        {
+            NameEvent = WorkerNames.VaccinationReminderWorker,
+            TypeEvent = ProcessEventTypes.Success,
+            Title = $"Recordatorio de vacunación enviado a {clienteNombre} ({petName}) - {reminderStage}",
+            VinculationData = VinculationKey(petVaccination.Id),
+            Snapshot = BuildPetVaccinationSnapshot(petVaccination)
+        });
     }
 }

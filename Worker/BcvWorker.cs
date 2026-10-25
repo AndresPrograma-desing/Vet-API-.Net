@@ -106,6 +106,9 @@ public class BcvWorker : BackgroundService
 
                         await moneyTypeRepository.SaveChangesAsync(stoppingToken);
                         _logger.LogInformation("Precio actualizado correctamente: {Precio} Bs.", precioActual);
+
+                        var processEventUtilities = scope.ServiceProvider.GetRequiredService<IProcessEventUtilities>();
+                        await processEventUtilities.ResolveAsync(WorkerNames.BcvWorker, vinculationData: null);
                     }
                     else
                     {
@@ -119,6 +122,15 @@ public class BcvWorker : BackgroundService
                         };
                         await notificationsPushService.SendNotificationAsync(data);
                         _logger.LogWarning("El scraper devolvió un valor inválido o nulo. No se actualizará la base de datos. Verifique la conexión o el sitio del BCV.");
+
+                        var processEventUtilities = scope.ServiceProvider.GetRequiredService<IProcessEventUtilities>();
+                        await processEventUtilities.RegisterErrorAsync(new RegisterProcessEventDTO
+                        {
+                            NameEvent = WorkerNames.BcvWorker,
+                            TypeEvent = ProcessEventTypes.Error,
+                            Title = "El scraper del BCV devolvió un valor inválido o nulo",
+                            ErrorMessage = "Verifique la URL configurada (tabla SystemConfigs) o la disponibilidad del sitio del BCV."
+                        });
                     }
                 }
 
@@ -127,6 +139,19 @@ public class BcvWorker : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error crítico en el BcvWorker.");
+
+                using (var errorScope = _scopeFactory.CreateScope())
+                {
+                    var processEventUtilities = errorScope.ServiceProvider.GetRequiredService<IProcessEventUtilities>();
+                    await processEventUtilities.RegisterErrorAsync(new RegisterProcessEventDTO
+                    {
+                        NameEvent = WorkerNames.BcvWorker,
+                        TypeEvent = ProcessEventTypes.Error,
+                        Title = "Fallo al actualizar la tasa del dólar BCV",
+                        ErrorMessage = ex.Message
+                    });
+                }
+
                 _logger.LogInformation("BcvWorker finished.");
             }
 

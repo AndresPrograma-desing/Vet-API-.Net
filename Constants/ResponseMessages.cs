@@ -728,6 +728,12 @@ namespace vet_api_Net.Constants
         public const string ProviderErrorSandboxRestricted = "ERROR: El servicio de correos (Resend) está en modo Sandbox de desarrollo. Solo se permite enviar correos a la dirección registrada en la cuenta de Resend.";
         public static string ProviderErrorValidation(string message) => $"ERROR de validación de correo: {message}";
         public static string ProviderErrorGeneric(string message) => $"ERROR: {message}";
+
+        public const string ContextHubUnauthorized = "ERROR: La API key de ContextHub no es válida o falta. Revise la configuración ContextHub:MailsApiKey.";
+        public const string ContextHubRateLimited = "ERROR: Se alcanzó el límite de 30 correos por hora para esta API key de ContextHub. Intente más tarde.";
+        public const string ContextHubProviderError = "ERROR: El correo no pudo ser entregado. Verifique que la dirección de destino sea correcta y exista; si el problema persiste, contacte al administrador del sistema.";
+        public static string ContextHubValidationError(string message) => $"ERROR de validación de correo (ContextHub): {message}";
+        public static string ContextHubGenericError(string message) => $"ERROR (ContextHub): {message}";
     }
 
     public static class EmailTypes
@@ -735,6 +741,7 @@ namespace vet_api_Net.Constants
         public const int Recibos = 25;
         public const int ResetPassword = 15;
         public const int Bienvenido = 10;
+        public const int Receta = 30;
 
         public static string GetEmailTypeString(int typeCode)
         {
@@ -743,6 +750,7 @@ namespace vet_api_Net.Constants
                 Recibos => "Recibos",
                 ResetPassword => "ResetPassword",
                 Bienvenido => "Bienvenido",
+                Receta => "Receta",
                 _ => "Unknown"
             };
         }
@@ -823,6 +831,10 @@ namespace vet_api_Net.Constants
     {
         public const string LogRegistered = "Log registrado con éxito.";
         public const string ErrorLoadingLogs = "Error al obtener los logs del sistema.";
+    }
+    public static class ResponseMessagesWorkerProcessEvents
+    {
+        public const string ErrorLoadingEvents = "Error al obtener los eventos de procesamiento de workers.";
     }
     public static class ResponseMessagesVaccination
     {

@@ -212,7 +212,7 @@ namespace vet_api_Net.Routes
             public const string Update = "{id}";
             public const string GetByMascotaId = "mascota/{mascotaId}";
             public const string UpdateNotes = "{id}/notes";
-            public const string RefreshIa = "mascota/{mascotaId}/refrescar";
+            public const string RefreshIa = "mascota/{mascotaId}/history";
         }
         public static class IaConocimiento
         {
@@ -278,6 +278,10 @@ namespace vet_api_Net.Routes
         public static class Logs
         {
             public const string GetLogs = "get-logs";
+        }
+        public static class WorkerProcessEvents
+        {
+            public const string GetEvents = "get-events";
         }
         public static class IntegrationCredential
         {

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaze.Utilities;
 using vet_api_Net.Services;
 using vet_api_Net.WorkerSettings;
 
@@ -240,6 +241,19 @@ namespace vet_api_Net.Worker
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error al escanear y eliminar facturas expiradas.");
+
+                    using (var errorScope = _services.CreateScope())
+                    {
+                        var processEventUtilities = errorScope.ServiceProvider.GetRequiredService<IProcessEventUtilities>();
+                        await processEventUtilities.RegisterErrorAsync(new RegisterProcessEventDTO
+                        {
+                            NameEvent = WorkerNames.DeleteFacturaWorker,
+                            TypeEvent = ProcessEventTypes.Error,
+                            Title = "Fallo al escanear y eliminar facturas expiradas",
+                            ErrorMessage = ex.Message
+                        });
+                    }
+
                     _logger.LogInformation("DeleteFacturaWorker finished.");
                 }
 
