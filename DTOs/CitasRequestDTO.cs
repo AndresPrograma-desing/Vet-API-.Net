@@ -42,6 +42,15 @@ public record CitasRequestDTO
 	[JsonPropertyName("metodo_pago")]
 	public string? MetodoPago { get; set; }
 
+	[JsonPropertyName("servicio_id")]
+	public int? ServicioId { get; set; }
+
+	[JsonPropertyName("servicio_nombre")]
+	public string? ServicioNombre { get; set; }
+
+	[JsonPropertyName("servicio_precio")]
+	public decimal? ServicioPrecio { get; set; }
+
 	[JsonPropertyName("Mascotum")]
 	public MascotaResumenDTO? Mascotum { get; set; }
 

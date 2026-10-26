@@ -315,6 +315,8 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => e.MetodoPagoId, "metodo_pago_id");
 
+            entity.HasIndex(e => e.ServicioId, "idx_citas_servicio");
+
             entity.HasIndex(e => new { e.DoctorId, e.FechaCita, e.HoraCita }, "unique_cita_doctor").IsUnique();
 
             entity.Property(e => e.Id)
@@ -354,6 +356,10 @@ public partial class AppDbContext : DbContext
 
                 .HasColumnName("metodo_pago_id");
 
+            entity.Property(e => e.ServicioId)
+
+                .HasColumnName("servicio_id");
+
             entity.HasOne(d => d.Doctor).WithMany(p => p.CitaDoctors)
                 .HasForeignKey(d => d.DoctorId)
                 .HasConstraintName("citas_ibfk_2");
@@ -371,6 +377,11 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.MetodoPagoId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("citas_ibfk_4");
+
+            entity.HasOne(d => d.Servicio).WithMany(p => p.Citas)
+                .HasForeignKey(d => d.ServicioId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("citas_ibfk_servicio");
         });
 
         modelBuilder.Entity<MetodoPago>(entity =>

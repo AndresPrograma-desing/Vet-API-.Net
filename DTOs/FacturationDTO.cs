@@ -81,6 +81,12 @@ public record FacturationDTO
     [JsonPropertyName("cita_id")]
     public int? CitaId { get; init; }
 
+    [JsonPropertyName("servicio_nombre")]
+    public string? ServicioNombre { get; init; }
+
+    [JsonPropertyName("consulta_price")]
+    public decimal ConsultaPrice { get; init; }
+
     [JsonPropertyName("doctor_id")]
     [Range(1, int.MaxValue, ErrorMessage = ResponseMessagesDtos.Factura.DoctorIdInvalid)]
     public int? DoctorId { get; init; }

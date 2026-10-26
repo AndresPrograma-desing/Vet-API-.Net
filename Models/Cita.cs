@@ -27,7 +27,11 @@ public partial class Cita
 
     public int? MetodoPagoId { get; set; }
 
+    public int? ServicioId { get; set; }
+
     public virtual MetodoPago? MetodoPago { get; set; }
+
+    public virtual Servicio? Servicio { get; set; }
 
     public virtual ICollection<Consulta> Consulta { get; set; } = new List<Consulta>();
 

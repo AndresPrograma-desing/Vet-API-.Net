@@ -23,13 +23,15 @@ public class CitasRequestService : ICitasRequestService
     private readonly IConfiguration _configuration;
     private readonly ApiSettingsOptions _apiSettings;
     private readonly IUserScopeResolver _userScopeResolver;
+    private readonly IServicioRepository _servicioRepository;
 
-    public CitasRequestService(ICitasRepository citasRepository, IConfiguration configuration, IOptions<ApiSettingsOptions> apiSettingsOptions, IUserScopeResolver userScopeResolver)
+    public CitasRequestService(ICitasRepository citasRepository, IConfiguration configuration, IOptions<ApiSettingsOptions> apiSettingsOptions, IUserScopeResolver userScopeResolver, IServicioRepository servicioRepository)
     {
         _citasRepository = citasRepository;
         _configuration = configuration;
         _apiSettings = apiSettingsOptions.Value;
         _userScopeResolver = userScopeResolver;
+        _servicioRepository = servicioRepository;
     }
 
     public async Task<(List<CitasRequestDTO> Items, int TotalCount)> GetAllCitasRequestsAsync(string? status = null, DateTime? date = null, bool allDates = false, string? currentUserRole = null, int? currentUserId = null, int? requestedDoctorId = null, int? requestedSecretariaId = null, int pageNumber = 1, int pageSize = 10)
@@ -200,10 +202,30 @@ public class CitasRequestService : ICitasRequestService
             }
         }
 
-        var allowedTypes = new[] { TypeConsultas.Consulta, TypeConsultas.Vacunacion, TypeConsultas.Cirugia, TypeConsultas.Emergencia, TypeConsultas.Seguimiento };
-        var tipo = string.IsNullOrWhiteSpace(dto.TipoCita) ? TypeConsultas.Consulta : dto.TipoCita;
-        if (!allowedTypes.Contains(tipo, StringComparer.OrdinalIgnoreCase))
-            throw new ArgumentException($"{ResponseMessagesCitas.StatuNoValid} {string.Join(", ", allowedTypes)}");
+        var fechaCita = dto.FechaCita?.Date ?? DateTime.Now.Date;
+        if (fechaCita.Add(hora.ToTimeSpan()) < DateTime.Now)
+            throw new ArgumentException(ResponseMessagesCitas.PastDateTimeNotAllowed);
+
+        Servicio? servicio = null;
+        if (dto.ServicioId.HasValue)
+        {
+            servicio = await _servicioRepository.GetByIdAsync(dto.ServicioId.Value);
+            if (servicio == null || !servicio.Activo)
+                throw new ArgumentException(ResponseMessagesServicio.ServicioNotFound);
+        }
+
+        string tipo;
+        if (servicio != null)
+        {
+            tipo = servicio.Nombre;
+        }
+        else
+        {
+            var allowedTypes = new[] { TypeConsultas.Consulta, TypeConsultas.Vacunacion, TypeConsultas.Cirugia, TypeConsultas.Emergencia, TypeConsultas.Seguimiento };
+            tipo = string.IsNullOrWhiteSpace(dto.TipoCita) ? TypeConsultas.Consulta : dto.TipoCita;
+            if (!allowedTypes.Contains(tipo, StringComparer.OrdinalIgnoreCase))
+                throw new ArgumentException($"{ResponseMessagesCitas.StatuNoValid} {string.Join(", ", allowedTypes)}");
+        }
 
         var allowedStates = new[] { Status.Programed, Status.Completed, Status.Cancelled, Status.NotAssisted, Status.InCurso };
         var estado = string.IsNullOrWhiteSpace(dto.Estado) ? Status.Programed : dto.Estado;
@@ -215,9 +237,10 @@ public class CitasRequestService : ICitasRequestService
             MascotaId = dto.MascotaId,
             DoctorId = dto.DoctorId,
             SecretariaId = dto.SecretariaId,
-            FechaCita = dto.FechaCita?.Date ?? DateTime.Now.Date,
+            FechaCita = fechaCita,
             HoraCita = hora,
             Motivo = dto.Motivo,
+            ServicioId = servicio?.Id,
             TipoCita = tipo,
             Estado = estado,
             Notas = dto.Notas
@@ -248,7 +271,16 @@ public class CitasRequestService : ICitasRequestService
             cita.HoraCita = hora;
         }
 
-        if (!string.IsNullOrWhiteSpace(dto.TipoCita))
+        if (dto.ServicioId.HasValue)
+        {
+            var servicio = await _servicioRepository.GetByIdAsync(dto.ServicioId.Value);
+            if (servicio == null || !servicio.Activo)
+                throw new ArgumentException(ResponseMessagesServicio.ServicioNotFound);
+
+            cita.ServicioId = servicio.Id;
+            cita.TipoCita = servicio.Nombre;
+        }
+        else if (!string.IsNullOrWhiteSpace(dto.TipoCita))
         {
             var val = dto.TipoCita.Trim().ToLowerInvariant();
             if (val.Contains("consulta")) val = TypeConsultas.Consulta;
@@ -277,6 +309,12 @@ public class CitasRequestService : ICitasRequestService
         if (dto.FechaCita.HasValue) cita.FechaCita = dto.FechaCita.Value.Date;
         if (dto.Motivo != null) cita.Motivo = dto.Motivo;
         if (dto.Notas != null) cita.Notas = dto.Notas;
+
+        if (dto.FechaCita.HasValue || !string.IsNullOrWhiteSpace(dto.HoraCita))
+        {
+            if (cita.FechaCita.Date.Add(cita.HoraCita.ToTimeSpan()) < DateTime.Now)
+                throw new ArgumentException(ResponseMessagesCitas.PastDateTimeNotAllowed);
+        }
 
         _citasRepository.Update(cita);
         await _citasRepository.SaveChangesAsync();

@@ -13,6 +13,7 @@ public class CreateCitaService : ICreateCitaService
     private readonly ICitasRepository _citasRepository;
     private readonly IPetsRepository _petsRepository;
     private readonly IUsersRepository _usersRepository;
+    private readonly IServicioRepository _servicioRepository;
     private readonly IEmailService _emailService;
     private readonly INotificationService _notificationService;
 
@@ -20,12 +21,14 @@ public class CreateCitaService : ICreateCitaService
         ICitasRepository citasRepository,
         IPetsRepository petsRepository,
         IUsersRepository usersRepository,
+        IServicioRepository servicioRepository,
         IEmailService emailService,
         INotificationService notificationService)
     {
         _citasRepository = citasRepository;
         _petsRepository = petsRepository;
         _usersRepository = usersRepository;
+        _servicioRepository = servicioRepository;
         _emailService = emailService;
         _notificationService = notificationService;
     }
@@ -49,6 +52,14 @@ public class CreateCitaService : ICreateCitaService
             if (sec == null) throw new KeyNotFoundException(ResponseMessagesUsers.SecretarialNotFound);
         }
 
+        Servicio? servicio = null;
+        if (dto.ServicioId.HasValue)
+        {
+            servicio = await _servicioRepository.GetByIdAsync(dto.ServicioId.Value);
+            if (servicio == null || !servicio.Activo)
+                throw new ArgumentException(ResponseMessagesServicio.ServicioNotFound);
+        }
+
         TimeOnly hora;
         try
         {
@@ -69,6 +80,9 @@ public class CreateCitaService : ICreateCitaService
         {
             fecha = DateTime.Now.Date;
         }
+
+        if (fecha.Add(hora.ToTimeSpan()) < DateTime.Now)
+            throw new ArgumentException(ResponseMessagesCitas.PastDateTimeNotAllowed);
 
         // --- EVITAR SOLAPAMIENTOS DE RANGOS DE 30 MINUTOS ---
         var citasDelDia = await _citasRepository.GetByDoctorAndDateAsync(dto.DoctorId, fecha);
@@ -165,7 +179,8 @@ public class CreateCitaService : ICreateCitaService
             FechaCita = fecha,
             HoraCita = hora,
             Motivo = dto.Motivo,
-            TipoCita = dto.TipoCita ?? TypeConsultas.Consulta,
+            ServicioId = servicio?.Id,
+            TipoCita = servicio?.Nombre ?? dto.TipoCita ?? TypeConsultas.Consulta,
             Estado = dto.Estado ?? Status.Programed,
             Notas = dto.Notas
         };

@@ -22,6 +22,9 @@ public record UpdateCitaDTO
     [JsonPropertyName("fecha_cita")]
     public DateTime? FechaCita { get; set; }
 
+    [JsonPropertyName("servicio_id")]
+    public int? ServicioId { get; set; }
+
     [JsonPropertyName("hora_cita")]
     [RegularExpression(@"^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$", ErrorMessage = ResponseMessagesCitas.InvalidHoraCita)]
     public string? HoraCita { get; set; }
