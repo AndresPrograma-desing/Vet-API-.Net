@@ -20,13 +20,15 @@ public class ConsultasService : IConsultasService
     private readonly IUserScopeResolver _userScopeResolver;
     private readonly IPetVaccinationService _petVaccinationService;
     private readonly IPetsRepository _petsRepository;
-    public ConsultasService(IConsultasRepository repository, IOptions<ApiSettingsOptions> apiSettingsOptions, IUserScopeResolver userScopeResolver, IPetVaccinationService petVaccinationService, IPetsRepository petsRepository)
+    private readonly IServicioRepository _servicioRepository;
+    public ConsultasService(IConsultasRepository repository, IOptions<ApiSettingsOptions> apiSettingsOptions, IUserScopeResolver userScopeResolver, IPetVaccinationService petVaccinationService, IPetsRepository petsRepository, IServicioRepository servicioRepository)
     {
         _repository = repository;
         _apiSettings = apiSettingsOptions.Value;
         _userScopeResolver = userScopeResolver;
         _petVaccinationService = petVaccinationService;
         _petsRepository = petsRepository;
+        _servicioRepository = servicioRepository;
     }
 
 
@@ -40,6 +42,15 @@ public class ConsultasService : IConsultasService
             throw new ArgumentException(ResponseMessagesConsultas.TemperaturaInvalid);
         }
 
+        if (dto.FechaConsulta.HasValue)
+        {
+            var nowReference = dto.FechaConsulta.Value.Kind == DateTimeKind.Utc ? DateTime.UtcNow : DateTime.Now;
+            if (dto.FechaConsulta.Value > nowReference.AddMinutes(1))
+            {
+                throw new ArgumentException(ResponseMessagesConsultas.FutureDateNotAllowed);
+            }
+        }
+
         var appointment = await _repository.GetCitaByIdAsync(dto.CitaId)
             ?? throw new KeyNotFoundException(ResponseMessagesCitas.CitaNotFound);
 
@@ -48,6 +59,14 @@ public class ConsultasService : IConsultasService
 
         var doctor = await _repository.GetDoctorByIdAsync(dto.DoctorId)
             ?? throw new KeyNotFoundException(ResponseMessagesUsers.DoctorNotFound);
+
+        var consultaPrice = dto.ConsultaPrice > 0m ? dto.ConsultaPrice.Value : 0m;
+        if (consultaPrice <= 0m && appointment.ServicioId.HasValue)
+        {
+            var servicioCita = await _servicioRepository.GetByIdAsync(appointment.ServicioId.Value);
+            if (servicioCita != null)
+                consultaPrice = servicioCita.Precio;
+        }
 
         var medicalRecord = new Consulta
         {
@@ -63,7 +82,7 @@ public class ConsultasService : IConsultasService
             Receta = dto.Receta,
             Observaciones = dto.Observaciones,
             Creado = DateTime.Now,
-            ConsultaPrice = dto.ConsultaPrice > 0m ? dto.ConsultaPrice : 0m
+            ConsultaPrice = consultaPrice
         };
 
         _repository.AddConsulta(medicalRecord);

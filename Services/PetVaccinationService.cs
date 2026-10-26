@@ -70,6 +70,9 @@ public class PetVaccinationService : IPetVaccinationService
 
         var applicationDate = dto.ApplicationDate ?? DateOnly.FromDateTime(DateTime.Now);
 
+        if (applicationDate > DateOnly.FromDateTime(DateTime.Now))
+            throw new ArgumentException(ResponseMessagesVaccination.ApplicationDateCannotBeFuture);
+
         if (!batch.Active)
             throw new InvalidOperationException(ResponseMessagesVaccination.BatchInactive);
 
@@ -84,6 +87,9 @@ public class PetVaccinationService : IPetVaccinationService
         {
             doctor = await _repository.GetDoctorByIdAsync(dto.DoctorId.Value);
         }
+
+        if (dto.NextDoseDateOverride.HasValue && dto.NextDoseDateOverride.Value < applicationDate)
+            throw new ArgumentException(ResponseMessagesVaccination.NextDoseBeforeApplicationDate);
 
         var nextDoseDate = dto.NextDoseDateOverride ?? await ResolveNextDoseDateAsync(vaccine, dto.MascotaId, applicationDate);
 

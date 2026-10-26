@@ -147,7 +147,7 @@ namespace vet_api_Net.Utilities.Pdf
                         c.Item().PaddingTop(2).AlignRight().Text(text =>
                         {
                             text.Span($"{PdfText.Vencimiento}: ").FontSize(9).SemiBold().FontColor(_textMuted);
-                            text.Span($"{_inv.FechaEmision.AddDays(30):dd/MM/yyyy}").FontSize(9).FontColor(_textDark);
+                            text.Span($"{_inv.FechaEmision.AddDays(7):dd/MM/yyyy}").FontSize(9).FontColor(_textDark);
                         });
                     });
                 });
@@ -224,8 +224,8 @@ namespace vet_api_Net.Utilities.Pdf
                         
                         c.Item().PaddingVertical(2).Row(rr =>
                         {
-                            rr.RelativeItem().Text(PdfText.ConsultaPrice).FontSize(9).FontColor(_textMuted);
-                            rr.ConstantItem(90).AlignRight().Text(_inv.Descuento.HasValue ? $"{_currencySymbol}{_inv.Descuento.Value:N2}" : $"{_currencySymbol}0.00").FontSize(9).FontColor(_textDark);
+                            rr.RelativeItem().Text(!string.IsNullOrWhiteSpace(_inv.ServicioNombre) ? _inv.ServicioNombre : PdfText.ConsultaPrice).FontSize(9).FontColor(_textMuted);
+                            rr.ConstantItem(90).AlignRight().Text($"{_currencySymbol}{_inv.ConsultaPrice:N2}").FontSize(9).FontColor(_textDark);
                         });
                         
                         c.Item().PaddingVertical(4).LineHorizontal(1).LineColor(_primaryColor);
