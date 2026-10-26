@@ -15,6 +15,7 @@ public interface IFacturasRepository
     Task<List<int>> GetMascotaIdsByClienteIdAsync(int clienteId);
     Task<List<Consulta>> GetConsultasWithRelationsAsync(List<int> mascotaIds);
     Task<List<Factura>> GetAllFacturasWithRelationsAsync();
+    Task<List<Factura>> GetFacturasByClienteIdAsync(int clienteId);
     Task<WorkerConfig?> GetFirstFacturaConfigAsync();
     Task<Cita?> GetCitaByIdAsync(int citaId);
     Task<MetodoPago?> GetMetodoPagoByIdAsync(int metodoPagoId);

@@ -221,6 +221,20 @@ public class FacturasController : ControllerBase
         }
     }
 
+    [HttpGet(Endpoints.Facturas.ClientAccount)]
+    public async Task<IActionResult> GetClientAccount(int clientId)
+    {
+        try
+        {
+            var account = await _invoiceService.GetClientAccountAsync(clientId);
+            return Ok(account);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { error = ResponseErrors.InternalServerError });
+        }
+    }
+
     private string BuildFileUrl(string fileName)
     {
         var baseUrl = !string.IsNullOrWhiteSpace(_externalBaseUrl) 

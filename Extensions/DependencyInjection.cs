@@ -333,6 +333,9 @@ public static class DependencyInjection
         services.AddScoped<IPermissionDefinitionRepository, PermissionDefinitionRepository>();
         services.AddScoped<IIntegrationCredentialRepository, IntegrationCredentialRepository>();
         services.AddScoped<IWorkerProcessEventRepository, WorkerProcessEventRepository>();
+        services.AddScoped<IMovimientosInventarioRepository, MovimientosInventarioRepository>();
+        services.AddScoped<IHistorialPrecioRepository, HistorialPrecioRepository>();
+        services.AddScoped<IServicioRepository, ServicioRepository>();
 
         // Servicios de la Aplicación
         services.AddScoped<IUserService, UserService>();
@@ -340,6 +343,9 @@ public static class DependencyInjection
         services.AddScoped<IPermissionDefinitionService, PermissionDefinitionService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<IMovimientosInventarioService, MovimientosInventarioService>();
+        services.AddScoped<IHistorialPrecioService, HistorialPrecioService>();
+        services.AddScoped<IServicioService, ServicioService>();
         services.AddScoped<ICreateProductService, ProductCreateService>();
         services.AddScoped<ICitasRequestService, CitasRequestService>();
         services.AddScoped<IConsultasService, ConsultasService>();
@@ -424,6 +430,7 @@ public static class DependencyInjection
         services.AddHostedService<VaccinationReminderWorker>();
         services.AddHostedService<HistoriaClinicaSummaryWorker>();
         services.AddHostedService<ProcessEventsWorker>();
+        services.AddHostedService<BirthdayPetsWorker>();
 
         // Clientes HTTP Externos (BCV)
         services.AddHttpClient("BcvClient", client =>

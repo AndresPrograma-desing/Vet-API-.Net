@@ -31,6 +31,7 @@ namespace vet_api_Net.Constants
         public const string ProcessEventsWorker = "ProcessEventsWorker";
         public const string BcvWorker = "BcvWorker";
         public const string ClearNotificationsWorker = "ClearNotificationsWorker";
+        public const string BirthdayPetsWorker = "BirthdayPetsWorker";
     }
 
     public static class ProcessEventTypes
@@ -61,5 +62,11 @@ namespace vet_api_Net.Constants
         public const string FrequencyDays = "days";
         public const string FrequencyMonths = "months";
         public const string FrequencyYears = "years";
+    }
+
+    public static class InventoryVariables
+    {
+        public const string TipoEntrada = "entrada";
+        public const string TipoSalida = "salida";
     }
 }

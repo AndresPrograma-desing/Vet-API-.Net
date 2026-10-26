@@ -10,6 +10,7 @@ public interface IPetsRepository
     Task<(List<Mascota> Items, int TotalCount)> GetPagedWithRelationsAsync(int pageNumber = 1, int pageSize = 10, string? searchTerm = null);
     Task<Mascota?> GetByIdWithRelationsAsync(int id);
     Task<List<Mascota>> GetByClientNameWithRelationsAsync(string lowerClientName);
+    Task<List<Mascota>> GetDueForBirthdayReminderAsync(int month, int day, int year);
     Task<bool> ExistsAsync(int id);
     void Update(Mascota mascota);
     Task<bool> DeleteWithDependenciesAsync(int id);

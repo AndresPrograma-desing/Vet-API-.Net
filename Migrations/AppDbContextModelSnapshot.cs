@@ -491,6 +491,10 @@ namespace vet_api_Net.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("productos_consultas_id");
 
+                    b.Property<int?>("ServicioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("servicio_id");
+
                     b.Property<decimal>("Total")
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)")
@@ -501,6 +505,8 @@ namespace vet_api_Net.Migrations
                         .HasColumnName("vaccine_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex(new[] { "ServicioId" }, "idx_detalles_factura_servicio");
 
                     b.HasIndex(new[] { "VaccineId" }, "idx_detalles_factura_vaccine");
 
@@ -962,6 +968,10 @@ namespace vet_api_Net.Migrations
                     b.Property<string>("ImageUrl")
                         .HasColumnType("text")
                         .HasColumnName("image_url");
+
+                    b.Property<int?>("LastBirthdayNotifiedYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("last_birthday_notified_year");
 
                     b.Property<DateTime?>("LastDataModifiedAt")
                         .HasColumnType("timestamp without time zone")
@@ -1510,6 +1520,50 @@ namespace vet_api_Net.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Reportes");
+                });
+
+            modelBuilder.Entity("vet_api_Net.Models.Servicio", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("activo");
+
+                    b.Property<DateTime>("Actualizado")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("actualizado");
+
+                    b.Property<DateTime>("Creado")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado");
+
+                    b.Property<string>("Descripcion")
+                        .HasColumnType("text")
+                        .HasColumnName("descripcion");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("nombre");
+
+                    b.Property<decimal>("Precio")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("precio");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
+                    b.ToTable("servicios", (string)null);
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.SystemConfig", b =>
@@ -2111,6 +2165,12 @@ namespace vet_api_Net.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("detalles_factura_ibfk_3");
 
+                    b.HasOne("vet_api_Net.Models.Servicio", "Servicio")
+                        .WithMany("DetallesFacturas")
+                        .HasForeignKey("ServicioId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("detalles_factura_ibfk_5");
+
                     b.HasOne("vet_api_Net.Models.Vaccine", "Vaccine")
                         .WithMany()
                         .HasForeignKey("VaccineId")
@@ -2122,6 +2182,8 @@ namespace vet_api_Net.Migrations
                     b.Navigation("Producto");
 
                     b.Navigation("ProductosConsultas");
+
+                    b.Navigation("Servicio");
 
                     b.Navigation("Vaccine");
                 });
@@ -2481,6 +2543,11 @@ namespace vet_api_Net.Migrations
                     b.Navigation("HistorialPrecios");
 
                     b.Navigation("MovimientosInventarios");
+                });
+
+            modelBuilder.Entity("vet_api_Net.Models.Servicio", b =>
+                {
+                    b.Navigation("DetallesFacturas");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.Usuario", b =>

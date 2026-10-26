@@ -52,6 +52,15 @@ public class PetsRepository : IPetsRepository
             .Where(m => m.Cliente != null && m.Cliente.Nombre.ToLower() == lowerClientName)
             .ToListAsync();
 
+    public async Task<List<Mascota>> GetDueForBirthdayReminderAsync(int month, int day, int year)
+        => await _context.Mascotas
+            .Include(m => m.Cliente)
+            .Where(m => m.FechaNacimiento != null &&
+                m.FechaNacimiento.Value.Month == month &&
+                m.FechaNacimiento.Value.Day == day &&
+                m.LastBirthdayNotifiedYear != year)
+            .ToListAsync();
+
     public async Task<bool> ExistsAsync(int id)
         => await _context.Mascotas.AnyAsync(m => m.Id == id);
 

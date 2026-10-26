@@ -65,7 +65,7 @@ public class InvoiceService : IInvoiceService
         }
         else if (detalles != null && detalles.Count > 0)
         {
-            foreach (var d in detalles.Where(d => !d.VaccineId.HasValue))
+            foreach (var d in detalles.Where(d => !d.VaccineId.HasValue && !d.ServicioId.HasValue))
             {
                 decimal unitPrice = await _currencyService.ConvertPriceAsync(d.PrecioUnitario);
                 items.Add(new FacturationItemDTO
@@ -97,6 +97,23 @@ public class InvoiceService : IInvoiceService
                     Codigo = string.Empty,
                     Nombre = d.Vaccine?.Name ?? d.Descripcion ?? string.Empty,
                     Descripcion = d.Descripcion,
+                    PrecioUnitario = unitPrice,
+                    Cantidad = d.Cantidad,
+                    Total = unitPrice * d.Cantidad,
+                    ConsultaPrice = convertedConsultaPrice
+                });
+            }
+
+            foreach (var d in detalles.Where(d => d.ServicioId.HasValue))
+            {
+                decimal unitPrice = await _currencyService.ConvertPriceAsync(d.PrecioUnitario);
+                items.Add(new FacturationItemDTO
+                {
+                    ProductosConsultasId = d.ProductosConsultasId,
+                    ServicioId = d.ServicioId,
+                    Codigo = string.Empty,
+                    Nombre = d.Servicio?.Nombre ?? d.Descripcion ?? string.Empty,
+                    Descripcion = d.Descripcion ?? d.Servicio?.Descripcion,
                     PrecioUnitario = unitPrice,
                     Cantidad = d.Cantidad,
                     Total = unitPrice * d.Cantidad,
@@ -412,6 +429,64 @@ public class InvoiceService : IInvoiceService
             IsEnabled = fc.IsEnabled,
             GenerateEnabled = fc.GenerateEnabled ?? false,
             LastUpdated = fc.LastUpdated
+        };
+    }
+
+    public async Task<ClientAccountDTO> GetClientAccountAsync(int clientId)
+    {
+        var facturas = await _facturasRepository.GetFacturasByClienteIdAsync(clientId);
+
+        var paidInvoices = new List<FacturationDTO>();
+        var pendingInvoices = new List<FacturationDTO>();
+
+        foreach (var factura in facturas)
+        {
+            var consulta = factura.Consulta;
+            decimal convertedConsultaPrice = await _currencyService.ConvertPriceAsync(consulta?.ConsultaPrice ?? 0m);
+            var detalles = await _facturasRepository.GetDetallesByFacturaIdAsync(factura.Id);
+            var items = await MapearItemsAsync(consulta, detalles, convertedConsultaPrice);
+
+            var subtotal = items.Sum(i => i.Total);
+            decimal descuento = factura.Descuento ?? 0m;
+
+            var dto = new FacturationDTO
+            {
+                FacturaId = factura.Id,
+                NumeroFactura = factura.NumeroFactura,
+                ClienteId = factura.ClienteId,
+                ClienteNombre = consulta?.Mascota?.Cliente != null ? $"{consulta.Mascota.Cliente.Nombre} {consulta.Mascota.Cliente.Apellido}" : null,
+                MascotaId = factura.MascotaId,
+                MascotaNombre = consulta?.Mascota?.Nombre,
+                ConsultaId = factura.ConsultaId,
+                CitaId = consulta?.CitaId,
+                DoctorId = consulta?.DoctorId,
+                DoctorNombre = consulta?.Doctor != null ? $"{consulta.Doctor.Nombre} {consulta.Doctor.Apellido}" : null,
+                FechaEmision = factura.FechaEmision,
+                Items = items,
+                Subtotal = subtotal,
+                Descuento = descuento,
+                Total = subtotal + convertedConsultaPrice - descuento,
+                MetodoPago = factura.MetodoPago,
+                EstadoPago = factura.EstadoPago,
+                Notas = factura.Notas ?? ResponseMessagesFactura.Notes,
+                Creado = factura.Creado,
+                Actualizado = factura.Actualizado,
+                UrlDocx = factura.UrlDocx
+            };
+
+            if (string.Equals(factura.EstadoPago, Status.Paid, StringComparison.OrdinalIgnoreCase))
+                paidInvoices.Add(dto);
+            else
+                pendingInvoices.Add(dto);
+        }
+
+        return new ClientAccountDTO
+        {
+            ClientId = clientId,
+            TotalPaid = paidInvoices.Sum(i => i.Total),
+            PendingBalance = pendingInvoices.Sum(i => i.Total),
+            PaidInvoices = paidInvoices,
+            PendingInvoices = pendingInvoices
         };
     }
 }

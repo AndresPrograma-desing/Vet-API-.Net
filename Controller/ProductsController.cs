@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using DTOs;
 using Microsoft.AspNetCore.Mvc;
@@ -98,7 +99,8 @@ public class ProductsController : ControllerBase
             if (dto == null || dto.Quantity <= 0)
                 return BadRequest(new { error = ResponseMessagesProduct.ProductCantPositive });
 
-            var product = await _productService.DecreaseStockAsync(id, dto.Quantity);
+            var currentUserId = GetCurrentUserId();
+            var product = await _productService.DecreaseStockAsync(id, dto.Quantity, currentUserId);
             var result = new
             {
                 message = ResponseMessagesProduct.DecreaseStockSuccess,
@@ -135,7 +137,8 @@ public class ProductsController : ControllerBase
     {
         try
         {
-            var (product, hasChanges) = await _productService.UpdateProductAsync(id, updatedProductDto);
+            var currentUserId = GetCurrentUserId();
+            var (product, hasChanges) = await _productService.UpdateProductAsync(id, updatedProductDto, currentUserId);
             var result = new
             {
                 message = hasChanges
@@ -171,5 +174,11 @@ public class ProductsController : ControllerBase
         {
             return StatusCode(500, new { error = ResponseErrors.InternalServerError });
         }
+    }
+
+    private int? GetCurrentUserId()
+    {
+        var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return int.TryParse(idClaim, out var parsedId) ? parsedId : null;
     }
 }
