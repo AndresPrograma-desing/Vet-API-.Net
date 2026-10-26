@@ -199,11 +199,17 @@ namespace vet_api_Net.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("secretaria_id");
 
+                    b.Property<int?>("ServicioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("servicio_id");
+
                     b.Property<string>("TipoCita")
                         .HasColumnType("text")
                         .HasColumnName("tipo_cita");
 
                     b.HasKey("Id");
+
+                    b.HasIndex(new[] { "ServicioId" }, "idx_citas_servicio");
 
                     b.HasIndex(new[] { "DoctorId", "FechaCita" }, "idx_doctor_fecha");
 
@@ -2077,6 +2083,12 @@ namespace vet_api_Net.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("citas_ibfk_3");
 
+                    b.HasOne("vet_api_Net.Models.Servicio", "Servicio")
+                        .WithMany("Citas")
+                        .HasForeignKey("ServicioId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("citas_ibfk_servicio");
+
                     b.Navigation("Doctor");
 
                     b.Navigation("Mascota");
@@ -2084,6 +2096,8 @@ namespace vet_api_Net.Migrations
                     b.Navigation("MetodoPago");
 
                     b.Navigation("Secretaria");
+
+                    b.Navigation("Servicio");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.Consulta", b =>
@@ -2547,6 +2561,8 @@ namespace vet_api_Net.Migrations
 
             modelBuilder.Entity("vet_api_Net.Models.Servicio", b =>
                 {
+                    b.Navigation("Citas");
+
                     b.Navigation("DetallesFacturas");
                 });
 

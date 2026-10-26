@@ -260,6 +260,7 @@ namespace vet_api_Net.Constants
         public const string CancelledCita = "CITA CANCELADA.";
         public const string NotCitasToday = "No hay citas programadas para el día de hoy.";
         public const string NotAvailableSlots = "No se encontró ningún horario disponible para autoagendar este día.";
+        public const string PastDateTimeNotAllowed = "No se puede agendar una cita en una fecha u hora que ya pasó.";
     }
     public static class TypeConsultas
     {
@@ -511,6 +512,7 @@ namespace vet_api_Net.Constants
         public const string PdfDataNotFound = "Consulta no encontrada para generar el PDF.";
         public const string PdfGenerationError = "Error al generar el PDF de la consulta/receta.";
         public const string PdfPersistenceError = "Error al guardar la URL del PDF generado. Sin embargo, el PDF se ha creado correctamente.";
+        public const string FutureDateNotAllowed = "La fecha de la consulta no puede ser futura.";
     }
     public static class ResponseMessagesGroqServices
     {
@@ -864,6 +866,8 @@ namespace vet_api_Net.Constants
         public const string NoConsultaLinked = "El registro de vacunación no está asociado a una consulta.";
         public const string FacturaNotFoundForConsulta = "No existe una factura generada para la consulta de esta vacunación.";
         public const string AlreadySentToInvoice = "Esta vacunación ya fue enviada a una factura.";
+        public const string ApplicationDateCannotBeFuture = "La fecha de aplicación no puede ser futura.";
+        public const string NextDoseBeforeApplicationDate = "La fecha de la próxima dosis no puede ser anterior a la fecha de aplicación.";
         public static string ReminderEmailSubject(string systemName) => $"Recordatorio de vacunación - {systemName}";
         public static string ReminderEmailBody(string petName, string vaccineName, string dueDate) =>
             $"<p>Hola,</p><p>Te recordamos que <strong>{petName}</strong> tiene programada la vacuna <strong>{vaccineName}</strong> para el día <strong>{dueDate}</strong>.</p><p>Agenda tu cita con anticipación.</p>";

@@ -45,6 +45,7 @@ public class CitasRepository : ICitasRepository
             .Include(c => c.Doctor)
             .Include(c => c.Secretaria)
             .Include(c => c.MetodoPago)
+            .Include(c => c.Servicio)
             .AsQueryable();
 
         if (doctorId.HasValue)
@@ -76,6 +77,7 @@ public class CitasRepository : ICitasRepository
             .Include(c => c.Doctor)
             .Include(c => c.Secretaria)
             .Include(c => c.MetodoPago)
+            .Include(c => c.Servicio)
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 

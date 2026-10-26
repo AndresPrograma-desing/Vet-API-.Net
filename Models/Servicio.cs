@@ -20,4 +20,6 @@ public partial class Servicio
     public DateTime Actualizado { get; set; } = DateTime.Now;
 
     public virtual ICollection<DetallesFactura> DetallesFacturas { get; set; } = new List<DetallesFactura>();
+
+    public virtual ICollection<Cita> Citas { get; set; } = new List<Cita>();
 }

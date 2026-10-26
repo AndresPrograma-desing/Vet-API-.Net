@@ -23,6 +23,9 @@ public static class CitaMappingExtensions
             Notas = cr.Notas,
             MetodoPagoId = cr.MetodoPagoId,
             MetodoPago = cr.MetodoPago?.Nombre,
+            ServicioId = cr.ServicioId,
+            ServicioNombre = cr.Servicio?.Nombre,
+            ServicioPrecio = cr.Servicio?.Precio,
             Mascotum = cr.Mascota != null ? new MascotaResumenDTO
             {
                 Id = cr.Mascota.Id,

@@ -22,6 +22,7 @@ public class FacturasRepository : IFacturasRepository
     {
         return await _db.Citas
             .Include(c => c.Mascota).ThenInclude(m => m.Cliente)
+            .Include(c => c.Servicio)
             .FirstOrDefaultAsync(c => c.Id == citaId);
     }
 
@@ -75,6 +76,7 @@ public class FacturasRepository : IFacturasRepository
             .Include(f => f.Consulta).ThenInclude(c => c!.Mascota).ThenInclude(m => m.Cliente)
             .Include(f => f.Consulta).ThenInclude(c => c!.Doctor)
             .Include(f => f.Consulta).ThenInclude(c => c!.ConsultasProductos).ThenInclude(cp => cp.Producto)
+            .Include(f => f.Consulta).ThenInclude(c => c!.Cita).ThenInclude(ci => ci.Servicio)
             .FirstOrDefaultAsync(f => f.Id == facturaId);
     }
 
@@ -90,6 +92,7 @@ public class FacturasRepository : IFacturasRepository
             .Include(c => c.Mascota).ThenInclude(m => m.Cliente)
             .Include(c => c.Doctor)
             .Include(c => c.ConsultasProductos).ThenInclude(cp => cp.Producto)
+            .Include(c => c.Cita).ThenInclude(ci => ci.Servicio)
             .OrderBy(c => c.FechaConsulta)
             .ToListAsync();
     }
@@ -100,6 +103,7 @@ public class FacturasRepository : IFacturasRepository
             .Include(f => f.Consulta).ThenInclude(c => c!.Mascota).ThenInclude(m => m.Cliente)
             .Include(f => f.Consulta).ThenInclude(c => c!.Doctor)
             .Include(f => f.Consulta).ThenInclude(c => c!.ConsultasProductos).ThenInclude(cp => cp.Producto)
+            .Include(f => f.Consulta).ThenInclude(c => c!.Cita).ThenInclude(ci => ci.Servicio)
             .Where(f => f.Consulta != null)
             .OrderByDescending(f => f.FechaEmision)
             .ToListAsync();
@@ -111,6 +115,7 @@ public class FacturasRepository : IFacturasRepository
             .Include(f => f.Consulta).ThenInclude(c => c!.Mascota).ThenInclude(m => m.Cliente)
             .Include(f => f.Consulta).ThenInclude(c => c!.Doctor)
             .Include(f => f.Consulta).ThenInclude(c => c!.ConsultasProductos).ThenInclude(cp => cp.Producto)
+            .Include(f => f.Consulta).ThenInclude(c => c!.Cita).ThenInclude(ci => ci.Servicio)
             .Where(f => f.ClienteId == clienteId)
             .OrderByDescending(f => f.FechaEmision)
             .ToListAsync();
