@@ -24,13 +24,17 @@ public class LogsController : ControllerBase
     }
 
     [HttpGet(Endpoints.Logs.GetLogs)]
-    public async Task<ActionResult<List<LogsSistemaResponseDTO>>> GetLogs(
+    public async Task<ActionResult<LogsSistemaListResponseDTO>> GetLogs(
         [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10)
+        [FromQuery] int pageSize = 10,
+        [FromQuery] int? userId = null,
+        [FromQuery] string? action = null,
+        [FromQuery] DateTime? dateFrom = null,
+        [FromQuery] DateTime? dateTo = null)
     {
         try
         {
-            var result = await _logService.GetLogsAsync(pageNumber, pageSize);
+            var result = await _logService.GetLogsAsync(pageNumber, pageSize, userId, action, dateFrom, dateTo);
             return Ok(result);
         }
         catch (Exception)

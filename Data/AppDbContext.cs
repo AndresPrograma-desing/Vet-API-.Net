@@ -46,6 +46,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<LogsSistema> LogsSistemas { get; set; }
 
+    public virtual DbSet<WorkerProcessEvent> WorkerProcessEvents { get; set; }
+
     public virtual DbSet<Mascota> Mascotas { get; set; }
 
     public virtual DbSet<MovimientosInventario> MovimientosInventarios { get; set; }
@@ -65,6 +67,8 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<VaccineBatch> VaccineBatches { get; set; }
 
     public virtual DbSet<PetVaccination> PetVaccinations { get; set; }
+
+    public virtual DbSet<Servicio> Servicios { get; set; }
 
     public virtual DbSet<Models.Reporte> Reportes { get; set; }
 
@@ -612,6 +616,8 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => e.ProductosConsultasId, "productos_consultas_id");
 
+            entity.HasIndex(e => e.ServicioId, "idx_detalles_factura_servicio");
+
             entity.Property(e => e.Id)
 
                 .HasColumnName("id");
@@ -640,6 +646,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.ProductosConsultasId)
 
                 .HasColumnName("productos_consultas_id");
+            entity.Property(e => e.ServicioId)
+
+                .HasColumnName("servicio_id");
             entity.Property(e => e.Total)
                 .HasPrecision(10, 2)
                 .HasColumnName("total");
@@ -662,6 +671,11 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.ProductosConsultasId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("detalles_factura_ibfk_3");
+
+            entity.HasOne(d => d.Servicio).WithMany(p => p.DetallesFacturas)
+                .HasForeignKey(d => d.ServicioId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("detalles_factura_ibfk_5");
         });
 
         modelBuilder.Entity<Factura>(entity =>
@@ -857,6 +871,31 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("logs_sistema_ibfk_1");
         });
 
+        modelBuilder.Entity<WorkerProcessEvent>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("worker_process_events");
+
+            entity.HasIndex(e => e.NameEvent, "idx_name_event_worker_process");
+            entity.HasIndex(e => e.TypeEvent, "idx_type_event_worker_process");
+            entity.HasIndex(e => e.Created, "idx_created_worker_process");
+            entity.HasIndex(e => e.IsResolved, "idx_is_resolved_worker_process");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.NameEvent).HasMaxLength(150).HasColumnName("name_event");
+            entity.Property(e => e.TypeEvent).HasMaxLength(50).HasColumnName("type_event");
+            entity.Property(e => e.Title).HasMaxLength(200).HasColumnName("title");
+            entity.Property(e => e.ErrorMessage).HasColumnName("error_message");
+            entity.Property(e => e.VinculationData).HasColumnName("vinculation_data");
+            entity.Property(e => e.Snapshot).HasColumnName("snapshot");
+            entity.Property(e => e.Intents).HasColumnName("intents");
+            entity.Property(e => e.IsResolved).HasColumnName("is_resolved");
+            entity.Property(e => e.Created).HasColumnName("created");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            entity.Property(e => e.ResolvedAt).HasColumnName("resolved_at");
+        });
+
         modelBuilder.Entity<Mascota>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -921,6 +960,8 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("sexo");
             entity.Property(e => e.LastDataModifiedAt)
                 .HasColumnName("last_data_modified_at");
+            entity.Property(e => e.LastBirthdayNotifiedYear)
+                .HasColumnName("last_birthday_notified_year");
 
             entity.HasOne(d => d.Cliente).WithMany(p => p.Mascota)
                 .HasForeignKey(d => d.ClienteId)
@@ -1160,6 +1201,23 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.EspecieId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("vaccines_ibfk_1");
+        });
+
+        modelBuilder.Entity<Servicio>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("servicios");
+
+            entity.HasIndex(e => e.Nombre).IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Nombre).HasMaxLength(150).HasColumnName("nombre");
+            entity.Property(e => e.Descripcion).HasColumnName("descripcion");
+            entity.Property(e => e.Precio).HasPrecision(10, 2).HasColumnName("precio");
+            entity.Property(e => e.Activo).HasColumnName("activo");
+            entity.Property(e => e.Creado).HasColumnName("creado");
+            entity.Property(e => e.Actualizado).HasColumnName("actualizado");
         });
 
         modelBuilder.Entity<Especie>(entity =>

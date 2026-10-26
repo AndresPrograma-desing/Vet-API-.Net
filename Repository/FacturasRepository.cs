@@ -49,6 +49,7 @@ public class FacturasRepository : IFacturasRepository
             .Include(d => d.Producto)
             .Include(d => d.Vaccine)
             .Include(d => d.ProductosConsultas)
+            .Include(d => d.Servicio)
             .Where(d => d.Factura.ConsultaId == consultaId)
             .ToListAsync();
     }
@@ -59,6 +60,7 @@ public class FacturasRepository : IFacturasRepository
             .Where(d => d.FacturaId == facturaId)
             .Include(d => d.Producto)
             .Include(d => d.Vaccine)
+            .Include(d => d.Servicio)
             .ToListAsync();
     }
 
@@ -99,6 +101,17 @@ public class FacturasRepository : IFacturasRepository
             .Include(f => f.Consulta).ThenInclude(c => c!.Doctor)
             .Include(f => f.Consulta).ThenInclude(c => c!.ConsultasProductos).ThenInclude(cp => cp.Producto)
             .Where(f => f.Consulta != null)
+            .OrderByDescending(f => f.FechaEmision)
+            .ToListAsync();
+    }
+
+    public async Task<List<Factura>> GetFacturasByClienteIdAsync(int clienteId)
+    {
+        return await _db.Facturas
+            .Include(f => f.Consulta).ThenInclude(c => c!.Mascota).ThenInclude(m => m.Cliente)
+            .Include(f => f.Consulta).ThenInclude(c => c!.Doctor)
+            .Include(f => f.Consulta).ThenInclude(c => c!.ConsultasProductos).ThenInclude(cp => cp.Producto)
+            .Where(f => f.ClienteId == clienteId)
             .OrderByDescending(f => f.FechaEmision)
             .ToListAsync();
     }

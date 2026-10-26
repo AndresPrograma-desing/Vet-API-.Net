@@ -64,26 +64,36 @@ public class SystemLogService : ISystemLogService
         return value.Substring(0, maxLength);
     }
 
-    public async Task<List<LogsSistemaResponseDTO>> GetLogsAsync(int pageNumber, int pageSize)
+    public async Task<LogsSistemaListResponseDTO> GetLogsAsync(
+        int pageNumber,
+        int pageSize,
+        int? userId = null,
+        string? action = null,
+        DateTime? dateFrom = null,
+        DateTime? dateTo = null)
     {
         if (pageNumber <= 0) pageNumber = 1;
         if (pageSize <= 0) pageSize = 10;
 
-        var logs = await _repository.GetLogsAsync(pageNumber, pageSize);
+        var (logs, totalCount) = await _repository.GetLogsAsync(pageNumber, pageSize, userId, action, dateFrom, dateTo);
 
-        return logs.Select(l => new LogsSistemaResponseDTO
+        return new LogsSistemaListResponseDTO
         {
-            Id = l.Id,
-            UsuarioId = l.UsuarioId,
-            UsuarioNombre = l.Usuario != null ? $"{l.Usuario.Nombre} {l.Usuario.Apellido}".Trim() : null,
-            Accion = l.Accion,
-            TablaAfectada = l.TablaAfectada,
-            RegistroId = l.RegistroId,
-            DatosPrevios = l.DatosPrevios,
-            DatosNuevos = l.DatosNuevos,
-            IpAddress = l.IpAddress,
-            UserAgent = l.UserAgent,
-            CreatedAt = l.CreatedAt
-        }).ToList();
+            Items = logs.Select(l => new LogsSistemaResponseDTO
+            {
+                Id = l.Id,
+                UsuarioId = l.UsuarioId,
+                UsuarioNombre = l.Usuario != null ? $"{l.Usuario.Nombre} {l.Usuario.Apellido}".Trim() : null,
+                Accion = l.Accion,
+                TablaAfectada = l.TablaAfectada,
+                RegistroId = l.RegistroId,
+                DatosPrevios = l.DatosPrevios,
+                DatosNuevos = l.DatosNuevos,
+                IpAddress = l.IpAddress,
+                UserAgent = l.UserAgent,
+                CreatedAt = l.CreatedAt
+            }).ToList(),
+            TotalCount = totalCount
+        };
     }
 }

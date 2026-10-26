@@ -1,0 +1,77 @@
+<!--
+
+Plantilla HTML para envío de recetas médicas a clientes.
+
+-->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html dir="ltr" xmlns="http://www.w3.org/1999/xhtml" lang="es">
+ <head>
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Receta médica</title>
+ </head>
+ <body style="width:100%;height:100%;font-family:arial, 'helvetica neue', helvetica, sans-serif;padding:0;Margin:0;background-color:#F6F6F6">
+  <table width="100%" cellspacing="0" cellpadding="0" role="none" style="width:100%;background-color:#F6F6F6">
+   <tbody>
+    <tr>
+     <td align="center" style="padding:20px 0">
+      <table width="600" cellspacing="0" cellpadding="0" bgcolor="#ffffff" role="none" style="width:600px;background-color:#FFFFFF;border-radius:8px;overflow:hidden">
+       <tbody>
+        <tr>
+         <td align="left" style="padding:20px 20px 0">
+          <h2 style="Margin:0;font-family:arial, 'helvetica neue', helvetica, sans-serif;font-size:28px;font-weight:700;color:#333333;text-transform:uppercase">{{system_name}}</h2>
+          <div style="border-bottom:1px solid #cccccc;margin-top:20px"></div>
+         </td>
+        </tr>
+        <tr>
+         <td align="left" style="padding:20px">
+          <p style="Margin:0 0 16px;font-size:16px;color:#333333">Estimado/a <strong>{{client_name}}</strong>,</p>
+          <p style="Margin:0 0 16px;font-size:14px;line-height:21px;color:#333333">A través de este correo le hacemos entrega formal de la <strong>receta médica</strong> indicada por el veterinario para su mascota. El documento detallado se encuentra adjunto en formato <strong>PDF</strong>.</p>
+
+          <div style="border:2px solid #475569;border-radius:8px;padding:16px;background-color:#ffffff;margin-top:16px">
+           <table style="width:100%;border-collapse:collapse" role="presentation">
+            <tbody>
+             <tr>
+              <td style="padding:10px 0;color:#334155;font-size:16px;width:40%;vertical-align:top"><strong>Paciente / Mascota:</strong></td>
+              <td style="padding:10px 0;color:#1e293b;font-size:16px;vertical-align:top">{{pet_name}}</td>
+             </tr>
+             <tr>
+              <td style="padding:10px 0;color:#334155;font-size:16px;vertical-align:top"><strong>Fecha de consulta:</strong></td>
+              <td style="padding:10px 0;color:#1e293b;font-size:16px;vertical-align:top">{{fecha_cita}}</td>
+             </tr>
+             <tr>
+              <td style="padding:10px 0;color:#334155;font-size:16px;vertical-align:top"><strong>Médico veterinario:</strong></td>
+              <td style="padding:10px 0;color:#1e293b;font-size:16px;vertical-align:top">{{doctor_name}}</td>
+             </tr>
+             <tr>
+              <td style="padding:10px 0;color:#334155;font-size:16px;vertical-align:top"><strong>Indicaciones:</strong></td>
+              <td style="padding:10px 0;color:#1e293b;font-size:16px;vertical-align:top;white-space:pre-line">{{receta_texto}}</td>
+             </tr>
+            </tbody>
+           </table>
+          </div>
+
+          <p style="Margin:20px 0 0;font-size:14px;line-height:21px;color:#333333"><i>Si tiene alguna duda sobre la receta o las indicaciones, no dude en contactarnos respondiendo directamente a nuestros canales de atención autorizados.</i></p>
+         </td>
+        </tr>
+        <tr>
+         <td align="left" style="padding:0 20px 20px">
+          <p style="Margin:0;font-size:14px;color:#333333">Atentamente,</p>
+          <p style="Margin:0;font-size:14px;color:#333333"><strong>Administración {{system_name}}</strong></p>
+         </td>
+        </tr>
+        <tr>
+         <td align="center" style="padding:20px;background-color:#f6f6f6">
+          <p style="Margin:0;font-size:12px;color:#666666">Este es un mensaje automatizado generado por la plataforma <strong>{{system_name}}</strong>.<br>Por razones de seguridad, las respuestas directas a este remitente no son monitoreadas.</p>
+         </td>
+        </tr>
+       </tbody>
+      </table>
+     </td>
+    </tr>
+   </tbody>
+  </table>
+ </body>
+</html>

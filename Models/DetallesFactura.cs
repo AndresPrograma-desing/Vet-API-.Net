@@ -15,6 +15,8 @@ public partial class DetallesFactura
 
     public int? ProductosConsultasId { get; set; }
 
+    public int? ServicioId { get; set; }
+
     public string? Descripcion { get; set; }
 
     public int Cantidad { get; set; }
@@ -32,4 +34,6 @@ public partial class DetallesFactura
     public virtual Vaccine? Vaccine { get; set; }
 
     public virtual ConsultasProducto? ProductosConsultas { get; set; }
+
+    public virtual Servicio? Servicio { get; set; }
 }

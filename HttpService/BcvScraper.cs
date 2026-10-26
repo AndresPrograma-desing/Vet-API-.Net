@@ -27,42 +27,35 @@ public class BcvScraper : IBcvScraper
 
     public async Task<decimal?> ObtenerPrecioBcvAsync()
     {
-        try
-        { 
-            string? bcvUrl;
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var SystemConfig = await _systemConfigRepository.GetSystemConfigAsync();
+        string? bcvUrl;
+        using (var scope = _scopeFactory.CreateScope())
+        {
+            var SystemConfig = await _systemConfigRepository.GetSystemConfigAsync();
 
-                bcvUrl = SystemConfig?.BcvApiUrl;
-            }
+            bcvUrl = SystemConfig?.BcvApiUrl;
+        }
 
-            if (string.IsNullOrWhiteSpace(bcvUrl))
-            {
-                _logger.LogWarning("La URL del BCV no está configurada en la tabla SystemConfigs.");
-                return null;
-            }
-
-            var client = _httpClientFactory.CreateClient("BcvClient");
-            var html = await client.GetStringAsync(bcvUrl); 
-            
-            var doc = new HtmlDocument();
-            doc.LoadHtml(html);
-
-            var nodo = doc.DocumentNode.SelectSingleNode("//div[@id='dolar']//strong");
-
-            if (nodo != null)
-            {
-                string valorTexto = nodo.InnerText.Trim();
-                return decimal.Parse(valorTexto, new CultureInfo("es-VE"));
-            }
-            _logger.LogWarning("No se encontró el precio del BCV.");
+        if (string.IsNullOrWhiteSpace(bcvUrl))
+        {
+            _logger.LogWarning("La URL del BCV no está configurada en la tabla SystemConfigs.");
             return null;
         }
-        catch (Exception ex)
-        { 
-            _logger.LogError(ex, "Error al obtener el precio del BCV." + ex.Message);
-            return null;
+
+        var client = _httpClientFactory.CreateClient("BcvClient");
+        var html = await client.GetStringAsync(bcvUrl);
+
+        var doc = new HtmlDocument();
+        doc.LoadHtml(html);
+
+        var nodo = doc.DocumentNode.SelectSingleNode("//div[@id='dolar']//strong");
+
+        if (nodo != null)
+        {
+            string valorTexto = nodo.InnerText.Trim();
+            return decimal.Parse(valorTexto, new CultureInfo("es-VE"));
         }
+
+        _logger.LogWarning("No se encontró el precio del BCV.");
+        return null;
     }
 }

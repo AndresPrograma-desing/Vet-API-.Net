@@ -491,6 +491,10 @@ namespace vet_api_Net.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("productos_consultas_id");
 
+                    b.Property<int?>("ServicioId")
+                        .HasColumnType("integer")
+                        .HasColumnName("servicio_id");
+
                     b.Property<decimal>("Total")
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)")
@@ -501,6 +505,8 @@ namespace vet_api_Net.Migrations
                         .HasColumnName("vaccine_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex(new[] { "ServicioId" }, "idx_detalles_factura_servicio");
 
                     b.HasIndex(new[] { "VaccineId" }, "idx_detalles_factura_vaccine");
 
@@ -537,7 +543,7 @@ namespace vet_api_Net.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EmailTemplates", (string)null);
+                    b.ToTable("EmailTemplates");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.Especie", b =>
@@ -790,7 +796,7 @@ namespace vet_api_Net.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ia_conocimientos", (string)null);
+                    b.ToTable("ia_conocimientos");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.IntegrationCredential", b =>
@@ -963,6 +969,10 @@ namespace vet_api_Net.Migrations
                         .HasColumnType("text")
                         .HasColumnName("image_url");
 
+                    b.Property<int?>("LastBirthdayNotifiedYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("last_birthday_notified_year");
+
                     b.Property<DateTime?>("LastDataModifiedAt")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("last_data_modified_at");
@@ -1097,7 +1107,7 @@ namespace vet_api_Net.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MoneyTypes", (string)null);
+                    b.ToTable("MoneyTypes");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.MovimientosInventario", b =>
@@ -1509,7 +1519,51 @@ namespace vet_api_Net.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Reportes", (string)null);
+                    b.ToTable("Reportes");
+                });
+
+            modelBuilder.Entity("vet_api_Net.Models.Servicio", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("activo");
+
+                    b.Property<DateTime>("Actualizado")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("actualizado");
+
+                    b.Property<DateTime>("Creado")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado");
+
+                    b.Property<string>("Descripcion")
+                        .HasColumnType("text")
+                        .HasColumnName("descripcion");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("nombre");
+
+                    b.Property<decimal>("Precio")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("precio");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
+                    b.ToTable("servicios", (string)null);
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.SystemConfig", b =>
@@ -1531,6 +1585,21 @@ namespace vet_api_Net.Migrations
                         .HasColumnType("character varying(512)")
                         .HasColumnName("bcv_api_url");
 
+                    b.Property<string>("EmailProviderApiKey")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("email_provider_api_key");
+
+                    b.Property<string>("EmailProviderApiUrl")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("email_provider_api_url");
+
+                    b.Property<string>("EmailProviderFromEmail")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("email_provider_from_email");
+
                     b.Property<string>("FrontendUrl")
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
@@ -1540,24 +1609,9 @@ namespace vet_api_Net.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("last_updated");
 
-                    b.Property<string>("ResendApiKey")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("resend_api_key");
-
-                    b.Property<string>("ResendApiUrl")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("resend_api_url");
-
-                    b.Property<string>("ResendFromEmail")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("resend_from_email");
-
                     b.HasKey("Id");
 
-                    b.ToTable("system_configs", (string)null);
+                    b.ToTable("system_configs");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.UserPermission", b =>
@@ -1848,7 +1902,7 @@ namespace vet_api_Net.Migrations
 
                     b.HasKey("ClientId");
 
-                    b.ToTable("WSMessageAPIData", (string)null);
+                    b.ToTable("WSMessageAPIData");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.WorkerConfig", b =>
@@ -1903,6 +1957,77 @@ namespace vet_api_Net.Migrations
                         .IsUnique();
 
                     b.ToTable("worker_configs", (string)null);
+                });
+
+            modelBuilder.Entity("vet_api_Net.Models.WorkerProcessEvent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("created");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("text")
+                        .HasColumnName("error_message");
+
+                    b.Property<int>("Intents")
+                        .HasColumnType("integer")
+                        .HasColumnName("intents");
+
+                    b.Property<bool>("IsResolved")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_resolved");
+
+                    b.Property<string>("NameEvent")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("name_event");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("resolved_at");
+
+                    b.Property<string>("Snapshot")
+                        .HasColumnType("text")
+                        .HasColumnName("snapshot");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.Property<string>("TypeEvent")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("type_event");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("VinculationData")
+                        .HasColumnType("text")
+                        .HasColumnName("vinculation_data");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "Created" }, "idx_created_worker_process");
+
+                    b.HasIndex(new[] { "IsResolved" }, "idx_is_resolved_worker_process");
+
+                    b.HasIndex(new[] { "NameEvent" }, "idx_name_event_worker_process");
+
+                    b.HasIndex(new[] { "TypeEvent" }, "idx_type_event_worker_process");
+
+                    b.ToTable("worker_process_events", (string)null);
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.AlertasInterna", b =>
@@ -2040,6 +2165,12 @@ namespace vet_api_Net.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("detalles_factura_ibfk_3");
 
+                    b.HasOne("vet_api_Net.Models.Servicio", "Servicio")
+                        .WithMany("DetallesFacturas")
+                        .HasForeignKey("ServicioId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("detalles_factura_ibfk_5");
+
                     b.HasOne("vet_api_Net.Models.Vaccine", "Vaccine")
                         .WithMany()
                         .HasForeignKey("VaccineId")
@@ -2051,6 +2182,8 @@ namespace vet_api_Net.Migrations
                     b.Navigation("Producto");
 
                     b.Navigation("ProductosConsultas");
+
+                    b.Navigation("Servicio");
 
                     b.Navigation("Vaccine");
                 });
@@ -2410,6 +2543,11 @@ namespace vet_api_Net.Migrations
                     b.Navigation("HistorialPrecios");
 
                     b.Navigation("MovimientosInventarios");
+                });
+
+            modelBuilder.Entity("vet_api_Net.Models.Servicio", b =>
+                {
+                    b.Navigation("DetallesFacturas");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.Usuario", b =>

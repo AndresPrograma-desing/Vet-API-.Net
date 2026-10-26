@@ -51,9 +51,9 @@ public class ResendEmailService : IEmailSenderService
             {
                 var systemConfig = await _systemConfigRepository.GetSystemConfigAsync();
 
-                apiKey = systemConfig?.ResendApiKey;
-                fromEmail = systemConfig?.ResendFromEmail;
-                apiUrl = systemConfig?.ResendApiUrl;
+                apiKey = systemConfig?.EmailProviderApiKey;
+                fromEmail = systemConfig?.EmailProviderFromEmail;
+                apiUrl = systemConfig?.EmailProviderApiUrl;
             }
 
             // Fallback para appsettings.json en desarrollo local

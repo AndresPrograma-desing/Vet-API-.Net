@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DTOs;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Repositories;
+using vet_api_Net.Interfaze.Utilities;
 using vet_api_Net.WorkerSettings;
 
 namespace vet_api_Net.Worker
@@ -191,6 +193,19 @@ namespace vet_api_Net.Worker
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error al escanear y eliminar PDFs de consultas expirados.");
+
+                    using (var errorScope = _services.CreateScope())
+                    {
+                        var processEventUtilities = errorScope.ServiceProvider.GetRequiredService<IProcessEventUtilities>();
+                        await processEventUtilities.RegisterErrorAsync(new RegisterProcessEventDTO
+                        {
+                            NameEvent = WorkerNames.DeleteConsultaPdfWorker,
+                            TypeEvent = ProcessEventTypes.Error,
+                            Title = "Fallo al escanear y eliminar PDFs de consultas expirados",
+                            ErrorMessage = ex.Message
+                        });
+                    }
+
                     _logger.LogInformation("DeleteConsultaPdfWorker finished.");
                 }
 

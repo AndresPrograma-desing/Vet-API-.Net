@@ -26,16 +26,16 @@ namespace vet_api_Net.Models
         [StringLength(512)]
         public string? BcvApiUrl { get; set; }
 
-        [Column("resend_api_url")]
+        [Column("email_provider_api_url")]
         [StringLength(512)]
-        public string? ResendApiUrl { get; set; }
+        public string? EmailProviderApiUrl { get; set; }
 
-        [Column("resend_api_key")]
+        [Column("email_provider_api_key")]
         [StringLength(512)]
-        public string? ResendApiKey { get; set; }
+        public string? EmailProviderApiKey { get; set; }
 
-        [Column("resend_from_email")]
+        [Column("email_provider_from_email")]
         [StringLength(512)]
-        public string? ResendFromEmail { get; set; }
+        public string? EmailProviderFromEmail { get; set; }
     }
 }

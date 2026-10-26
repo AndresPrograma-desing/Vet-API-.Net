@@ -10,7 +10,9 @@ using vet_api_Net.Interfaze.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
+using DTOs;
 using vet_api_Net.Constants;
+using vet_api_Net.Interfaze.Utilities;
 using vet_api_Net.WorkerSettings;
 
 namespace vet_api_Net.Worker
@@ -166,6 +168,19 @@ namespace vet_api_Net.Worker
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error crítico en el ciclo de DeleteReportWorker");
+
+                    using (var errorScope = _services.CreateScope())
+                    {
+                        var processEventUtilities = errorScope.ServiceProvider.GetRequiredService<IProcessEventUtilities>();
+                        await processEventUtilities.RegisterErrorAsync(new RegisterProcessEventDTO
+                        {
+                            NameEvent = WorkerNames.DeleteReportWorker,
+                            TypeEvent = ProcessEventTypes.Error,
+                            Title = "Fallo en el ciclo de eliminación de reportes expirados",
+                            ErrorMessage = ex.Message
+                        });
+                    }
+
                     _logger.LogInformation("DeleteReportWorker finished.");
                 }
  

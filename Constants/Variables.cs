@@ -28,6 +28,17 @@ namespace vet_api_Net.Constants
         public const string AutoGenerateReportWorker = "AutoGenerateReportWorker";
         public const string VaccinationReminderWorker = "VaccinationReminderWorker";
         public const string HistoriaClinicaSummaryWorker = "HistoriaClinicaSummaryWorker";
+        public const string ProcessEventsWorker = "ProcessEventsWorker";
+        public const string BcvWorker = "BcvWorker";
+        public const string ClearNotificationsWorker = "ClearNotificationsWorker";
+        public const string BirthdayPetsWorker = "BirthdayPetsWorker";
+    }
+
+    public static class ProcessEventTypes
+    {
+        public const string Error = "Error";
+        public const string Warning = "Warning";
+        public const string Success = "Success";
     }
 
     public static class AiProviders
@@ -51,5 +62,11 @@ namespace vet_api_Net.Constants
         public const string FrequencyDays = "days";
         public const string FrequencyMonths = "months";
         public const string FrequencyYears = "years";
+    }
+
+    public static class InventoryVariables
+    {
+        public const string TipoEntrada = "entrada";
+        public const string TipoSalida = "salida";
     }
 }

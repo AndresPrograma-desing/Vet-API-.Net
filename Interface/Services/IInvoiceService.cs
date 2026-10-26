@@ -12,4 +12,5 @@ public interface IInvoiceService
     Task<FacturationDTO?> ChangeStatusFacturaAsync(int facturaId, string estadoPago, string? metodoPago = null);
     Task<FacturaSettingDTO?> GetFacturaSettingsAsync();
     Task SaveOrUpdateFacturaPersistenceAsync(int citaId, int consultaId, string numeroFactura, string urlDocx, FacturationDTO dto);
+    Task<ClientAccountDTO> GetClientAccountAsync(int clientId);
 }

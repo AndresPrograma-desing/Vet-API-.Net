@@ -64,6 +64,7 @@ public class EmailService : IEmailService
         DateTime? citaFecha = null;
         TimeOnly? citaHora = null;
         string doctorName = string.Empty;
+        string recetaTexto = string.Empty;
 
         try
         { 
@@ -73,9 +74,10 @@ public class EmailService : IEmailService
                 throw new InvalidOperationException(ResponseMessagesEmailsController.TemplateNotFound);
             } 
 
-            if (typeEmail.Equals(_templatesHTML.Recibos, StringComparison.OrdinalIgnoreCase) || 
+            if (typeEmail.Equals(_templatesHTML.Recibos, StringComparison.OrdinalIgnoreCase) ||
+                typeEmail.Equals(_templatesHTML.Receta, StringComparison.OrdinalIgnoreCase) ||
                 typeEmail.Equals("Citas", StringComparison.OrdinalIgnoreCase))
-            { 
+            {
                 var cita = await _repository.GetCitaWithDetailsAsync(entityId)
                     ?? throw new KeyNotFoundException(ResponseMessagesWSMessageAPI.CitaNotFound);
 
@@ -99,21 +101,38 @@ public class EmailService : IEmailService
                     if (cita.Estado != Status.Completed)
                         throw new InvalidOperationException(ResponseMessagesFacturaErrors.OnlyCitaAllowed);
 
-                    if (consulta == null) 
+                    if (consulta == null)
                         throw new KeyNotFoundException(ResponseMessagesWSMessageAPI.ConsultaNotFound);
 
                     var factura = await _repository.GetFacturaByConsultaIdAsync(consulta.Id)
                         ?? throw new KeyNotFoundException(ResponseMessagesWSMessageAPI.FacturaNotFound);
-                    
+
                     facturaNumero = factura.NumeroFactura;
                     facturaId = factura.Id;
 
                     var (bytes, name) = await LoadInvoicePdfAsync(factura.UrlDocx, factura.NumeroFactura);
                     pdfBytes = bytes;
                     pdfName = name;
-                    
+
                     if (pdfBytes == null)
                         throw new InvalidOperationException(string.Format(ResponseMessagesEmailsController.PdfNotFound, factura.NumeroFactura));
+                }
+                else if (typeEmail.Equals(_templatesHTML.Receta, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (consulta == null)
+                        throw new KeyNotFoundException(ResponseMessagesWSMessageAPI.ConsultaNotFound);
+
+                    if (string.IsNullOrWhiteSpace(consulta.UrlDocx))
+                        throw new InvalidOperationException(string.Format(ResponseMessagesEmailsController.PdfNotFound, consulta.Id));
+
+                    var (bytes, name) = await LoadRecetaPdfAsync(consulta.UrlDocx);
+                    pdfBytes = bytes;
+                    pdfName = name;
+
+                    if (pdfBytes == null)
+                        throw new InvalidOperationException(string.Format(ResponseMessagesEmailsController.PdfNotFound, consulta.Id));
+
+                    recetaTexto = consulta.Receta ?? string.Empty;
                 }
             }
             else if (typeEmail.Equals("BienvenidaUsuario", StringComparison.OrdinalIgnoreCase) || 
@@ -169,6 +188,13 @@ public class EmailService : IEmailService
                 htmlBody = htmlBody.Replace("{{fecha_cita}}", citaFecha?.ToString("dd/MM/yyyy") ?? string.Empty);
                 htmlBody = htmlBody.Replace("{{hora_cita}}", citaHora?.ToString("HH:mm") ?? string.Empty);
                 htmlBody = htmlBody.Replace("{{doctor_name}}", doctorName);
+            }
+            else if (typeEmail.Equals(_templatesHTML.Receta, StringComparison.OrdinalIgnoreCase))
+            {
+                subject = $"Receta médica - {_apiSettings.SystemName}";
+                htmlBody = htmlBody.Replace("{{fecha_cita}}", citaFecha?.ToString("dd/MM/yyyy") ?? string.Empty);
+                htmlBody = htmlBody.Replace("{{doctor_name}}", doctorName);
+                htmlBody = htmlBody.Replace("{{receta_texto}}", recetaTexto);
             }
             
             bool emailResult = await _emailSenderService.SendEmailAsync(clientEmail, subject, htmlBody, pdfBytes, pdfName);
@@ -240,16 +266,16 @@ public class EmailService : IEmailService
     {
         var systemConfig = await _systemConfigRepository.GetSystemConfigAsync();
 
-        bool isApiKeyConfigured = !string.IsNullOrWhiteSpace(systemConfig?.ResendApiKey);
+        bool isApiKeyConfigured = !string.IsNullOrWhiteSpace(systemConfig?.EmailProviderApiKey);
 
         return new DataResendDto
         {
-            ClientEmail = systemConfig?.ResendFromEmail ?? string.Empty,
+            ClientEmail = systemConfig?.EmailProviderFromEmail ?? string.Empty,
             ApiKey = string.Empty, // Protegemos la ApiKey para no exponerla al cliente
-            UrlResend = !string.IsNullOrWhiteSpace(systemConfig?.ResendApiUrl) && Uri.TryCreate(systemConfig.ResendApiUrl, UriKind.Absolute, out var uri) 
-                ? uri.GetLeftPart(UriPartial.Authority) 
-                : "https://api.resend.com",
-            ApiUrl = systemConfig?.ResendApiUrl ?? "https://api.resend.com/emails",
+            UrlResend = !string.IsNullOrWhiteSpace(systemConfig?.EmailProviderApiUrl) && Uri.TryCreate(systemConfig.EmailProviderApiUrl, UriKind.Absolute, out var uri)
+                ? uri.GetLeftPart(UriPartial.Authority)
+                : "https://context-hub-memory.vercel.app",
+            ApiUrl = systemConfig?.EmailProviderApiUrl ?? "https://context-hub-memory.vercel.app",
             Active = isApiKeyConfigured
         };
     }
@@ -262,12 +288,12 @@ public class EmailService : IEmailService
         }
 
         var currentConfig = await _systemConfigRepository.GetSystemConfigAsync();
-        
+
         string apiKeyToSave = string.IsNullOrWhiteSpace(dto.ApiKey)
-            ? currentConfig?.ResendApiKey ?? string.Empty
+            ? currentConfig?.EmailProviderApiKey ?? string.Empty
             : dto.ApiKey;
 
-        await _systemConfigRepository.UpdateResendConfigAsync(apiKeyToSave, dto.ClientEmail, dto.ApiUrl);
+        await _systemConfigRepository.UpdateEmailProviderConfigAsync(apiKeyToSave, dto.ClientEmail, dto.ApiUrl);
     }
 
     private async Task<(byte[]? bytes, string? name)> LoadInvoicePdfAsync(string? urlDocx, string numeroFactura)
@@ -320,5 +346,34 @@ public class EmailService : IEmailService
         }
 
         return (null, null);
+    }
+
+    private async Task<(byte[]? bytes, string? name)> LoadRecetaPdfAsync(string? urlDocx)
+    {
+        if (string.IsNullOrWhiteSpace(urlDocx)) return (null, null);
+
+        var webRoot = _env?.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+        var dir = Path.Combine(webRoot, "consultas");
+
+        if (!Directory.Exists(dir)) return (null, null);
+
+        string? fileName = null;
+        try
+        {
+            var uri = new Uri(urlDocx);
+            fileName = Path.GetFileName(uri.LocalPath);
+        }
+        catch
+        {
+            fileName = urlDocx.Split('/').LastOrDefault();
+        }
+
+        if (string.IsNullOrWhiteSpace(fileName)) return (null, null);
+
+        var filePath = Path.Combine(dir, fileName);
+        if (!File.Exists(filePath)) return (null, null);
+
+        var bytes = await File.ReadAllBytesAsync(filePath);
+        return (bytes, fileName);
     }
 }

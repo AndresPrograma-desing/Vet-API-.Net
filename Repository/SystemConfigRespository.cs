@@ -23,7 +23,7 @@ public class SystemConfigRespository: ISystemConfigRepository
         return  await _context.SystemConfigs.FirstOrDefaultAsync();
     }
 
-    public async Task UpdateResendConfigAsync(string apiKey, string fromEmail, string apiUrl)
+    public async Task UpdateEmailProviderConfigAsync(string apiKey, string fromEmail, string apiUrl)
     {
         var config = await _context.SystemConfigs.FirstOrDefaultAsync();
         if (config == null)
@@ -38,9 +38,9 @@ public class SystemConfigRespository: ISystemConfigRepository
             _context.SystemConfigs.Add(config);
         }
 
-        config.ResendApiKey = apiKey;
-        config.ResendFromEmail = fromEmail;
-        config.ResendApiUrl = apiUrl;
+        config.EmailProviderApiKey = apiKey;
+        config.EmailProviderFromEmail = fromEmail;
+        config.EmailProviderApiUrl = apiUrl;
         config.LastUpdated = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();

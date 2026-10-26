@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using DTOs;
@@ -13,6 +14,7 @@ using vet_api_Net.Constants;
 using vet_api_Net.Infrastructure.Configuration;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaze.Utilities;
 using vet_api_Net.Models;
 
 //Describe: Background service que detecta mascotas pendientes de un resumen clínico por IA (sin historia previa, o con datos modificados tras el último análisis) y, al acumular un lote mínimo, las envía en un único request a Gemini y guarda el resumen devuelto por cada paciente. Su habilitación e intervalo son configurables desde la tabla worker_configs (fila "HistoriaClinicaSummaryWorker"), con appsettings.json como valores por defecto si no hay fila en la BD.
@@ -100,6 +102,7 @@ public class HistoriaClinicaSummaryWorker : BackgroundService
         var repository = scope.ServiceProvider.GetRequiredService<IHistoriaClinicaRepository>();
         var geminiService = scope.ServiceProvider.GetRequiredService<IGeminiService>();
         var geminiOptions = scope.ServiceProvider.GetRequiredService<IOptions<GeminiOptions>>().Value;
+        var processEventUtilities = scope.ServiceProvider.GetRequiredService<IProcessEventUtilities>();
 
         var batchMinSize = geminiOptions.BatchMinSize > 0 ? geminiOptions.BatchMinSize : 8;
         var pendingMascotas = await repository.GetMascotasPendingSummaryAsync(limit: 200);
@@ -153,10 +156,21 @@ public class HistoriaClinicaSummaryWorker : BackgroundService
         try
         {
             resultados = await geminiService.GenerarResumenesBatchAsync(pacientesRequest);
+            await processEventUtilities.ResolveAsync(WorkerNames.HistoriaClinicaSummaryWorker, GeminiBatchVinculationKey(pendingMascotas.Select(m => m.Id)));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "No se pudo generar el lote de resúmenes clínicos con Gemini. Se reintentará en el próximo ciclo.");
+
+            await processEventUtilities.RegisterErrorAsync(new RegisterProcessEventDTO
+            {
+                NameEvent = WorkerNames.HistoriaClinicaSummaryWorker,
+                TypeEvent = ProcessEventTypes.Error,
+                Title = $"Fallo al generar resúmenes clínicos con Gemini (lote de {pendingMascotas.Count} mascotas)",
+                ErrorMessage = ex.Message,
+                VinculationData = GeminiBatchVinculationKey(pendingMascotas.Select(m => m.Id))
+            });
+
             _logger.LogInformation("HistoriaClinicaSummaryWorker finished.");
             return;
         }
@@ -186,6 +200,22 @@ public class HistoriaClinicaSummaryWorker : BackgroundService
                 };
 
                 repository.Add(nuevaHistoria);
+
+                await processEventUtilities.RegisterSuccessAsync(new RegisterProcessEventDTO
+                {
+                    NameEvent = WorkerNames.HistoriaClinicaSummaryWorker,
+                    TypeEvent = ProcessEventTypes.Success,
+                    Title = $"Resumen clínico generado con IA para {mascota.Nombre} (Mascota {mascota.Id})",
+                    VinculationData = $"Mascota:{mascota.Id}",
+                    Snapshot = JsonSerializer.Serialize(new
+                    {
+                        mascota.Id,
+                        mascota.Nombre,
+                        resumen.ResumenIa,
+                        resumen.AlertasRiesgoIa,
+                        resumen.SugerenciasIa
+                    })
+                });
             }
             catch (Exception ex)
             {
@@ -197,4 +227,7 @@ public class HistoriaClinicaSummaryWorker : BackgroundService
 
         _logger.LogInformation("HistoriaClinicaSummaryWorker finished.");
     }
+
+    private static string GeminiBatchVinculationKey(IEnumerable<int> mascotaIds) =>
+        $"HistoriaClinicaBatch:{string.Join(",", mascotaIds.OrderBy(id => id))}";
 }

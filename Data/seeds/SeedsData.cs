@@ -55,6 +55,7 @@ namespace vet_api_Net.Data.seeds
                     TRUNCATE TABLE mascotas RESTART IDENTITY CASCADE;
                     TRUNCATE TABLE clientes RESTART IDENTITY CASCADE;
                     TRUNCATE TABLE productos RESTART IDENTITY CASCADE;
+                    TRUNCATE TABLE servicios RESTART IDENTITY CASCADE;
                     TRUNCATE TABLE especies RESTART IDENTITY CASCADE;
                     {{TRUNCATE_USUARIOS}}
                     TRUNCATE TABLE categorias_productos RESTART IDENTITY CASCADE;
@@ -84,6 +85,7 @@ namespace vet_api_Net.Data.seeds
                     TRUNCATE TABLE mascotas;
                     TRUNCATE TABLE clientes;
                     TRUNCATE TABLE productos;
+                    TRUNCATE TABLE servicios;
                     TRUNCATE TABLE especies;
                     {{TRUNCATE_USUARIOS}}
                     TRUNCATE TABLE categorias_productos;
@@ -143,6 +145,7 @@ namespace vet_api_Net.Data.seeds
 
             var doctor = context.Usuarios.FirstOrDefault(u => u.Rol == "doctor") ?? context.Usuarios.FirstOrDefault();
             var secretaria = context.Usuarios.FirstOrDefault(u => u.Rol == "secretaria") ?? context.Usuarios.FirstOrDefault();
+            var admin = context.Usuarios.FirstOrDefault(u => u.Rol == "admin") ?? context.Usuarios.FirstOrDefault();
 
             if (doctor == null || secretaria == null)
             {
@@ -535,6 +538,84 @@ namespace vet_api_Net.Data.seeds
                 }
             }
             context.Productos.AddRange(productos);
+            context.SaveChanges();
+
+            // Catálogo dummy de Servicios (HU-26): tarifas fijas que se pueden agregar a un recibo
+            // junto a productos y vacunas (ver InvoiceService.MapearItemsAsync).
+            var servicios = new List<Servicio>
+            {
+                new Servicio { Nombre = "Consulta general", Descripcion = "Evaluación clínica estándar.", Precio = 15.00m, Activo = true, Creado = DateTime.Now, Actualizado = DateTime.Now },
+                new Servicio { Nombre = "Consulta de emergencia", Descripcion = "Atención fuera de horario regular.", Precio = 35.00m, Activo = true, Creado = DateTime.Now, Actualizado = DateTime.Now },
+                new Servicio { Nombre = "Baño y peluquería", Descripcion = "Baño, corte y cepillado.", Precio = 12.00m, Activo = true, Creado = DateTime.Now, Actualizado = DateTime.Now },
+                new Servicio { Nombre = "Corte de uñas", Descripcion = "Corte y limado de uñas.", Precio = 5.00m, Activo = true, Creado = DateTime.Now, Actualizado = DateTime.Now },
+                new Servicio { Nombre = "Limpieza dental", Descripcion = "Profilaxis dental bajo sedación.", Precio = 40.00m, Activo = true, Creado = DateTime.Now, Actualizado = DateTime.Now },
+                new Servicio { Nombre = "Cirugía menor", Descripcion = "Procedimientos ambulatorios simples.", Precio = 60.00m, Activo = true, Creado = DateTime.Now, Actualizado = DateTime.Now },
+                new Servicio { Nombre = "Hospitalización (día)", Descripcion = "Tarifa diaria de hospitalización.", Precio = 25.00m, Activo = true, Creado = DateTime.Now, Actualizado = DateTime.Now },
+                new Servicio { Nombre = "Radiografía", Descripcion = "Estudio radiográfico simple.", Precio = 20.00m, Activo = true, Creado = DateTime.Now, Actualizado = DateTime.Now },
+                new Servicio { Nombre = "Eutanasia", Descripcion = "Procedimiento con acompañamiento.", Precio = 30.00m, Activo = false, Creado = DateTime.Now, Actualizado = DateTime.Now },
+                new Servicio { Nombre = "Traslado a domicilio", Descripcion = "Recolección o entrega de mascota.", Precio = 10.00m, Activo = true, Creado = DateTime.Now, Actualizado = DateTime.Now }
+            };
+            context.Servicios.AddRange(servicios);
+            context.SaveChanges();
+
+            // Datos dummy de Kardex de Inventario (HU-13) e Historial de Precios (HU-14): se generan
+            // directamente aquí (no vía ProductService) porque el seeder corre antes de que exista
+            // tráfico real de la app; en producción estas filas las crea ProductService.DecreaseStockAsync/
+            // UpdateProductAsync automáticamente cada vez que cambia el stock o el precio de un producto.
+            var productosParaMovimientos = productos.Take(25).ToList();
+            var movimientos = new List<MovimientosInventario>();
+            var movRng = new Random(20261025);
+            foreach (var producto in productosParaMovimientos)
+            {
+                var stockActual = producto.Stock ?? 0;
+                var stockPrevio = Math.Max(stockActual - 10, 0);
+                movimientos.Add(new MovimientosInventario
+                {
+                    ProductoId = producto.Id,
+                    TipoMovimiento = "entrada",
+                    Cantidad = stockActual - stockPrevio,
+                    StockAnterior = stockPrevio,
+                    StockNuevo = stockActual,
+                    Motivo = "Reposición de stock inicial",
+                    UsuarioId = admin.Id,
+                    FechaMovimiento = DateTime.Now.AddDays(-movRng.Next(1, 20))
+                });
+
+                if (stockActual > 5)
+                {
+                    var salida = movRng.Next(1, Math.Min(5, stockActual));
+                    movimientos.Add(new MovimientosInventario
+                    {
+                        ProductoId = producto.Id,
+                        TipoMovimiento = "salida",
+                        Cantidad = salida,
+                        StockAnterior = stockActual,
+                        StockNuevo = stockActual - salida,
+                        Motivo = "Venta en consulta",
+                        UsuarioId = secretaria.Id,
+                        FechaMovimiento = DateTime.Now.AddDays(-movRng.Next(1, 10))
+                    });
+                }
+            }
+            context.MovimientosInventarios.AddRange(movimientos);
+            context.SaveChanges();
+
+            var productosParaHistorialPrecio = productos.Skip(25).Take(15).ToList();
+            var historialPrecios = new List<HistorialPrecio>();
+            foreach (var producto in productosParaHistorialPrecio)
+            {
+                var precioAnterior = Math.Round(producto.PrecioVenta * 0.9m, 2);
+                historialPrecios.Add(new HistorialPrecio
+                {
+                    ProductoId = producto.Id,
+                    PrecioAnterior = precioAnterior,
+                    PrecioNuevo = producto.PrecioVenta,
+                    UsuarioId = admin.Id,
+                    Motivo = "Ajuste por inflación",
+                    FechaCambio = DateTime.Now.AddDays(-movRng.Next(1, 30))
+                });
+            }
+            context.HistorialPrecios.AddRange(historialPrecios);
             context.SaveChanges();
 
             var baseDate = DateTime.Now;
@@ -1028,9 +1109,9 @@ namespace vet_api_Net.Data.seeds
                     FrontendUrl = "https://happy-pets-web.vercel.app",
                     BackendExternalUrl = "https://g27frlv5-5168.use2.devtunnels.ms/",
                     BcvApiUrl = "https://www.bcv.org.ve",
-                    ResendApiUrl = "https://api.resend.com/emails",
-                    ResendApiKey = "re_8ihXsxrL_NRxgtRcoyqjou3J75MjbJdFo",// Ya no esta funcional
-                    ResendFromEmail = "HappyPets <[EMAIL_ADDRESS]>",
+                    EmailProviderApiUrl = "https://context-hub-memory.vercel.app",
+                    EmailProviderApiKey = string.Empty,
+                    EmailProviderFromEmail = "HappyPets <[EMAIL_ADDRESS]>",
                     LastUpdated = DateTime.UtcNow
                 };
                 context.SystemConfigs.Add(systemConfig);

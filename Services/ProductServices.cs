@@ -16,11 +16,19 @@ public class ProductService : IProductService, ICreateProductService
 {
     private readonly IProductRepository _repository;
     private readonly ICurrencyUtilities _currencyService;
+    private readonly IMovimientosInventarioService _movimientosInventarioService;
+    private readonly IHistorialPrecioService _historialPrecioService;
 
-    public ProductService(IProductRepository repository, ICurrencyUtilities currencyService)
+    public ProductService(
+        IProductRepository repository,
+        ICurrencyUtilities currencyService,
+        IMovimientosInventarioService movimientosInventarioService,
+        IHistorialPrecioService historialPrecioService)
     {
         _repository = repository;
         _currencyService = currencyService;
+        _movimientosInventarioService = movimientosInventarioService;
+        _historialPrecioService = historialPrecioService;
     }
 
     public async Task<List<ProductDTO>> GetProductsAsync(int? categoriaId, string searchTerm, decimal? maxPrice, int pageNumber, int pageSize)
@@ -84,7 +92,7 @@ public class ProductService : IProductService, ICreateProductService
         return product;
     }
 
-    public async Task<Producto> DecreaseStockAsync(int id, int quantity)
+    public async Task<Producto> DecreaseStockAsync(int id, int quantity, int? userId = null, string? reason = null, int? referenceId = null)
     {
         if (quantity <= 0)
             throw new ArgumentException(ResponseMessagesProduct.ProductCantPositive);
@@ -97,13 +105,27 @@ public class ProductService : IProductService, ICreateProductService
         if (currentStock < quantity)
             throw new InvalidOperationException(ResponseMessagesProduct.NotSufficientStock);
 
-        product.Stock = currentStock - quantity;
+        var newStock = currentStock - quantity;
+        product.Stock = newStock;
         _repository.UpdateProduct(product);
         await _repository.SaveChangesAsync();
 
+        if (userId.HasValue)
+        {
+            await _movimientosInventarioService.RegisterMovementAsync(
+                product.Id,
+                InventoryVariables.TipoSalida,
+                quantity,
+                currentStock,
+                newStock,
+                reason ?? ResponseMessagesProduct.DefaultDecreaseMotivo,
+                userId.Value,
+                referenceId);
+        }
+
         return product;
     }
-    public async Task<(Producto Product, bool HasChanges)> UpdateProductAsync(int id, ProductsUpdateDTO updatedProductDto)
+    public async Task<(Producto Product, bool HasChanges)> UpdateProductAsync(int id, ProductsUpdateDTO updatedProductDto, int? userId = null)
     {
         ArgumentNullException.ThrowIfNull(updatedProductDto);
 
@@ -154,6 +176,9 @@ public class ProductService : IProductService, ICreateProductService
             return (existingProduct, false);
         }
 
+        var previousPrice = existingProduct.Precio;
+        var previousStock = existingProduct.Stock ?? 0;
+
         existingProduct.Precio = targetPrecio;
         existingProduct.PrecioVenta = targetPrecioVenta;
         existingProduct.Codigo = targetCodigo;
@@ -168,6 +193,32 @@ public class ProductService : IProductService, ICreateProductService
 
         _repository.UpdateProduct(existingProduct);
         await _repository.SaveChangesAsync();
+
+        if (userId.HasValue)
+        {
+            if (previousPrice != targetPrecio)
+            {
+                await _historialPrecioService.RegisterPriceChangeAsync(
+                    existingProduct.Id,
+                    previousPrice,
+                    targetPrecio,
+                    userId.Value,
+                    ResponseMessagesProduct.DefaultPriceChangeMotivo);
+            }
+
+            var newStock = targetStock ?? 0;
+            if (previousStock != newStock)
+            {
+                await _movimientosInventarioService.RegisterMovementAsync(
+                    existingProduct.Id,
+                    newStock > previousStock ? InventoryVariables.TipoEntrada : InventoryVariables.TipoSalida,
+                    Math.Abs(newStock - previousStock),
+                    previousStock,
+                    newStock,
+                    ResponseMessagesProduct.DefaultUpdateStockMotivo,
+                    userId.Value);
+            }
+        }
 
         return (existingProduct, true);
     }
