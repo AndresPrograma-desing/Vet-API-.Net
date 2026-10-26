@@ -116,6 +116,7 @@ namespace vet_api_Net.Routes
             public const string StatusPago = "{id}/estado-pago";
             public const string Settings = "settings-facturas";
             public const string UpdateSettings = "settings-facturas/auto-delete";
+            public const string ClientAccount = "client/{clientId}/account";
         }
         public static class UsersPetsController
         {
@@ -140,6 +141,10 @@ namespace vet_api_Net.Routes
             public const string Quantity = "{id}/quantity";
             public const string UpdateProducto = "update/{id}";
             public const string Categories = "categories";
+        }
+        public static class MovimientosInventarioController
+        {
+            public const string AlertasStockMinimo = "alertas-stock-minimo";
         }
         public static class ReportController
         {
@@ -174,6 +179,13 @@ namespace vet_api_Net.Routes
             public const string DownloadCredencial = "credencial/{id}";
             public const string DownloadCarnet = "mascota/{mascotaId}/carnet";
             public const string DownloadHistoriaClinica = "mascota/{mascotaId}/historial";
+        }
+        public static class Servicio
+        {
+            public const string GetById = "{id}";
+            public const string Create = "create";
+            public const string Update = "{id}";
+            public const string Delete = "{id}";
         }
         public static class Vaccine
         {

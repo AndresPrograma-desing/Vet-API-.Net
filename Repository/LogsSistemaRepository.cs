@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,12 +24,35 @@ public class LogsSistemaRepository : ILogsSistemaRepository
         await _context.LogsSistemas.AddAsync(log);
     }
 
-    public async Task<List<LogsSistema>> GetLogsAsync(int pageNumber, int pageSize)
+    public async Task<(List<LogsSistema> Items, int TotalCount)> GetLogsAsync(
+        int pageNumber,
+        int pageSize,
+        int? userId = null,
+        string? action = null,
+        DateTime? dateFrom = null,
+        DateTime? dateTo = null)
     {
-        return await _context.LogsSistemas
+        var query = _context.LogsSistemas.AsQueryable();
+
+        if (userId.HasValue)
+            query = query.Where(l => l.UsuarioId == userId.Value);
+
+        if (!string.IsNullOrWhiteSpace(action))
+        {
+            var cleanAction = action.Trim().ToLower();
+            query = query.Where(l => l.Accion.ToLower().Contains(cleanAction));
+        }
+
+        if (dateFrom.HasValue)
+            query = query.Where(l => l.CreatedAt >= dateFrom.Value);
+
+        if (dateTo.HasValue)
+            query = query.Where(l => l.CreatedAt <= dateTo.Value);
+
+        return await query
             .Include(l => l.Usuario)
             .OrderByDescending(l => l.CreatedAt)
-            .ToPagedListAsync(pageNumber, pageSize);
+            .ToPagedResultAsync(pageNumber, pageSize);
     }
 
     public async Task<bool> SaveChangesAsync()

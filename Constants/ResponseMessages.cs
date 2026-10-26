@@ -406,6 +406,7 @@ namespace vet_api_Net.Constants
         public const string Active = "activo";
         public const string Inactive = "inactivo";
         public const string InvoicePending = "factura_pendiente";
+        public const string Paid = "pagada";
         public const string Busy = "ocupado";
         public const string NotAvailable = "no_disponible";
         public const string Available = "disponible";
@@ -454,6 +455,9 @@ namespace vet_api_Net.Constants
         public const string UpdateProductSuccess = "Producto actualizado exitosamente.";
         public const string UpdateProductNoChanges = "No se aplicaron cambios.";
         public const string ProductCantEqualOrLessThan = "El precio de venta no puede ser menor o igual al precio de compra.";
+        public const string DefaultDecreaseMotivo = "Salida de stock.";
+        public const string DefaultUpdateStockMotivo = "Ajuste manual de stock.";
+        public const string DefaultPriceChangeMotivo = "Actualización de precio.";
 
         public static class ResponseMessagesProductCreate
         {
@@ -870,6 +874,20 @@ namespace vet_api_Net.Constants
         public static string DayBeforeReminderNotificationTitle(string petName) => $"Vacuna mañana: {petName}";
         public static string DayBeforeReminderNotificationMessage(string petName, string vaccineName, string dueDate) =>
             $"La mascota {petName} tiene programada la vacuna {vaccineName} para mañana {dueDate}. Confirma la asistencia con el cliente.";
+    }
+    public static class ResponseMessagesBirthday
+    {
+        public static string ReminderEmailSubject(string systemName) => $"¡Feliz cumpleaños de tu mascota! - {systemName}";
+        public static string NotificationTitle(string petName) => $"Cumpleaños hoy: {petName}";
+        public static string NotificationMessage(string petName, string clientName) =>
+            $"Hoy es el cumpleaños de {petName}, mascota de {clientName}. Se envió un saludo automático por correo.";
+    }
+    public static class ResponseMessagesServicio
+    {
+        public const string ServicioNotFound = "Servicio no encontrado.";
+        public const string ServicioNombreRequired = "El nombre del servicio es requerido.";
+        public const string ServicioPrecioInvalid = "El precio del servicio no puede ser negativo.";
+        public const string ServicioNombreAlreadyExists = "Ya existe un servicio con ese nombre.";
     }
     public static class ResponseMessagesEspecie
     {

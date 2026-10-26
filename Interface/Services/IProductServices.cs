@@ -11,9 +11,9 @@ public interface IProductService
 
     Task<Producto> DeleteProductAsync(int id);
 
-    Task<Producto> DecreaseStockAsync(int id, int quantity);
+    Task<Producto> DecreaseStockAsync(int id, int quantity, int? userId = null, string? reason = null, int? referenceId = null);
 
-    Task<(Producto Product, bool HasChanges)> UpdateProductAsync(int id, ProductsUpdateDTO updatedProductDto);
+    Task<(Producto Product, bool HasChanges)> UpdateProductAsync(int id, ProductsUpdateDTO updatedProductDto, int? userId = null);
     Task<List<CategoryProductsDTO>> GetCategoriesAsync();
 
 }

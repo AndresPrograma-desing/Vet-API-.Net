@@ -1,7 +1,17 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace DTOs;
+
+public record LogsSistemaListResponseDTO
+{
+    [JsonPropertyName("items")]
+    public List<LogsSistemaResponseDTO> Items { get; set; } = new();
+
+    [JsonPropertyName("total_count")]
+    public int TotalCount { get; set; }
+}
 
 public record LogsSistemaResponseDTO
 {

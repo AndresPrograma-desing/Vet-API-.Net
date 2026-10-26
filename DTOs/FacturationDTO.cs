@@ -17,6 +17,9 @@ public record FacturationItemDTO
     [JsonPropertyName("vaccine_id")]
     public int? VaccineId { get; init; }
 
+    [JsonPropertyName("servicio_id")]
+    public int? ServicioId { get; init; }
+
     [JsonPropertyName("codigo")]
     [Required(ErrorMessage = ResponseMessagesDtos.Factura.CodigoRequired)]
     [StringLength(50, ErrorMessage = ResponseMessagesDtos.Factura.CodigoMaxLength)]
