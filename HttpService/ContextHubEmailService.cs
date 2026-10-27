@@ -90,12 +90,13 @@ public class ContextHubEmailService : IEmailSenderService
                 return false;
             }
 
-            _logger.LogInformation(
-                "[DIAG] ContextHub mail config -> baseUrl='{BaseUrl}' mailsApiKeyLen={KeyLen} mailsApiKeyLast4='{Last4}' anonKeySet={AnonSet}",
+            _logger.LogWarning(
+                "[DIAG] ContextHub mail config -> baseUrl='{BaseUrl}' mailsApiKeyLen={KeyLen} mailsApiKeyLast4='{Last4}' anonKeySet={AnonSet} anonKeyLen={AnonLen}",
                 baseUrl,
                 mailsApiKey.Length,
                 mailsApiKey.Length >= 4 ? mailsApiKey[^4..] : mailsApiKey,
-                !string.IsNullOrWhiteSpace(_options.AnonKey));
+                !string.IsNullOrWhiteSpace(_options.AnonKey),
+                _options.AnonKey?.Length ?? -1);
 
             var payload = new ContextHubSendMailRequest
             {
