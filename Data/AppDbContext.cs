@@ -77,7 +77,6 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<Models.MoneyType> MoneyTypes { get; set; }
 
     public virtual DbSet<Models.SystemConfig> SystemConfigs { get; set; }
-    public virtual DbSet<Models.WSMessageAPIData> WSMessageAPIData { get; set; }
     public virtual DbSet<Models.EmailTemplate> EmailTemplates { get; set; }
     public virtual DbSet<Models.PasswordResetTicket> PasswordResetTickets { get; set; }
     public virtual DbSet<Models.UserPermission> UserPermissions { get; set; }

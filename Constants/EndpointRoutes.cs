@@ -251,13 +251,6 @@ namespace vet_api_Net.Routes
             public const string NotificactionByUser = "user/{userId}/notifications";
             public const string RespondCitaRequest = "{alertId}/respond-cita-request";
         }
-        public static class WSMessageController
-        {
-            public const string DispatchInvoiceByCita = "dispatch/appointment/{citaId}";
-            public const string SessionInit = "session/init";
-            public const string SessionStatus = "session/status";
-        }
-
         public static class EmailsController
         {
             public const string DispatchEmail = "send-email/{entityId}";
