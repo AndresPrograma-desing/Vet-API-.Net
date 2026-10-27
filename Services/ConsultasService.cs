@@ -21,7 +21,8 @@ public class ConsultasService : IConsultasService
     private readonly IPetVaccinationService _petVaccinationService;
     private readonly IPetsRepository _petsRepository;
     private readonly IServicioRepository _servicioRepository;
-    public ConsultasService(IConsultasRepository repository, IOptions<ApiSettingsOptions> apiSettingsOptions, IUserScopeResolver userScopeResolver, IPetVaccinationService petVaccinationService, IPetsRepository petsRepository, IServicioRepository servicioRepository)
+    private readonly ICurrencyUtilities _currencyService;
+    public ConsultasService(IConsultasRepository repository, IOptions<ApiSettingsOptions> apiSettingsOptions, IUserScopeResolver userScopeResolver, IPetVaccinationService petVaccinationService, IPetsRepository petsRepository, IServicioRepository servicioRepository, ICurrencyUtilities currencyService)
     {
         _repository = repository;
         _apiSettings = apiSettingsOptions.Value;
@@ -29,6 +30,7 @@ public class ConsultasService : IConsultasService
         _petVaccinationService = petVaccinationService;
         _petsRepository = petsRepository;
         _servicioRepository = servicioRepository;
+        _currencyService = currencyService;
     }
 
 
@@ -60,7 +62,7 @@ public class ConsultasService : IConsultasService
         var doctor = await _repository.GetDoctorByIdAsync(dto.DoctorId)
             ?? throw new KeyNotFoundException(ResponseMessagesUsers.DoctorNotFound);
 
-        var consultaPrice = dto.ConsultaPrice > 0m ? dto.ConsultaPrice.Value : 0m;
+        var consultaPrice = dto.ConsultaPrice > 0m ? await _currencyService.ConvertToUsdAsync(dto.ConsultaPrice.Value) : 0m;
         if (consultaPrice <= 0m && appointment.ServicioId.HasValue)
         {
             var servicioCita = await _servicioRepository.GetByIdAsync(appointment.ServicioId.Value);
