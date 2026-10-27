@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using DTOs;
 using vet_api_Net.Constants;
@@ -30,6 +31,7 @@ public class ContextHubEmailService : IEmailSenderService
     private readonly IFailureTrackerUtilities _failureTracker;
     private readonly ISystemConfigRepository _systemConfigRepository;
     private readonly IServiceScopeFactory _services;
+    private readonly ILogger<ContextHubEmailService> _logger;
 
     public ContextHubEmailService(
         HttpClient httpClient,
@@ -37,7 +39,8 @@ public class ContextHubEmailService : IEmailSenderService
         IOptions<ApiSettingsOptions> apiSettingsOptions,
         IFailureTrackerUtilities failureTracker,
         ISystemConfigRepository systemConfigRepository,
-        IServiceScopeFactory services)
+        IServiceScopeFactory services,
+        ILogger<ContextHubEmailService> logger)
     {
         _httpClient = httpClient;
         _options = options.Value;
@@ -45,6 +48,7 @@ public class ContextHubEmailService : IEmailSenderService
         _failureTracker = failureTracker;
         _systemConfigRepository = systemConfigRepository;
         _services = services;
+        _logger = logger;
     }
 
     public async Task<bool> SendEmailAsync(string to, string subject, string htmlBody, byte[]? attachmentBytes = null, string? attachmentName = null)
@@ -75,14 +79,23 @@ public class ContextHubEmailService : IEmailSenderService
 
             if (_failureTracker.IsBlocked("ContextHubEmail"))
             {
+                _logger.LogInformation("[DIAG] ContextHubEmail bloqueado por FailureTracker (circuit breaker abierto por fallos previos), se omite el envío sin intentar la petición HTTP.");
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(baseUrl) || string.IsNullOrWhiteSpace(mailsApiKey))
             {
+                _logger.LogWarning("[DIAG] baseUrl o mailsApiKey vacíos. baseUrl='{BaseUrl}' mailsApiKeyLen={KeyLen}", baseUrl, mailsApiKey?.Length ?? -1);
                 _failureTracker.RecordFailure("ContextHubEmail");
                 return false;
             }
+
+            _logger.LogInformation(
+                "[DIAG] ContextHub mail config -> baseUrl='{BaseUrl}' mailsApiKeyLen={KeyLen} mailsApiKeyLast4='{Last4}' anonKeySet={AnonSet}",
+                baseUrl,
+                mailsApiKey.Length,
+                mailsApiKey.Length >= 4 ? mailsApiKey[^4..] : mailsApiKey,
+                !string.IsNullOrWhiteSpace(_options.AnonKey));
 
             var payload = new ContextHubSendMailRequest
             {
@@ -121,6 +134,7 @@ public class ContextHubEmailService : IEmailSenderService
             if (!response.IsSuccessStatusCode)
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
+                _logger.LogError("[DIAG] ContextHub respondió {StatusCode}: {Body}", (int)response.StatusCode, errorBody);
                 string friendlyMessage = ParseContextHubError(response.StatusCode, errorBody);
                 _failureTracker.RecordFailure("ContextHubEmail");
                 throw new InvalidOperationException(friendlyMessage);
@@ -133,8 +147,9 @@ public class ContextHubEmailService : IEmailSenderService
         {
             throw;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "[DIAG] Excepción no controlada enviando correo vía ContextHub.");
             _failureTracker.RecordFailure("ContextHubEmail");
             return false;
         }
