@@ -36,4 +36,10 @@ public class EmailTemplateRepository : IEmailTemplateRepository
         _context.EmailTemplates.Update(template);
         return await _context.SaveChangesAsync() > 0;
     }
+
+    public async Task<bool> AddTemplateAsync(EmailTemplate template)
+    {
+        _context.EmailTemplates.Add(template);
+        return await _context.SaveChangesAsync() > 0;
+    }
 }

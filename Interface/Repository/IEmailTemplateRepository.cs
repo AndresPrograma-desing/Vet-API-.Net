@@ -9,4 +9,5 @@ public interface IEmailTemplateRepository
     Task<System.Collections.Generic.IEnumerable<EmailTemplate>> GetAllTemplatesAsync();
     Task<EmailTemplate?> GetTemplateByIdAsync(int id);
     Task<bool> UpdateTemplateAsync(EmailTemplate template);
+    Task<bool> AddTemplateAsync(EmailTemplate template);
 }

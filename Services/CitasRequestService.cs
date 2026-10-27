@@ -24,14 +24,16 @@ public class CitasRequestService : ICitasRequestService
     private readonly ApiSettingsOptions _apiSettings;
     private readonly IUserScopeResolver _userScopeResolver;
     private readonly IServicioRepository _servicioRepository;
+    private readonly ICurrencyUtilities _currencyService;
 
-    public CitasRequestService(ICitasRepository citasRepository, IConfiguration configuration, IOptions<ApiSettingsOptions> apiSettingsOptions, IUserScopeResolver userScopeResolver, IServicioRepository servicioRepository)
+    public CitasRequestService(ICitasRepository citasRepository, IConfiguration configuration, IOptions<ApiSettingsOptions> apiSettingsOptions, IUserScopeResolver userScopeResolver, IServicioRepository servicioRepository, ICurrencyUtilities currencyService)
     {
         _citasRepository = citasRepository;
         _configuration = configuration;
         _apiSettings = apiSettingsOptions.Value;
         _userScopeResolver = userScopeResolver;
         _servicioRepository = servicioRepository;
+        _currencyService = currencyService;
     }
 
     public async Task<(List<CitasRequestDTO> Items, int TotalCount)> GetAllCitasRequestsAsync(string? status = null, DateTime? date = null, bool allDates = false, string? currentUserRole = null, int? currentUserId = null, int? requestedDoctorId = null, int? requestedSecretariaId = null, int pageNumber = 1, int pageSize = 10)
@@ -74,9 +76,10 @@ public class CitasRequestService : ICitasRequestService
             var (appointments, totalCount) = await _citasRepository.GetPagedWithRelationsAsync(
                 doctorId, secretariaId, date, allDates, status, pageNumber, pageSize);
 
+            var money = await _currencyService.GetActiveMoneyTypeAsync();
             var items = appointments.Select(a =>
             {
-                var dto = a.ToRequestDTO();
+                var dto = a.ToRequestDTO(money, _currencyService);
                 dto.FechaCita = a.FechaCita.ToString(_apiSettings.DateFormat);
                 return dto;
             }).ToList();
@@ -320,7 +323,8 @@ public class CitasRequestService : ICitasRequestService
         await _citasRepository.SaveChangesAsync();
 
         var updatedCita = await _citasRepository.GetByIdWithRelationsAsync(id);
-        var resultDto = (updatedCita ?? cita).ToRequestDTO();
+        var money = await _currencyService.GetActiveMoneyTypeAsync();
+        var resultDto = (updatedCita ?? cita).ToRequestDTO(money, _currencyService);
         resultDto.FechaCita = (updatedCita ?? cita).FechaCita.ToString(_apiSettings.DateFormat);
         return resultDto;
     }
@@ -363,7 +367,8 @@ public class CitasRequestService : ICitasRequestService
         try
         {
             var citas = await _citasRepository.GetByStatusAsync(Status.NotAssisted);
-            return citas.Select(c => c.ToRequestDTO()).ToList();
+            var money = await _currencyService.GetActiveMoneyTypeAsync();
+            return citas.Select(c => c.ToRequestDTO(money, _currencyService)).ToList();
         }
         catch (Exception ex)
         {
