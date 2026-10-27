@@ -716,8 +716,9 @@ namespace vet_api_Net.Constants
         public const string TestEmailSubject = "Correo de Prueba - HappyPets";
         public const string TestEmailBody = "<h1>¡Hola!</h1><p>Esta es una prueba de envío exitosa de HappyPets utilizando la API de <strong>Resend</strong>.</p>";
 
-        public const string ClientNoEmail = "El cliente no tiene un correo electrónico registrado para el envío de factura.";
-        public const string PdfNotFound = "No se encontró el archivo PDF para la factura {0}.";
+        public const string ClientNoEmail = "El cliente no tiene un correo electrónico registrado para el envío del recibo.";
+        public const string PdfNotFound = "No se encontró el archivo PDF para el recibo {0}.";
+        public const string PdfNotFoundReceta = "No se encontró el archivo PDF para la recipe de la consulta {0}.";
         public const string TemplateNotFound = "<h1>Plantilla no encontrada</h1>";
         public const string TemplateNotFoundById = "No se encontró la plantilla con el ID especificado.";
         public const string UpdateSuccess = "Plantilla de correo actualizada exitosamente.";

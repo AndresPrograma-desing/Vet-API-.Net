@@ -123,14 +123,14 @@ public class EmailService : IEmailService
                         throw new KeyNotFoundException(ResponseMessagesWSMessageAPI.ConsultaNotFound);
 
                     if (string.IsNullOrWhiteSpace(consulta.UrlDocx))
-                        throw new InvalidOperationException(string.Format(ResponseMessagesEmailsController.PdfNotFound, consulta.Id));
+                        throw new InvalidOperationException(string.Format(ResponseMessagesEmailsController.PdfNotFoundReceta, consulta.Id));
 
                     var (bytes, name) = await LoadRecetaPdfAsync(consulta.UrlDocx);
                     pdfBytes = bytes;
                     pdfName = name;
 
                     if (pdfBytes == null)
-                        throw new InvalidOperationException(string.Format(ResponseMessagesEmailsController.PdfNotFound, consulta.Id));
+                        throw new InvalidOperationException(string.Format(ResponseMessagesEmailsController.PdfNotFoundReceta, consulta.Id));
 
                     recetaTexto = consulta.Receta ?? string.Empty;
                 }
@@ -260,6 +260,43 @@ public class EmailService : IEmailService
             TypeEmail = template.TypeEmail,
             Update = template.Update
         };
+    }
+
+    public async Task<IEnumerable<string>> SyncMissingEmailTemplatesAsync()
+    {
+        var emailTemplatesPath = Path.Combine(_env.ContentRootPath, "Templates", "Email");
+        if (!Directory.Exists(emailTemplatesPath))
+        {
+            return Enumerable.Empty<string>();
+        }
+
+        var existingTemplates = await _templateRepository.GetAllTemplatesAsync();
+        var existingTypes = existingTemplates.Select(t => t.TypeEmail).ToHashSet();
+
+        var added = new List<string>();
+        foreach (var file in Directory.GetFiles(emailTemplatesPath, "*.html"))
+        {
+            var templateName = Path.GetFileNameWithoutExtension(file);
+            if (existingTypes.Contains(templateName))
+            {
+                continue;
+            }
+
+            var created = await _templateRepository.AddTemplateAsync(new Models.EmailTemplate
+            {
+                TypeEmail = templateName,
+                HtmlCode = await File.ReadAllTextAsync(file),
+                CreatedAt = DateTime.Now,
+                Update = DateTime.Now
+            });
+
+            if (created)
+            {
+                added.Add(templateName);
+            }
+        }
+
+        return added;
     }
 
     public async Task<DataResendDto> GetResendConfigAsync()

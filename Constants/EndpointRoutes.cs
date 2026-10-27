@@ -265,6 +265,7 @@ namespace vet_api_Net.Routes
             public const string GetTemplates = "templates";
             public const string GetTemplateById = "templates/{id}";
             public const string UpdateTemplate = "templates/{id}";
+            public const string SyncTemplates = "templates/sync";
             public const string DataResend = "data-resend";
             public const string UpdateResend = "update-resend";
         }

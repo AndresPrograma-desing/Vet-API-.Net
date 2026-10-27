@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using vet_api_Net.Constants;
@@ -154,6 +155,21 @@ public class EmailsController : ControllerBase
         catch (Exception)
         {
             return StatusCode(500, new { success = false, message = ResponseMessagesEmailsController.UpdateFailure });
+        }
+    }
+
+    [Authorize(Roles = Roles.Admin)]
+    [HttpPost(Endpoints.EmailsController.SyncTemplates)]
+    public async Task<IActionResult> SyncTemplates()
+    {
+        try
+        {
+            var added = await _emailService.SyncMissingEmailTemplatesAsync();
+            return Ok(new { success = true, added });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { success = false, message = ResponseErrors.InternalServerError });
         }
     }
 

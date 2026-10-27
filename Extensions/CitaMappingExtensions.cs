@@ -1,14 +1,21 @@
 using System;
 using System.Globalization;
 using DTOs;
+using vet_api_Net.Interfaze.Utilities;
 using vet_api_Net.Models;
 
 namespace vet_api_Net.Extensions;
 
 public static class CitaMappingExtensions
 {
-    public static CitasRequestDTO ToRequestDTO(this Cita cr)
+    public static CitasRequestDTO ToRequestDTO(this Cita cr, MoneyTypesDTO? money = null, ICurrencyUtilities? currencyService = null)
     {
+        var servicioPrecio = cr.Servicio?.Precio;
+        if (servicioPrecio.HasValue && money != null && currencyService != null)
+        {
+            servicioPrecio = currencyService.ConvertPrice(servicioPrecio.Value, money);
+        }
+
         return new CitasRequestDTO
         {
             Id = cr.Id,
