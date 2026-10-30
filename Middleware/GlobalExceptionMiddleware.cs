@@ -4,6 +4,7 @@ using System.IO;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
+using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Services;
 
 namespace vet_api_Net.Middleware
@@ -60,6 +61,18 @@ namespace vet_api_Net.Middleware
                 else
                 {
                     await RegistrarLogErrorAsync(context, logService, $"SOLICITUD_INCORRECTA ({context.Response.StatusCode}): {responseText}", null);
+
+                    // El 400 automático de [ApiController] ante un ModelState inválido (ej. un
+                    // [Range]/[Required] del DTO) devuelve un ValidationProblemDetails crudo
+                    // ({ title, errors: { Campo: [...] } }) que el front no sabe interpretar y
+                    // terminaba mostrando tal cual. Se sanitiza a un mensaje genérico, igual que
+                    // ya se hace acá abajo para el 500; los 400 armados a mano en los controllers
+                    // (BadRequest(new { error = "..." })) ya traen su propio mensaje y no matchean
+                    // este shape, así que se respetan sin tocar.
+                    if (context.Response.StatusCode == StatusCodes.Status400BadRequest && EsValidationProblemDetails(responseText))
+                    {
+                        await EscribirRespuestaValidacionAsync(context, responseBody);
+                    }
                 }
             }
 
@@ -77,6 +90,30 @@ namespace vet_api_Net.Middleware
             var jsonResponse = JsonSerializer.Serialize(new 
             { 
                 message = "Error al procesar la solictud enviada." 
+            });
+
+            await context.Response.WriteAsync(jsonResponse);
+        }
+
+        // Detecta el shape por defecto de ValidationProblemDetails ({ title, status, errors })
+        // que [ApiController] genera automáticamente ante un ModelState inválido, sin parsear
+        // JSON completo: alcanza con los nombres de campo que ese formato siempre trae.
+        private static bool EsValidationProblemDetails(string responseText)
+        {
+            return responseText.Contains("\"errors\"", StringComparison.OrdinalIgnoreCase)
+                && responseText.Contains("\"title\"", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static async Task EscribirRespuestaValidacionAsync(HttpContext context, MemoryStream responseBody)
+        {
+            responseBody.SetLength(0);
+
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+            var jsonResponse = JsonSerializer.Serialize(new
+            {
+                error = ResponseErrors.ValidationFailed
             });
 
             await context.Response.WriteAsync(jsonResponse);

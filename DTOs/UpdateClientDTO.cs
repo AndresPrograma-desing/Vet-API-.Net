@@ -23,6 +23,7 @@ public record UpdateClientDTO
 
     [JsonPropertyName("telefono")]
     [StringLength(20, ErrorMessage = ResponseMessagesDtos.Cliente.TelefonoMaxLength)]
+    [RegularExpression(@"^\d+$", ErrorMessage = ResponseMessagesDtos.Cliente.TelefonoInvalidFormat)]
     public string? Telefono { get; set; }
 
     [JsonPropertyName("direccion")]

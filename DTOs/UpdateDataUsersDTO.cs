@@ -21,5 +21,6 @@ public class UpdateUserDTO
 
     [JsonPropertyName("phone")]
     [StringLength(20, ErrorMessage = ResponseMessagesDtos.Usuario.TelefonoMaxLength)]
+    [RegularExpression(@"^\d+$", ErrorMessage = ResponseMessagesDtos.Usuario.TelefonoInvalidFormat)]
     public string? Phone { get; set; }
 }
