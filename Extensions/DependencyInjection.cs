@@ -31,7 +31,6 @@ using vet_api_Net.Mocks;
 using vet_api_Net.Repositories;
 using vet_api_Net.Services;
 using vet_api_Net.Services.Supabase;
-using vet_api_Net.Services.WSMessage;
 using vet_api_Net.Utilities;
 using vet_api_Net.Utilities.Pdf;
 using vet_api_Net.Worker;
@@ -310,7 +309,6 @@ public static class DependencyInjection
         services.AddScoped<IClientRepository, ClientRepository>();
         services.AddScoped<IConsultasRepository, ConsultasRepository>();
         services.AddScoped<IInvoiceExternalRepository, InvoiceExternalRepository>();
-        services.AddScoped<IWSMRepository, WSMRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IFacturasRepository, FacturasRepository>();
         services.AddScoped<IPasswordRecoveryRepository, PasswordRecoveryRepository>();
@@ -365,8 +363,6 @@ public static class DependencyInjection
         services.AddScoped<IBcvScraper, BcvScraper>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<INotificationsPushService, NotificationsPushService>();
-        services.AddScoped<IWSMessage, WSMessage>();
-        services.AddScoped<IInvoiceExternalService, InvoiceExternalService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IPasswordRecoveryService, PasswordRecoveryService>();
         services.AddScoped<IDashboardService, DashboardService>();

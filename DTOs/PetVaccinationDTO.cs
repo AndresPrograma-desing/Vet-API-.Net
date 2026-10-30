@@ -1,5 +1,8 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using vet_api_Net.Constants;
+using vet_api_Net.Validation;
 
 namespace DTOs;
 
@@ -21,9 +24,11 @@ public record RegisterPetVaccinationDTO
     public int? DoctorId { get; set; }
 
     [JsonPropertyName("application_date")]
+    [NotFutureDate(ErrorMessage = ResponseMessagesDtos.PetVaccination.ApplicationDateFutura)]
     public DateOnly? ApplicationDate { get; set; }
 
     [JsonPropertyName("weight_at_application")]
+    [Range(0, double.MaxValue, ErrorMessage = ResponseMessagesDtos.PetVaccination.WeightNoNegativo)]
     public decimal? WeightAtApplication { get; set; }
 
     [JsonPropertyName("dose")]

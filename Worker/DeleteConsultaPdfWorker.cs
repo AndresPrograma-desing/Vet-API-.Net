@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using vet_api_Net.Constants;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Utilities;
+using vet_api_Net.Models;
 using vet_api_Net.WorkerSettings;
 
 namespace vet_api_Net.Worker
@@ -21,106 +22,110 @@ namespace vet_api_Net.Worker
         private readonly IWebHostEnvironment _env;
         private readonly ILogger<DeleteConsultaPdfWorker> _logger;
         private readonly IServiceProvider _services;
-        private TimeSpan _threshold;
-        private TimeSpan _scanInterval;
-        private readonly bool _enabled;
+        private readonly IConfiguration _config;
+        private static readonly TimeSpan DisabledPollInterval = TimeSpan.FromMinutes(1);
 
         public DeleteConsultaPdfWorker(IWebHostEnvironment env, ILogger<DeleteConsultaPdfWorker> logger, IServiceProvider services, IConfiguration config)
         {
             _env = env ?? throw new ArgumentNullException(nameof(env));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _services = services ?? throw new ArgumentNullException(nameof(services));
+            _config = config ?? throw new ArgumentNullException(nameof(config));
+        }
 
-            try
+        private static TimeSpan ParseInterval(int value, string? unit, TimeSpan fallback)
+        {
+            if (value <= 0 || string.IsNullOrWhiteSpace(unit)) return fallback;
+
+            switch (unit.Trim().ToLowerInvariant())
             {
-                var section = config.GetSection("WorkerSettings:DeleteConsultaPdfWorker");
-                var setting = new WorkerSetting();
-                section.Bind(setting);
-
-                _enabled = setting.Enabled;
-
-                if (setting.IntervalValues > 0 && !string.IsNullOrWhiteSpace(setting.IntervalUnits))
-                {
-                    var units = setting.IntervalUnits.Trim().ToLowerInvariant();
-                    switch (units)
-                    {
-                        case "s":
-                        case "sec":
-                        case "second":
-                        case "seconds":
-                            _scanInterval = TimeSpan.FromSeconds(setting.IntervalValues); break;
-                        case "m":
-                        case "min":
-                        case "minute":
-                        case "minutes":
-                            _scanInterval = TimeSpan.FromMinutes(setting.IntervalValues); break;
-                        case "h":
-                        case "hour":
-                        case "hours":
-                            _scanInterval = TimeSpan.FromHours(setting.IntervalValues); break;
-                        case "d":
-                        case "day":
-                        case "days":
-                            _scanInterval = TimeSpan.FromDays(setting.IntervalValues); break;
-                        default:
-                            _scanInterval = TimeSpan.FromMinutes(setting.IntervalValues); break;
-                    }
-                }
-                else
-                {
-                    _scanInterval = TimeSpan.FromMinutes(30);
-                }
-
-                if (setting.RetentionValues > 0 && !string.IsNullOrWhiteSpace(setting.RetentionUnits))
-                {
-                    var units = setting.RetentionUnits.Trim().ToLowerInvariant();
-                    switch (units)
-                    {
-                        case "s":
-                        case "sec":
-                        case "second":
-                        case "seconds":
-                            _threshold = TimeSpan.FromSeconds(setting.RetentionValues); break;
-                        case "m":
-                        case "min":
-                        case "minute":
-                        case "minutes":
-                            _threshold = TimeSpan.FromMinutes(setting.RetentionValues); break;
-                        case "h":
-                        case "hour":
-                        case "hours":
-                            _threshold = TimeSpan.FromHours(setting.RetentionValues); break;
-                        case "d":
-                        case "day":
-                        case "days":
-                            _threshold = TimeSpan.FromDays(setting.RetentionValues); break;
-                        default:
-                            _threshold = TimeSpan.FromMinutes(setting.RetentionValues); break;
-                    }
-                }
-                else
-                {
-                    _threshold = TimeSpan.FromDays(30);
-                }
+                case "s":
+                case "sec":
+                case "second":
+                case "seconds":
+                    return TimeSpan.FromSeconds(value);
+                case "m":
+                case "min":
+                case "minute":
+                case "minutes":
+                    return TimeSpan.FromMinutes(value);
+                case "h":
+                case "hour":
+                case "hours":
+                    return TimeSpan.FromHours(value);
+                case "d":
+                case "day":
+                case "days":
+                    return TimeSpan.FromDays(value);
+                default:
+                    return TimeSpan.FromMinutes(value);
             }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Error al cargar la configuración del DeleteConsultaPdfWorker, se usarán valores predeterminados");
-                _scanInterval = TimeSpan.FromMinutes(30);
-                _threshold = TimeSpan.FromDays(30);
-                _enabled = true;
-            }
+        }
+
+        private (bool Enabled, TimeSpan ScanInterval, TimeSpan Threshold) ResolveSettingsFromAppsettings()
+        {
+            var section = _config.GetSection("WorkerSettings:DeleteConsultaPdfWorker");
+            var setting = new WorkerSetting();
+            section.Bind(setting);
+
+            var scanInterval = ParseInterval(setting.IntervalValues, setting.IntervalUnits, TimeSpan.FromMinutes(30));
+            var threshold = ParseInterval(setting.RetentionValues, setting.RetentionUnits, TimeSpan.FromDays(30));
+
+            return (setting.Enabled, scanInterval, threshold);
+        }
+
+        private (bool Enabled, TimeSpan ScanInterval, TimeSpan Threshold) ResolveSettingsFromDb(WorkerConfig? dbSetting, (bool Enabled, TimeSpan ScanInterval, TimeSpan Threshold) appsettingsFallback)
+        {
+            if (dbSetting == null) return appsettingsFallback;
+
+            var scanInterval = ParseInterval(dbSetting.IntervalValue, dbSetting.IntervalUnit, appsettingsFallback.ScanInterval);
+            var threshold = ParseInterval(dbSetting.RetentionValue ?? 0, dbSetting.RetentionUnit, appsettingsFallback.Threshold);
+
+            return (dbSetting.IsEnabled, scanInterval, threshold);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            if (!_enabled)
-            {
-                return;
-            }
-
             while (!stoppingToken.IsCancellationRequested)
             {
+                bool enabled;
+                TimeSpan scanInterval;
+                TimeSpan threshold;
+
+                try
+                {
+                    var appsettingsValues = ResolveSettingsFromAppsettings();
+
+                    if (_env.IsDevelopment())
+                    {
+                        (enabled, scanInterval, threshold) = appsettingsValues;
+                    }
+                    else
+                    {
+                        using var settingsScope = _services.CreateScope();
+                        var workerConfigRepository = settingsScope.ServiceProvider.GetRequiredService<IWorkerConfigRepository>();
+                        var dbSetting = await workerConfigRepository.GetByWorkerNameAsync(WorkerNames.DeleteConsultaPdfWorker, stoppingToken);
+                        (enabled, scanInterval, threshold) = ResolveSettingsFromDb(dbSetting, appsettingsValues);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Error al cargar la configuración del DeleteConsultaPdfWorker, se usarán valores predeterminados");
+                    enabled = true;
+                    scanInterval = TimeSpan.FromMinutes(30);
+                    threshold = TimeSpan.FromDays(30);
+                }
+
+                if (!enabled)
+                {
+                    try
+                    {
+                        await Task.Delay(DisabledPollInterval, stoppingToken);
+                    }
+                    catch (TaskCanceledException) { }
+                    continue;
+                }
+
                 try
                 {
                     _logger.LogInformation("DeleteConsultaPdfWorker started.");
@@ -134,16 +139,7 @@ namespace vet_api_Net.Worker
                         var files = Directory.GetFiles(dir, "*.pdf");
 
                         using var scope = _services.CreateScope();
-                        var workerConfigRepository = scope.ServiceProvider.GetRequiredService<IWorkerConfigRepository>();
                         var consultasRepository = scope.ServiceProvider.GetRequiredService<IConsultasRepository>();
-                        var dbSetting = await workerConfigRepository.GetByWorkerNameAsync(WorkerNames.DeleteConsultaPdfWorker, stoppingToken);
-
-                        var effectiveThreshold = _threshold;
-                        if (dbSetting != null && !dbSetting.IsEnabled)
-                        {
-                            var minutosRetencion = dbSetting.RetentionValue > 0 ? dbSetting.RetentionValue!.Value : (int)_threshold.TotalMinutes;
-                            effectiveThreshold = TimeSpan.FromMinutes(minutosRetencion);
-                        }
 
                         foreach (var file in files)
                         {
@@ -153,7 +149,7 @@ namespace vet_api_Net.Worker
                                 var age = now - created;
                                 var fileName = Path.GetFileName(file);
 
-                                if (age >= effectiveThreshold)
+                                if (age >= threshold)
                                 {
                                     File.Delete(file);
 
@@ -211,7 +207,7 @@ namespace vet_api_Net.Worker
 
                 try
                 {
-                    await Task.Delay(_scanInterval, stoppingToken);
+                    await Task.Delay(scanInterval, stoppingToken);
                 }
                 catch (TaskCanceledException) { }
             }

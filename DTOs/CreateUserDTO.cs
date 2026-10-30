@@ -27,5 +27,6 @@ public record CreateUserDTO
     public string Rol { get; set; } = null!;
 
     [StringLength(20, ErrorMessage = ResponseMessagesDtos.Usuario.TelefonoMaxLength)]
+    [RegularExpression(@"^\d+$", ErrorMessage = ResponseMessagesDtos.Usuario.TelefonoInvalidFormat)]
     public string? Telefono { get; set; }
 }

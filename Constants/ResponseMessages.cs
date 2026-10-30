@@ -13,6 +13,7 @@ namespace vet_api_Net.Constants
         public const string InternalServerError = "Ocurrio un error interno del servidor.";
         public const string NotFound = "Recurso no encontrado.";
         public const string BadRequest = "Solicitud incorrecta.";
+        public const string ValidationFailed = "Verifique los datos enviados.";
         public const string Unauthorized = "No autorizado.";
         public const string Forbidden = "Prohibido.";
         public const string TooManyRequests = "Se excedió el límite de peticiones.";
@@ -44,6 +45,7 @@ namespace vet_api_Net.Constants
             public const string EmailRequired = "El correo electrónico es requerido.";
             public const string InvalidEmailFormat = "El correo electrónico no tiene un formato válido.";
             public const string TelefonoMaxLength = "El teléfono no puede exceder los 20 caracteres.";
+            public const string TelefonoInvalidFormat = "El teléfono debe contener solo números.";
             public const string DireccionMaxLength = "La dirección no puede exceder los 300 caracteres.";
             public const string IdentificacionMaxLength = "La identificación no puede exceder los 20 caracteres.";
             public const string NotaMaxLength = "La nota no puede exceder los 500 caracteres.";
@@ -54,11 +56,13 @@ namespace vet_api_Net.Constants
             public const string NombreMaxLength = "El nombre no puede exceder los 100 caracteres.";
             public const string EspecieRequired = "La especie es requerida.";
             public const string EspecieMaxLength = "La especie no puede exceder los 50 caracteres.";
+            public const string EspecieNoAmbos = "Una mascota debe ser canina o felina; 'Ambos' solo aplica a vacunas.";
             public const string RazaMaxLength = "La raza no puede exceder los 50 caracteres.";
             public const string ColorMaxLength = "El color no puede exceder los 50 caracteres.";
             public const string SexoRequired = "El sexo es requerido.";
             public const string SexoMaxLength = "El sexo no puede exceder los 20 caracteres.";
             public const string FechaNacimientoMaxLength = "La fecha de nacimiento no puede exceder los 20 caracteres.";
+            public const string FechaNacimientoFutura = "La fecha de nacimiento no puede ser una fecha futura.";
             public const string PesoNoNegativo = "El peso no puede ser negativo.";
             public const string IdentificacionMaxLength = "La identificación de la mascota no puede exceder los 50 caracteres.";
             public const string AlergiasMaxLength = "Las alergias no pueden exceder los 500 caracteres.";
@@ -117,8 +121,36 @@ namespace vet_api_Net.Constants
             public const string RolRequired = "El rol es requerido.";
             public const string RolMaxLength = "El rol no puede exceder los 20 caracteres.";
             public const string TelefonoMaxLength = "El teléfono no puede exceder los 20 caracteres.";
+            public const string TelefonoInvalidFormat = "El teléfono debe contener solo números.";
             public const string NombreMaxLength = "El nombre no puede exceder los 100 caracteres.";
             public const string ApellidoMaxLength = "El apellido no puede exceder los 100 caracteres.";
+        }
+        public static class Servicio
+        {
+            public const string NombreRequired = "El nombre del servicio es requerido.";
+            public const string NombreMaxLength = "El nombre no puede exceder los 200 caracteres.";
+            public const string DescripcionMaxLength = "La descripción no puede exceder los 500 caracteres.";
+            public const string PrecioNoNegativo = "El precio no puede ser negativo.";
+        }
+        public static class Vaccine
+        {
+            public const string NameRequired = "El nombre de la vacuna es requerido.";
+            public const string SpeciesRequired = "La especie es requerida.";
+            public const string MinimumAgeWeeksNoNegativo = "La edad mínima en semanas no puede ser negativa.";
+            public const string BoosterFrequencyValueInvalid = "La frecuencia de refuerzo debe ser mayor a cero.";
+            public const string PriceNoNegativo = "El precio no puede ser negativo.";
+        }
+        public static class VaccineBatch
+        {
+            public const string LaboratoryRequired = "El laboratorio es requerido.";
+            public const string BatchNumberRequired = "El número de lote es requerido.";
+            public const string QuantityInStockNoNegativo = "La cantidad en stock no puede ser negativa.";
+            public const string ExpirationBeforeReceived = "La fecha de vencimiento no puede ser anterior a la fecha de recepción.";
+        }
+        public static class PetVaccination
+        {
+            public const string WeightNoNegativo = "El peso no puede ser negativo.";
+            public const string ApplicationDateFutura = "La fecha de aplicación no puede ser una fecha futura.";
         }
         public static class Cita
         {
@@ -683,17 +715,6 @@ namespace vet_api_Net.Constants
                 return string.Format(FallbackMessageBase, petName);
             }
         }
-    }
-    public static class ResponseMessagesWSMessageController
-    {
-        public const string Success = "El envío del recibo a través de WhatsApp fue exitoso.";
-        public const string PartialFailure = "El envio a WhatsApp fallo, intente mas tarde";
-        public const string CriticalFailure = "Hubo un fallo crítico en el procesamiento y despacho del recibo.";
-        public const string SessionInitSuccess = "Solicitud de inicialización de sesión enviada con éxito:";
-        public const string SessionInitFailure = "No se pudo completar la inicialización de la sesión con el servidor de mensajería.";
-        public const string SessionInitCriticalFailure = "Hubo un error crítico al procesar la solicitud de inicialización.";
-        public const string SessionStatusNotFound = "No se encontró información o la instancia de WhatsApp no está inicializada.";
-        public const string SessionStatusCriticalFailure = "Hubo un error crítico al recuperar el estado del canal.";
     }
     public static class ResponseMessagesNotificationPush
     {
