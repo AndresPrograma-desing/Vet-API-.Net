@@ -98,9 +98,9 @@ public class ConsultasService : IConsultasService
                 var product = await _repository.GetProductoByIdAsync(p.ProductoId)
                     ?? throw new KeyNotFoundException($"Producto {p.ProductoId} no encontrado");
 
-                var unitPrice = p.PrecioUnitario.HasValue && p.PrecioUnitario.Value > 0m
-                    ? p.PrecioUnitario.Value
-                    : (product.PrecioVenta > 0m ? product.PrecioVenta : product.Precio);
+                var unitPrice = product.PrecioVenta > 0m
+                    ? product.PrecioVenta
+                    : product.Precio;
 
                 var itemDetail = new ConsultasProducto
                 {
@@ -208,7 +208,9 @@ public class ConsultasService : IConsultasService
             var pendingVaccinations = targetRecord?.PetVaccinations?.Where(pv => !pv.DetalleFacturaId.HasValue).ToList() ?? new List<PetVaccination>();
             if (targetRecord == null || (!hasProductos && !pendingVaccinations.Any())) return;
 
-            decimal productsSubtotal = hasProductos ? targetRecord.ConsultasProductos.Sum(cp => cp.PrecioUnitario * cp.Cantidad) : 0m;
+            decimal productsSubtotal = hasProductos
+                ? targetRecord.ConsultasProductos.Sum(cp => (cp.Producto?.PrecioVenta > 0m ? cp.Producto.PrecioVenta : cp.PrecioUnitario) * cp.Cantidad)
+                : 0m;
             decimal vaccinesSubtotal = pendingVaccinations.Sum(pv => pv.Vaccine.Price);
             decimal subtotal = productsSubtotal + vaccinesSubtotal;
             decimal discount = 0m;
@@ -251,7 +253,7 @@ public class ConsultasService : IConsultasService
 
             foreach (var cp in targetRecord.ConsultasProductos)
             {
-                var resolvedPrice = cp.PrecioUnitario > 0m ? cp.PrecioUnitario : (cp.Producto?.PrecioVenta ?? 0m);
+                var resolvedPrice = cp.Producto?.PrecioVenta > 0m ? cp.Producto.PrecioVenta : cp.PrecioUnitario;
                 _repository.AddDetalleFactura(new DetallesFactura
                 {
                     FacturaId = invoice.Id,

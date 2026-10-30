@@ -684,17 +684,6 @@ namespace vet_api_Net.Constants
             }
         }
     }
-    public static class ResponseMessagesWSMessageController
-    {
-        public const string Success = "El envío del recibo a través de WhatsApp fue exitoso.";
-        public const string PartialFailure = "El envio a WhatsApp fallo, intente mas tarde";
-        public const string CriticalFailure = "Hubo un fallo crítico en el procesamiento y despacho del recibo.";
-        public const string SessionInitSuccess = "Solicitud de inicialización de sesión enviada con éxito:";
-        public const string SessionInitFailure = "No se pudo completar la inicialización de la sesión con el servidor de mensajería.";
-        public const string SessionInitCriticalFailure = "Hubo un error crítico al procesar la solicitud de inicialización.";
-        public const string SessionStatusNotFound = "No se encontró información o la instancia de WhatsApp no está inicializada.";
-        public const string SessionStatusCriticalFailure = "Hubo un error crítico al recuperar el estado del canal.";
-    }
     public static class ResponseMessagesNotificationPush
     {
         public const string PushTicket = "El usuario ${user_name} marco el ticket como visto";

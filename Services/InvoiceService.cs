@@ -46,7 +46,9 @@ public class InvoiceService : IInvoiceService
         {
             foreach (var cp in cps)
             {
-                var basePrice = cp.PrecioUnitario > 0m ? cp.PrecioUnitario : (cp.Producto?.PrecioVenta ?? cp.Producto?.Precio ?? 0m);
+                var basePrice = cp.Producto?.PrecioVenta > 0m
+                    ? cp.Producto.PrecioVenta
+                    : (cp.PrecioUnitario > 0m ? cp.PrecioUnitario : (cp.Producto?.Precio ?? 0m));
                 decimal unitPrice = await _currencyService.ConvertPriceAsync(basePrice);
 
                 items.Add(new FacturationItemDTO
@@ -229,6 +231,11 @@ public class InvoiceService : IInvoiceService
 
             if (secretariaId > 0)
             {
+                // dto.Subtotal/Total vienen convertidos a la moneda activa (para mostrar en el PDF);
+                // Factura siempre persiste en USD crudo, así que se normalizan de vuelta antes de guardar.
+                decimal subtotalUsd = await _currencyService.ConvertToUsdAsync(dto.Subtotal);
+                decimal totalUsd = await _currencyService.ConvertToUsdAsync(dto.Total);
+
                 var nueva = new Factura
                 {
                     NumeroFactura = numeroFactura,
@@ -237,9 +244,9 @@ public class InvoiceService : IInvoiceService
                     ConsultaId = consultaId,
                     SecretariaId = secretariaId,
                     FechaEmision = DateTime.UtcNow,
-                    Subtotal = dto.Subtotal,
+                    Subtotal = subtotalUsd,
                     Descuento = dto.Descuento ?? 0m,
-                    Total = dto.Total,
+                    Total = totalUsd,
                     MetodoPago = dto.MetodoPago,
                     EstadoPago = dto.EstadoPago == Status.InvoicePending ? Status.Pending : dto.EstadoPago,
                     Notas = dto.Notas,
