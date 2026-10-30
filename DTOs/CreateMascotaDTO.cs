@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using vet_api_Net.Constants;
+using vet_api_Net.Validation;
 
 namespace DTOs;
 
@@ -12,6 +13,7 @@ public record CreateMascotaDTO
 
     [Required(ErrorMessage = ResponseMessagesDtos.Mascota.EspecieRequired)]
     [StringLength(50, ErrorMessage = ResponseMessagesDtos.Mascota.EspecieMaxLength)]
+    [NoAmbosEspecie(ErrorMessage = ResponseMessagesDtos.Mascota.EspecieNoAmbos)]
     public string Especie { get; set; } = null!;
 
     [StringLength(50, ErrorMessage = ResponseMessagesDtos.Mascota.RazaMaxLength)]
