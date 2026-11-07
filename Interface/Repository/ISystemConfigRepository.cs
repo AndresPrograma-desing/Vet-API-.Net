@@ -9,4 +9,5 @@ public interface ISystemConfigRepository
 {
     Task<SystemConfig?> GetSystemConfigAsync();
     Task UpdateEmailProviderConfigAsync(string apiKey, string fromEmail, string apiUrl);
+    Task UpdateWorkingHoursAsync(TimeOnly start, TimeOnly end);
 }

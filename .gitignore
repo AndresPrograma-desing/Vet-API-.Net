@@ -115,3 +115,5 @@ ollama_ia.ps1
 DOCUMENTACIÓN.md
 migrations_cmd_output.txt
 Production.md
+# Respaldos de la base de datos
+Backups/

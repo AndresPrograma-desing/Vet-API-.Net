@@ -62,6 +62,15 @@ public class ConsultasService : IConsultasService
         var doctor = await _repository.GetDoctorByIdAsync(dto.DoctorId)
             ?? throw new KeyNotFoundException(ResponseMessagesUsers.DoctorNotFound);
 
+        foreach (var requested in dto.Productos ?? [])
+        {
+            var requestedProduct = await _repository.GetProductoByIdAsync(requested.ProductoId)
+                ?? throw new KeyNotFoundException($"Producto {requested.ProductoId} no encontrado");
+
+            if (!requestedProduct.Activo)
+                throw new InvalidOperationException(ResponseMessagesProduct.ProductDisabledNamed(requestedProduct.Nombre));
+        }
+
         var consultaPrice = dto.ConsultaPrice > 0m ? await _currencyService.ConvertToUsdAsync(dto.ConsultaPrice.Value) : 0m;
         if (consultaPrice <= 0m && appointment.ServicioId.HasValue)
         {

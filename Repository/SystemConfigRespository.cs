@@ -45,4 +45,25 @@ public class SystemConfigRespository: ISystemConfigRepository
 
         await _context.SaveChangesAsync();
     }
+
+    public async Task UpdateWorkingHoursAsync(TimeOnly start, TimeOnly end)
+    {
+        var config = await _context.SystemConfigs.FirstOrDefaultAsync();
+        if (config == null)
+        {
+            config = new SystemConfig
+            {
+                FrontendUrl = "https://happy-pets-web.vercel.app",
+                BackendExternalUrl = "https://g27frlv5-5168.use2.devtunnels.ms/",
+                BcvApiUrl = "https://www.bcv.org.ve"
+            };
+            _context.SystemConfigs.Add(config);
+        }
+
+        config.WorkStartTime = start;
+        config.WorkEndTime = end;
+        config.LastUpdated = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+    }
 }

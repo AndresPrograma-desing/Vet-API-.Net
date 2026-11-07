@@ -50,4 +50,7 @@ public record ProductsUpdateDTO
     [JsonPropertyName("proveedor")]
     [StringLength(200, ErrorMessage = ResponseMessagesDtos.Producto.ProveedorMaxLength)]
     public string? Proveedor { get; set; }
+
+    [JsonPropertyName("active")]
+    public bool? Active { get; set; }
 }

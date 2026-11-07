@@ -262,6 +262,11 @@ namespace vet_api_Net.Routes
             public const string DataResend = "data-resend";
             public const string UpdateResend = "update-resend";
         }
+        public static class WorkingHours
+        {
+            public const string Get = "";
+            public const string Update = "";
+        }
         public static class PasswordRecovery
         {
             public const string RequestCode = "request-code";

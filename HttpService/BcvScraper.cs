@@ -37,7 +37,7 @@ public class BcvScraper : IBcvScraper
 
         if (string.IsNullOrWhiteSpace(bcvUrl))
         {
-            _logger.LogWarning("La URL del BCV no está configurada en la tabla SystemConfigs.");
+            // _logger.LogWarning("La URL del BCV no está configurada en la tabla SystemConfigs.");
             return null;
         }
 
@@ -55,7 +55,7 @@ public class BcvScraper : IBcvScraper
             return decimal.Parse(valorTexto, new CultureInfo("es-VE"));
         }
 
-        _logger.LogWarning("No se encontró el precio del BCV.");
+        // _logger.LogWarning("No se encontró el precio del BCV.");
         return null;
     }
 }

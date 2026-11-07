@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using vet_api_Net.Constants;
 using vet_api_Net.Data;
 using vet_api_Net.Extensions;
 using vet_api_Net.Interfaze.Repositories;
@@ -22,11 +23,20 @@ public class ProductRepository : IProductRepository
     {
         return await _context.MoneyTypes.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id);
     }
-    public async Task<List<Producto>> GetActiveProductsAsync(string noProductName, int? categoriaId, string searchTerm, decimal? maxPrice, int pageNumber, int pageSize)
+    public async Task<List<Producto>> GetActiveProductsAsync(string noProductName, int? categoriaId, string searchTerm, decimal? maxPrice, int pageNumber, int pageSize, string? status = null)
 {
     var query = _context.Productos
         .AsNoTracking()
         .Where(p => p.Nombre != noProductName);
+
+    if (string.Equals(status, ProductStatusFilter.Disabled, StringComparison.OrdinalIgnoreCase))
+    {
+        query = query.Where(p => !p.Activo);
+    }
+    else if (!string.Equals(status, ProductStatusFilter.All, StringComparison.OrdinalIgnoreCase))
+    {
+        query = query.Where(p => p.Activo);
+    }
 
     if (categoriaId.HasValue)
     {

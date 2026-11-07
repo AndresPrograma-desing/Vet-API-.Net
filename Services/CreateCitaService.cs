@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using DTOs;
 using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Services;
+using vet_api_Net.Interfaze.Utilities;
 using vet_api_Net.Models;
 using vet_api_Net.Constants;
 
@@ -16,6 +17,7 @@ public class CreateCitaService : ICreateCitaService
     private readonly IServicioRepository _servicioRepository;
     private readonly IEmailService _emailService;
     private readonly INotificationService _notificationService;
+    private readonly IWorkingHoursUtilities _workingHours;
 
     public CreateCitaService(
         ICitasRepository citasRepository,
@@ -23,8 +25,10 @@ public class CreateCitaService : ICreateCitaService
         IUsersRepository usersRepository,
         IServicioRepository servicioRepository,
         IEmailService emailService,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IWorkingHoursUtilities workingHours)
     {
+        _workingHours = workingHours;
         _citasRepository = citasRepository;
         _petsRepository = petsRepository;
         _usersRepository = usersRepository;
@@ -84,6 +88,8 @@ public class CreateCitaService : ICreateCitaService
         if (fecha.Add(hora.ToTimeSpan()) < DateTime.Now)
             throw new ArgumentException(ResponseMessagesCitas.PastDateTimeNotAllowed);
 
+        await _workingHours.EnsureWithinWorkingHoursAsync(hora);
+
         // --- EVITAR SOLAPAMIENTOS DE RANGOS DE 30 MINUTOS ---
         var citasDelDia = await _citasRepository.GetByDoctorAndDateAsync(dto.DoctorId, fecha);
 
@@ -128,9 +134,10 @@ public class CreateCitaService : ICreateCitaService
                 };
 
                 var foundFreeSlot = false;
+                var (workStart, workEnd) = await _workingHours.GetWorkingHoursAsync();
                 var parsedHours = standardHours
                     .Select(h => TimeOnly.ParseExact(h, "HH:mm"))
-                    .Where(t => t >= hora)
+                    .Where(t => t >= hora && t >= workStart && t.AddMinutes(30) <= workEnd && t.AddMinutes(30) > t)
                     .OrderBy(t => t)
                     .ToList();
 

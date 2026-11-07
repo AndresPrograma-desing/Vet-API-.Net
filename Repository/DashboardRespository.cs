@@ -86,7 +86,7 @@ public class DashboardRepository : IDashboardRepository
 
     public async Task<int> GetTotalProductosAsync(DateTime? startDate, DateTime? endDate)
     {
-        var query = _context.Productos.AsQueryable();
+        var query = _context.Productos.Where(p => p.Activo);
         if (startDate.HasValue) query = query.Where(p => p.Creado >= startDate.Value);
         if (endDate.HasValue) query = query.Where(p => p.Creado <= endDate.Value);
         
@@ -132,7 +132,7 @@ public class DashboardRepository : IDashboardRepository
     public async Task<List<Producto>> GetProductosBajoStockAsync(int count)
     {
         return await _context.Productos
-            .Where(p => p.Stock <= p.StockMinimo)
+            .Where(p => p.Activo && p.Stock <= p.StockMinimo)
             .OrderBy(p => p.Stock)
             .Take(count)
             .ToListAsync();

@@ -1070,6 +1070,10 @@ public partial class AppDbContext : DbContext
                 .ToTable("productos")
 ;
 
+            entity.Property(e => e.Activo)
+                .HasColumnName("activo")
+                .HasDefaultValue(true);
+
             entity.HasIndex(e => e.CategoriaId, "categoria_id");
 
             entity.HasIndex(e => e.Codigo, "codigo").IsUnique();
@@ -1435,6 +1439,12 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.ReceptorId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("mensajes_ibfk_2");
+        });
+
+        modelBuilder.Entity<Models.SystemConfig>(entity =>
+        {
+            entity.Property(e => e.WorkStartTime).HasDefaultValue(new TimeOnly(8, 0));
+            entity.Property(e => e.WorkEndTime).HasDefaultValue(new TimeOnly(20, 0));
         });
 
         OnModelCreatingPartial(modelBuilder);

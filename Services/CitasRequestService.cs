@@ -25,9 +25,11 @@ public class CitasRequestService : ICitasRequestService
     private readonly IUserScopeResolver _userScopeResolver;
     private readonly IServicioRepository _servicioRepository;
     private readonly ICurrencyUtilities _currencyService;
+    private readonly IWorkingHoursUtilities _workingHours;
 
-    public CitasRequestService(ICitasRepository citasRepository, IConfiguration configuration, IOptions<ApiSettingsOptions> apiSettingsOptions, IUserScopeResolver userScopeResolver, IServicioRepository servicioRepository, ICurrencyUtilities currencyService)
+    public CitasRequestService(ICitasRepository citasRepository, IConfiguration configuration, IOptions<ApiSettingsOptions> apiSettingsOptions, IUserScopeResolver userScopeResolver, IServicioRepository servicioRepository, ICurrencyUtilities currencyService, IWorkingHoursUtilities workingHours)
     {
+        _workingHours = workingHours;
         _citasRepository = citasRepository;
         _configuration = configuration;
         _apiSettings = apiSettingsOptions.Value;
@@ -209,6 +211,8 @@ public class CitasRequestService : ICitasRequestService
         if (fechaCita.Add(hora.ToTimeSpan()) < DateTime.Now)
             throw new ArgumentException(ResponseMessagesCitas.PastDateTimeNotAllowed);
 
+        await _workingHours.EnsureWithinWorkingHoursAsync(hora);
+
         Servicio? servicio = null;
         if (dto.ServicioId.HasValue)
         {
@@ -317,6 +321,8 @@ public class CitasRequestService : ICitasRequestService
         {
             if (cita.FechaCita.Date.Add(cita.HoraCita.ToTimeSpan()) < DateTime.Now)
                 throw new ArgumentException(ResponseMessagesCitas.PastDateTimeNotAllowed);
+
+            await _workingHours.EnsureWithinWorkingHoursAsync(cita.HoraCita);
         }
 
         _citasRepository.Update(cita);
