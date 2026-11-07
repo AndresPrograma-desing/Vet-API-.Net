@@ -40,4 +40,7 @@ public record ProductDTO
 
     [JsonPropertyName("proveedor")]
     public string? Proveedor { get; set; }
+
+    [JsonPropertyName("active")]
+    public bool Active { get; set; } = true;
 }

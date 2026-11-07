@@ -37,5 +37,11 @@ namespace vet_api_Net.Models
         [Column("email_provider_from_email")]
         [StringLength(512)]
         public string? EmailProviderFromEmail { get; set; }
+
+        [Column("work_start_time")]
+        public TimeOnly WorkStartTime { get; set; } = new(8, 0);
+
+        [Column("work_end_time")]
+        public TimeOnly WorkEndTime { get; set; } = new(20, 0);
     }
 }

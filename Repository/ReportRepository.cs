@@ -87,6 +87,7 @@ public class ReportRepository : IReportRepository
 
         var productos = await _context.Productos
             .AsNoTracking()
+            .Where(p => p.Activo)
             .Select(p => (object)new
             {
                 p.Id,
@@ -195,7 +196,7 @@ public class ReportRepository : IReportRepository
         var completedAppointments = await _context.Citas.CountAsync(c => c.Estado == Status.Completed);
         var cancelledAppointments = await _context.Citas.CountAsync(c => c.Estado == Status.Cancelled);
         var notAssistedAppointments = await _context.Citas.CountAsync(c => c.Estado == Status.NotAssisted);
-        var lowStockProductsCount = await _context.Productos.CountAsync(p => p.Stock <= p.StockMinimo);
+        var lowStockProductsCount = await _context.Productos.CountAsync(p => p.Activo && p.Stock <= p.StockMinimo);
 
         var summary = new
         {

@@ -1416,6 +1416,12 @@ namespace vet_api_Net.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("activo");
+
                     b.Property<DateTime>("Actualizado")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("actualizado");
@@ -1614,6 +1620,18 @@ namespace vet_api_Net.Migrations
                     b.Property<DateTime>("LastUpdated")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("last_updated");
+
+                    b.Property<TimeOnly>("WorkEndTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("time without time zone")
+                        .HasDefaultValue(new TimeOnly(20, 0, 0))
+                        .HasColumnName("work_end_time");
+
+                    b.Property<TimeOnly>("WorkStartTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("time without time zone")
+                        .HasDefaultValue(new TimeOnly(8, 0, 0))
+                        .HasColumnName("work_start_time");
 
                     b.HasKey("Id");
 
@@ -1890,25 +1908,6 @@ namespace vet_api_Net.Migrations
                     b.HasIndex(new[] { "VaccineId" }, "idx_scheme_stage_vaccine");
 
                     b.ToTable("vaccine_scheme_stages", (string)null);
-                });
-
-            modelBuilder.Entity("vet_api_Net.Models.WSMessageAPIData", b =>
-                {
-                    b.Property<string>("ClientId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ApiKey")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Message")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("Update")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.HasKey("ClientId");
-
-                    b.ToTable("WSMessageAPIData");
                 });
 
             modelBuilder.Entity("vet_api_Net.Models.WorkerConfig", b =>

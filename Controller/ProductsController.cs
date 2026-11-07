@@ -30,11 +30,12 @@ public class ProductsController : ControllerBase
         [FromQuery] string? searchTerm,
         [FromQuery] decimal? maxPrice,
         [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10)
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? status = null)
     {
         try
         {
-            var products = await _productService.GetProductsAsync(categoriaId, searchTerm, maxPrice, pageNumber, pageSize);
+            var products = await _productService.GetProductsAsync(categoriaId, searchTerm, maxPrice, pageNumber, pageSize, status);
             return Ok(products);
         }
         catch (Exception)

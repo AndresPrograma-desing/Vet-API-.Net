@@ -1112,6 +1112,8 @@ namespace vet_api_Net.Data.seeds
                     EmailProviderApiUrl = "https://context-hub-memory.vercel.app",
                     EmailProviderApiKey = string.Empty,
                     EmailProviderFromEmail = "HappyPets <[EMAIL_ADDRESS]>",
+                    WorkStartTime = new TimeOnly(8, 0),
+                    WorkEndTime = new TimeOnly(20, 0),
                     LastUpdated = DateTime.UtcNow
                 };
                 context.SystemConfigs.Add(systemConfig);

@@ -31,6 +31,8 @@ public partial class Producto
 
     public bool? RequiereReceta { get; set; }
 
+    public bool Activo { get; set; } = true;
+
     public DateTime Creado { get; set; }
 
     public DateTime Actualizado { get; set; }
