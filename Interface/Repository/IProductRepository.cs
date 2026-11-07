@@ -7,7 +7,7 @@ namespace vet_api_Net.Interfaze.Repositories;
 public interface IProductRepository
 {
     Task<MoneyType?> GetMoneyTypeByIdAsync(int id);
-    Task<List<Producto>> GetActiveProductsAsync(string noProductName, int? categoriaId, string searchTerm, decimal? maxPrice, int pageNumber, int pageSize);
+    Task<List<Producto>> GetActiveProductsAsync(string noProductName, int? categoriaId, string searchTerm, decimal? maxPrice, int pageNumber, int pageSize, string? status = null);
     Task<Producto?> GetProductByIdAsync(int id);
     Task<List<CategoriasProducto>> GetCategoriesAsync();
     Task<bool> ExistsByCodeOrNameAsync(string code, string name);

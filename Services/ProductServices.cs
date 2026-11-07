@@ -31,9 +31,9 @@ public class ProductService : IProductService, ICreateProductService
         _historialPrecioService = historialPrecioService;
     }
 
-    public async Task<List<ProductDTO>> GetProductsAsync(int? categoriaId, string searchTerm, decimal? maxPrice, int pageNumber, int pageSize)
+    public async Task<List<ProductDTO>> GetProductsAsync(int? categoriaId, string searchTerm, decimal? maxPrice, int pageNumber, int pageSize, string? status = null)
     {
-        var productsRaw = await _repository.GetActiveProductsAsync(ResponseMessagesProduct.NoProductName, categoriaId, searchTerm, maxPrice, pageNumber, pageSize);
+        var productsRaw = await _repository.GetActiveProductsAsync(ResponseMessagesProduct.NoProductName, categoriaId, searchTerm, maxPrice, pageNumber, pageSize, status);
         var money = await _currencyService.GetActiveMoneyTypeAsync();
 
         return productsRaw.Select(p => new ProductDTO
@@ -48,7 +48,8 @@ public class ProductService : IProductService, ICreateProductService
             PrecioVenta = _currencyService.ConvertPrice(p.PrecioVenta, money),
             Stock = p.Stock,
             StockMinimo = p.StockMinimo,
-            Proveedor = p.Proveedor
+            Proveedor = p.Proveedor,
+            Active = p.Activo
         }).ToList();
     }
 
@@ -86,7 +87,9 @@ public class ProductService : IProductService, ICreateProductService
         if (product == null)
             throw new KeyNotFoundException(ResponseMessagesProduct.ProductNotFound);
 
-        _repository.DeleteProduct(product);
+        product.Activo = false;
+        product.Actualizado = DateTime.Now;
+        _repository.UpdateProduct(product);
         await _repository.SaveChangesAsync();
 
         return product;
@@ -100,6 +103,9 @@ public class ProductService : IProductService, ICreateProductService
         var product = await _repository.GetProductByIdAsync(id);
         if (product == null)
             throw new KeyNotFoundException(ResponseMessagesProduct.ProductNotFound);
+
+        if (!product.Activo)
+            throw new InvalidOperationException(ResponseMessagesProduct.ProductDisabled);
 
         var currentStock = product.Stock ?? 0;
         if (currentStock < quantity)
@@ -157,8 +163,10 @@ public class ProductService : IProductService, ICreateProductService
         int? targetStockMinimo = updatedProductDto.StockMinimo ?? existingProduct.StockMinimo;
         string? targetProveedor = updatedProductDto.Proveedor ?? existingProduct.Proveedor;
         string? targetUnidadMedida = updatedProductDto.UnidadMedida ?? existingProduct.UnidadMedida;
+        bool targetActivo = updatedProductDto.Active ?? existingProduct.Activo;
 
         bool hasChanges =
+            existingProduct.Activo != targetActivo ||
             existingProduct.Precio != targetPrecio ||
             existingProduct.PrecioVenta != targetPrecioVenta ||
             existingProduct.Codigo != targetCodigo ||
@@ -190,6 +198,7 @@ public class ProductService : IProductService, ICreateProductService
         existingProduct.StockMinimo = targetStockMinimo;
         existingProduct.Proveedor = targetProveedor;
         existingProduct.UnidadMedida = targetUnidadMedida;
+        existingProduct.Activo = targetActivo;
 
         _repository.UpdateProduct(existingProduct);
         await _repository.SaveChangesAsync();

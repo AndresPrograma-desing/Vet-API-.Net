@@ -293,6 +293,13 @@ namespace vet_api_Net.Constants
         public const string NotCitasToday = "No hay citas programadas para el día de hoy.";
         public const string NotAvailableSlots = "No se encontró ningún horario disponible para autoagendar este día.";
         public const string PastDateTimeNotAllowed = "No se puede agendar una cita en una fecha u hora que ya pasó.";
+        public static string OutsideWorkingHours(TimeOnly start, TimeOnly end) => $"La hora seleccionada está fuera del horario laboral ({start:HH:mm} a {end:HH:mm}).";
+    }
+    public static class ResponseMessagesWorkingHours
+    {
+        public const string Updated = "Horario laboral actualizado con éxito.";
+        public const string InvalidFormat = "Formato de hora inválido. Use 'HH:mm'.";
+        public const string StartMustBeBeforeEnd = "La hora de inicio debe ser menor que la hora de cierre.";
     }
     public static class TypeConsultas
     {
@@ -474,10 +481,18 @@ namespace vet_api_Net.Constants
     {
         public const string MessageNotFound = "Mensaje no encontrado.";
     }
+    public static class ProductStatusFilter
+    {
+        public const string Active = "active";
+        public const string Disabled = "disabled";
+        public const string All = "all";
+    }
     public static class ResponseMessagesProduct
     {
         public const string NoProductName = "Sin Producto.";
         public const string ProductNotFound = "Producto no encontrado.";
+        public const string ProductDisabled = "El producto está deshabilitado y no se puede utilizar.";
+        public static string ProductDisabledNamed(string name) => $"El producto '{name}' está deshabilitado y no se puede utilizar.";
         public const string NoProductPrice = "Sin Precio.";
         public const string ProductCantPositive = "La cantidad debe ser un número positivo.";
         public const string NotSufficientStock = "Stock insuficiente.";

@@ -314,6 +314,7 @@ public static class DependencyInjection
         services.AddScoped<IPasswordRecoveryRepository, PasswordRecoveryRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<ISystemConfigRepository, SystemConfigRespository>();
+        services.AddScoped<IWorkingHoursService, WorkingHoursService>();
         services.AddScoped<IHistoriaClinicaRepository, HistoriaClinicaRepository>();
         services.AddScoped<IIaConocimientoRepository, IaConocimientoRepository>();
         services.AddScoped<IPasswordResetTicketRepository, PasswordResetTicketRepository>();
@@ -411,6 +412,7 @@ public static class DependencyInjection
         services.AddScoped<IHistoriaClinicaPdfUtilities, HistoriaClinicaPdfUtilities>();
         services.AddScoped<IUserScopeResolver, UserScopeResolver>();
         services.AddScoped<IProcessEventUtilities, ProcessEventUtilities>();
+        services.AddScoped<IWorkingHoursUtilities, WorkingHoursUtilities>();
 
         // Seguridad de datos
         services.AddScoped<ILoginSecurity, LoginSecurity>();

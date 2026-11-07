@@ -42,7 +42,7 @@ public class MovimientosInventarioRepository : IMovimientosInventarioRepository
     public async Task<List<Producto>> GetProductsWithLowStockAsync()
     {
         return await _context.Productos
-            .Where(p => p.StockMinimo.HasValue && p.Stock.HasValue && p.Stock <= p.StockMinimo)
+            .Where(p => p.Activo && p.StockMinimo.HasValue && p.Stock.HasValue && p.Stock <= p.StockMinimo)
             .OrderBy(p => p.Nombre)
             .ToListAsync();
     }
