@@ -30,7 +30,7 @@ namespace vet_api_Net.Utilities.Pdf
             mascotaPart = SanitizePart(mascotaPart);
 
             var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture);
-            return $"Historial_Medico_{mascotaPart}_{timestamp}.pdf";
+            return $"Reporte_Completo_{mascotaPart}_{timestamp}.pdf";
         }
 
         private static string SanitizePart(string input)
@@ -72,7 +72,11 @@ namespace vet_api_Net.Utilities.Pdf
 
                     page.Content().PaddingVertical(15).Column(column =>
                     {
-                        column.Item().Element(ComposePetInfo);
+                        if (_historia.Owner != null)
+                            column.Item().Element(ComposeOwnerInfo);
+
+                        column.Item().PaddingTop(10).Element(ComposePetInfo);
+                        column.Item().PaddingTop(10).Element(ComposePetDetails);
 
                         if (!string.IsNullOrWhiteSpace(_historia.ResumenIa))
                             column.Item().PaddingTop(15).Element(c => ComposeTextBlock(c, "RESUMEN CLÍNICO", _historia.ResumenIa, _primaryColor));
@@ -83,6 +87,7 @@ namespace vet_api_Net.Utilities.Pdf
                         if (!string.IsNullOrWhiteSpace(_historia.SugerenciasIa))
                             column.Item().PaddingTop(10).Element(c => ComposeTextBlock(c, "SUGERENCIAS", _historia.SugerenciasIa, _primaryColor));
 
+                        column.Item().PaddingTop(15).Element(BuildVacunasTable);
                         column.Item().PaddingTop(15).Element(BuildConsultasTable);
                     });
 
@@ -113,7 +118,7 @@ namespace vet_api_Net.Utilities.Pdf
 
                     row.ConstantItem(220).AlignRight().Column(col =>
                     {
-                        col.Item().Text("HISTORIAL MÉDICO")
+                        col.Item().Text("REPORTE COMPLETO")
                             .FontSize(12).SemiBold().FontColor(_textMuted);
 
                         col.Item().Text($"Mascota N° {_historia.MascotaId:D6}")
@@ -145,6 +150,127 @@ namespace vet_api_Net.Utilities.Pdf
                     {
                         c.Item().Text("CONDICIONES MÉDICAS").FontSize(9).Bold().FontColor(_primaryColor);
                         c.Item().PaddingTop(2).Text(string.IsNullOrWhiteSpace(mascota?.CondicionesMedicas) ? "Ninguna registrada" : mascota.CondicionesMedicas).FontSize(9).FontColor(_textDark);
+                    });
+                });
+            }
+
+            private void ComposeOwnerInfo(IContainer container)
+            {
+                var owner = _historia.Owner!;
+
+                container.Column(col =>
+                {
+                    col.Item().PaddingBottom(4).Text("DATOS DEL CLIENTE").FontSize(10).Bold().FontColor(_primaryColor);
+
+                    col.Item().Background(_secondaryColor).Padding(10).Column(c =>
+                    {
+                        c.Item().Row(r =>
+                        {
+                            ComposeField(r, "NOMBRE", $"{owner.FirstName} {owner.LastName}".Trim());
+                            ComposeField(r, "CÉDULA", owner.Identification);
+                            ComposeField(r, "TELÉFONO", owner.Phone);
+                        });
+
+                        c.Item().PaddingTop(6).Row(r =>
+                        {
+                            ComposeField(r, "CORREO", owner.Email);
+                            ComposeField(r, "DIRECCIÓN", owner.Address);
+                            ComposeField(r, "CLIENTE DESDE", owner.RegisteredAt.ToString(PdfText.DMY));
+                        });
+                    });
+                });
+            }
+
+            private void ComposePetDetails(IContainer container)
+            {
+                var mascota = _historia.Mascota;
+
+                container.Column(col =>
+                {
+                    col.Item().PaddingBottom(4).Text("DATOS DE LA MASCOTA").FontSize(10).Bold().FontColor(_primaryColor);
+
+                    col.Item().Background(Colors.Grey.Lighten4).Padding(10).Column(c =>
+                    {
+                        c.Item().Row(r =>
+                        {
+                            ComposeField(r, "SEXO", mascota?.Sexo);
+                            ComposeField(r, "COLOR", mascota?.Color);
+                            ComposeField(r, "FECHA DE NACIMIENTO", mascota?.FechaNacimiento?.ToString(PdfText.DMY));
+                        });
+
+                        c.Item().PaddingTop(6).Row(r =>
+                        {
+                            ComposeField(r, "PESO", mascota?.Peso != null ? $"{mascota.Peso} kg" : null);
+                            ComposeField(r, "ESTERILIZADO", mascota?.Sterilized == true ? "Sí" : "No");
+                            ComposeField(r, "IDENTIFICACIÓN", mascota?.PetIdentification);
+                        });
+
+                        c.Item().PaddingTop(6).Row(r =>
+                        {
+                            ComposeField(r, "REGISTRADA EN EL SISTEMA", mascota?.RegisteredAt.ToString(PdfText.DMY));
+                        });
+                    });
+                });
+            }
+
+            private void ComposeField(RowDescriptor row, string label, string? value)
+            {
+                row.RelativeItem().Column(c =>
+                {
+                    c.Item().Text(label).FontSize(8).Bold().FontColor(_primaryColor);
+                    c.Item().PaddingTop(1).Text(string.IsNullOrWhiteSpace(value) ? "-" : value).FontSize(9).FontColor(_textDark);
+                });
+            }
+
+            private void BuildVacunasTable(IContainer container)
+            {
+                container.Column(col =>
+                {
+                    col.Item().PaddingBottom(4).Text("VACUNAS APLICADAS").FontSize(10).Bold().FontColor(_primaryColor);
+
+                    if (_historia.Vacunas == null || _historia.Vacunas.Count == 0)
+                    {
+                        col.Item().Text("Sin vacunas registradas.").FontSize(9).FontColor(_textMuted);
+                        return;
+                    }
+
+                    col.Item().Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.RelativeColumn(3);
+                            columns.RelativeColumn(2);
+                            columns.RelativeColumn(2);
+                            columns.RelativeColumn(2);
+                            columns.RelativeColumn(2);
+                        });
+
+                        table.Header(header =>
+                        {
+                            IContainer StyleHeaderCell(IContainer c) => c.Background(_primaryColor).Padding(5).AlignMiddle();
+
+                            header.Cell().Element(StyleHeaderCell).Text("Vacuna").FontColor(Colors.White).FontSize(8.5f).Bold();
+                            header.Cell().Element(StyleHeaderCell).Text("Aplicación").FontColor(Colors.White).FontSize(8.5f).Bold();
+                            header.Cell().Element(StyleHeaderCell).Text("Próxima dosis").FontColor(Colors.White).FontSize(8.5f).Bold();
+                            header.Cell().Element(StyleHeaderCell).Text("Lote").FontColor(Colors.White).FontSize(8.5f).Bold();
+                            header.Cell().Element(StyleHeaderCell).Text(PdfText.Doctor).FontColor(Colors.White).FontSize(8.5f).Bold();
+                        });
+
+                        bool alternate = false;
+                        foreach (var vacuna in _historia.Vacunas)
+                        {
+                            var rowColor = alternate ? _secondaryColor : "#FFFFFF";
+                            alternate = !alternate;
+
+                            IContainer StyleContentCell(IContainer c) =>
+                                c.Background(rowColor).PaddingHorizontal(5).PaddingVertical(4).BorderBottom(1).BorderColor(_borderLight).AlignMiddle();
+
+                            table.Cell().Element(StyleContentCell).Text(vacuna.NombreVacuna).FontSize(8f).FontColor(_textDark);
+                            table.Cell().Element(StyleContentCell).Text(vacuna.FechaVacunacion.ToString(PdfText.DMY)).FontSize(8f).FontColor(_textDark);
+                            table.Cell().Element(StyleContentCell).Text(vacuna.ProximaDosis?.ToString(PdfText.DMY) ?? "-").FontSize(8f).FontColor(_textDark);
+                            table.Cell().Element(StyleContentCell).Text(string.IsNullOrEmpty(vacuna.Lote) ? "-" : vacuna.Lote).FontSize(8f).FontColor(_textDark);
+                            table.Cell().Element(StyleContentCell).Text(string.IsNullOrEmpty(vacuna.DoctorNombre) ? "-" : vacuna.DoctorNombre).FontSize(8f).FontColor(_textDark);
+                        }
                     });
                 });
             }

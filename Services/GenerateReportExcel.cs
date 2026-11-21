@@ -60,6 +60,15 @@ namespace vet_api_Net.Services
                 {
                     ws.Cell(row + 2, col + 1).Value = dict[headers[col]]?.ToString() ?? string.Empty;
                 }
+
+                if (nombre == Exceltext.Productos
+                    && dict.TryGetValue("Estado", out var estado)
+                    && estado?.ToString() == Exceltext.ProductDisabled)
+                {
+                    var rowRange = ws.Row(row + 2);
+                    rowRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+                    rowRange.Style.Font.FontColor = XLColor.DimGray;
+                }
             }
             ws.Columns().AdjustToContents();
         }
