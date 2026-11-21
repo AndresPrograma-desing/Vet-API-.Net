@@ -141,7 +141,21 @@ public class HistoriaClinicaService : IHistoriaClinicaService
                 FechaNacimiento = mascota.FechaNacimiento,
                 Peso = mascota.Peso,
                 Alergias = mascota.Alergias,
-                CondicionesMedicas = mascota.CondicionesMedicas
+                CondicionesMedicas = mascota.CondicionesMedicas,
+                Color = mascota.Color,
+                PetIdentification = mascota.IdenteficacionMascota,
+                Sterilized = mascota.Esterilizado ?? false,
+                RegisteredAt = mascota.Creado
+            },
+            Owner = mascota.Cliente == null ? null : new HistoriaClinicaOwnerDTO
+            {
+                FirstName = mascota.Cliente.Nombre,
+                LastName = mascota.Cliente.Apellido,
+                Email = mascota.Cliente.Email,
+                Phone = mascota.Cliente.Telefono,
+                Address = mascota.Cliente.Direccion,
+                Identification = mascota.Cliente.Identificacion,
+                RegisteredAt = mascota.Cliente.Creado
             },
             Consultas = consultas.Select(c => new HistoriaClinicaConsultaDTO
             {

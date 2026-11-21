@@ -36,6 +36,9 @@ public record HistoriaClinicaResponseDTO
     [JsonPropertyName("mascota")]
     public HistoriaClinicaMascotaDTO Mascota { get; set; } = null!;
 
+    [JsonPropertyName("owner")]
+    public HistoriaClinicaOwnerDTO? Owner { get; set; }
+
     [JsonPropertyName("consultas")]
     public List<HistoriaClinicaConsultaDTO> Consultas { get; set; } = new();
 
@@ -89,6 +92,42 @@ public record HistoriaClinicaMascotaDTO
 
     [JsonPropertyName("condiciones_medicas")]
     public string? CondicionesMedicas { get; set; }
+
+    [JsonPropertyName("color")]
+    public string? Color { get; set; }
+
+    [JsonPropertyName("pet_identification")]
+    public string? PetIdentification { get; set; }
+
+    [JsonPropertyName("sterilized")]
+    public bool Sterilized { get; set; }
+
+    [JsonPropertyName("registered_at")]
+    public DateTime RegisteredAt { get; set; }
+}
+
+public record HistoriaClinicaOwnerDTO
+{
+    [JsonPropertyName("first_name")]
+    public string FirstName { get; set; } = string.Empty;
+
+    [JsonPropertyName("last_name")]
+    public string LastName { get; set; } = string.Empty;
+
+    [JsonPropertyName("email")]
+    public string Email { get; set; } = string.Empty;
+
+    [JsonPropertyName("phone")]
+    public string? Phone { get; set; }
+
+    [JsonPropertyName("address")]
+    public string? Address { get; set; }
+
+    [JsonPropertyName("identification")]
+    public string? Identification { get; set; }
+
+    [JsonPropertyName("registered_at")]
+    public DateTime RegisteredAt { get; set; }
 }
 
 public record HistoriaClinicaConsultaDTO

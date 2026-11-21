@@ -8,6 +8,7 @@ using vet_api_Net.Interfaze.Repositories;
 using vet_api_Net.Interfaze.Repositories.Clients;
 using vet_api_Net.Interfaze.Services;
 using vet_api_Net.Interfaze.Services.Clients;
+using vet_api_Net.Interfaze.Utilities;
 
 namespace vet_api_Net.Services;
 
@@ -20,13 +21,16 @@ public class ClientRequestsService : IClientRequestsService
     private readonly IConsultasRepository _consultasRepository;
     private readonly IClientRepository _clientRepository;
     private readonly INotificationService _notificationService;
+    private readonly IWorkingHoursUtilities _workingHours;
 
     public ClientRequestsService(
         ICitasRepository citasRepository,
         IConsultasRepository consultasRepository,
         IClientRepository clientRepository,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IWorkingHoursUtilities workingHours)
     {
+        _workingHours = workingHours;
         _citasRepository = citasRepository;
         _consultasRepository = consultasRepository;
         _clientRepository = clientRepository;
@@ -96,6 +100,14 @@ public class ClientRequestsService : IClientRequestsService
         var mascota = mascotas.FirstOrDefault(m => m.Id == dto.MascotaId);
         if (mascota == null)
             throw new UnauthorizedAccessException(ResponseMessagesClientRequests.MascotaNotOwned);
+
+        if (!string.IsNullOrWhiteSpace(dto.HoraPreferida))
+        {
+            if (!TimeOnly.TryParse(dto.HoraPreferida, out var requestedTime))
+                throw new ArgumentException(ResponseMessagesCitas.InvalidHoraCita);
+
+            await _workingHours.EnsureWithinWorkingHoursAsync(requestedTime);
+        }
 
         if (dto.FechaPreferida.HasValue)
         {

@@ -87,7 +87,6 @@ public class ReportRepository : IReportRepository
 
         var productos = await _context.Productos
             .AsNoTracking()
-            .Where(p => p.Activo)
             .Select(p => (object)new
             {
                 p.Id,
@@ -99,6 +98,7 @@ public class ReportRepository : IReportRepository
                 p.Stock,
                 p.StockMinimo,
                 p.Proveedor,
+                Estado = p.Activo ? Exceltext.ProductActive : Exceltext.ProductDisabled,
                 p.Creado,
                 p.Actualizado
             })
@@ -197,6 +197,7 @@ public class ReportRepository : IReportRepository
         var cancelledAppointments = await _context.Citas.CountAsync(c => c.Estado == Status.Cancelled);
         var notAssistedAppointments = await _context.Citas.CountAsync(c => c.Estado == Status.NotAssisted);
         var lowStockProductsCount = await _context.Productos.CountAsync(p => p.Activo && p.Stock <= p.StockMinimo);
+        var disabledProductsCount = await _context.Productos.CountAsync(p => !p.Activo);
 
         var summary = new
         {
@@ -204,6 +205,7 @@ public class ReportRepository : IReportRepository
             TotalClients = clientes.Count,
             TotalPets = mascotas.Count,
             TotalProducts = productos.Count,
+            DisabledProductsCount = disabledProductsCount,
             TotalUsers = usuarios.Count,
             TotalInvoices = facturas.Count,
             TotalRevenue = totalRevenue,

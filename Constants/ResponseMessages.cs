@@ -429,6 +429,8 @@ namespace vet_api_Net.Constants
         public const string Consultations = "Consultas";
         public const string InventoryMovements = "Movimientos de Inventario";
         public const string Summary = "Resumen";
+        public const string ProductActive = "Activo";
+        public const string ProductDisabled = "Deshabilitado";
         public const string SummaryMetricColumn = "Métrica";
         public const string SummaryValueColumn = "Valor";
         public const string InvalidReport = "Reporte inválido o sin datos.";
